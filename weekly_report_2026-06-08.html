@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>US CCS Weekly Report｜2026-06-01 ~ 2026-06-07</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f0f2f5; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; display: flex; justify-content: center; padding: 32px 16px; }
+  .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); width: 100%; max-width: 900px; overflow: hidden; }
+  .card-header { background: linear-gradient(135deg, #1456F0 0%, #0E3FC0 100%); padding: 20px 24px 18px; display: flex; align-items: center; gap: 12px; }
+  .card-header .icon { font-size: 26px; }
+  .card-header .title { font-size: 17px; font-weight: 700; color: #fff; }
+  .card-header .subtitle { font-size: 12px; color: rgba(255,255,255,0.72); margin-top: 3px; }
+  .card-header .badge { margin-left: auto; background: rgba(255,255,255,0.18); color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+  .compare-strip { background: #f7f9ff; border-bottom: 1px solid #e8edff; padding: 14px 24px; }
+  .section-label { font-size: 11px; font-weight: 600; color: #888; letter-spacing: 0.4px; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+  .section-label::before { content: ''; display: inline-block; width: 3px; height: 12px; background: #1456F0; border-radius: 2px; }
+  .compare-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .cmp { background: #fff; border: 1px solid #e8e8e8; border-radius: 8px; padding: 10px 12px; text-align: center; }
+  .cmp .lbl { font-size: 11px; color: #999; margin-bottom: 5px; }
+  .cmp .val { font-size: 18px; font-weight: 700; }
+  .cmp.dn .val { color: #e53e3e; }
+  .cmp.up .val { color: #0ab44a; }
+  .cmp.q2 { border-color: #ffd899; background: #fffaf0; }
+  .cmp.q2 .val { color: #ff8c00; }
+  .cmp .prev { font-size: 10px; color: #bbb; margin-top: 3px; }
+  .section { padding: 16px 24px 20px; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 680px; }
+  thead tr.group-row th { font-size: 11px; font-weight: 700; text-align: center; padding: 6px 0; border-bottom: 1px solid #dde3f0; }
+  thead tr.group-row th.g-name { background: #fff; border-bottom-color: transparent; }
+  thead tr.group-row th.g-follow { background: #eef3ff; color: #1456F0; border-left: 1px solid #c8d8ff; border-right: 1px solid #c8d8ff; }
+  thead tr.group-row th.g-new { background: #fff8e8; color: #b07000; border-left: 1px solid #f0d890; border-right: 1px solid #f0d890; }
+  thead tr.group-row th.g-q2 { background: #fff8f0; color: #ff8c00; border-left: 1px solid #ffd899; border-right: 1px solid #ffd899; }
+  thead tr.sub-row th { background: #f7f8fa; color: #888; font-size: 10.5px; font-weight: 600; text-align: center; padding: 6px 8px; border-bottom: 2px solid #e8e8e8; white-space: nowrap; }
+  thead tr.sub-row th:first-child { text-align: center; min-width: 100px; }
+  thead tr.sub-row th.g-follow { background: #f0f5ff; border-left: 1px solid #c8d8ff; border-right: 1px solid #c8d8ff; }
+  thead tr.sub-row th.g-new { background: #fffbf0; border-left: 1px solid #f0d890; border-right: 1px solid #f0d890; }
+  thead tr.sub-row th.g-q2 { background: #fffaf0; border-left: 1px solid #ffd899; border-right: 1px solid #ffd899; }
+  tbody tr td { padding: 8px 8px; text-align: center; border-bottom: 1px solid #f3f3f3; color: #333; white-space: nowrap; }
+  tbody tr td:first-child { text-align: center; font-weight: 500; color: #222; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr.team-row td { background: #f0f5ff; font-weight: 700; color: #1456F0; border-top: 1px solid #d0dcff; border-bottom: 1px solid #d0dcff; }
+  tbody tr.team-row td.g-follow { border-left: 1px solid #c8d8ff; border-right: 1px solid #c8d8ff; }
+  tbody tr.team-row td.g-new { border-left: 1px solid #f0d890; border-right: 1px solid #f0d890; }
+  tbody tr td.g-follow { background: #fafcff; border-left: 1px solid #e8f0ff; border-right: 1px solid #e8f0ff; }
+  tbody tr td.g-new { background: #fffdf5; border-left: 1px solid #faf0c8; border-right: 1px solid #faf0c8; }
+  tbody tr td.g-q2 { background: #fffdf9; border-left: 1px solid #fff0d8; border-right: 1px solid #fff0d8; }
+  tbody tr.team-row td.g-q2 { background: #f0f5ff; border-left: 1px solid #ffd899; border-right: 1px solid #ffd899; }
+  th.pc-col { background: #ff8c00 !important; color: #fff !important; }
+  td.pc-col { font-weight: 700 !important; }
+  th.q2-col { background: #ff8c00 !important; color: #fff !important; }
+  td.q2-col { font-weight: 700 !important; color: #ff8c00; }
+  tbody tr.team-row td.q2-col { color: #ff8c00; }
+  td.col-max { color: #16a34a !important; font-weight: 700; }
+  td.col-min { color: #b91c1c !important; font-weight: 700; }
+  .chart-section { padding: 16px 24px 20px; border-top: 1px solid #f0f0f0; }
+  .chart-wrap { position: relative; height: 260px; }
+  .text-section { padding: 18px 24px 20px; border-top: 8px solid #f0f2f5; }
+  .text-section .section-label { margin-bottom: 14px; font-size: 15px; font-weight: 700; color: #1456F0; letter-spacing: 0; }
+  .sub-block { margin-bottom: 16px; }
+  .sub-block:last-child { margin-bottom: 0; }
+  .sub-title { font-size: 13px; font-weight: 700; color: #1456F0; display: block; background: none; padding: 0; border-radius: 0; margin-bottom: 6px; }
+  .sub-block ul, .sub-block ol { padding-left: 20px; }
+  .sub-block li { font-size: 13px; color: #333; line-height: 1.7; margin-bottom: 4px; }
+  .sub-block p { font-size: 13px; color: #333; line-height: 1.7; margin-bottom: 6px; }
+  .note { font-size: 10.5px; color: #bbb; padding: 10px 24px; background: #fafafa; border-top: 1px solid #f0f0f0; text-align: center; }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="card-header">
+    <div class="icon">📊</div>
+    <div>
+      <div class="title">US CCS Weekly Report- Irisding</div>
+      <div class="subtitle">2026-06-01 &nbsp;~&nbsp; 2026-06-07</div>
+    </div>
+    <div class="badge" id="weekBadge">Week 23</div>
+  </div>
+
+  <div class="compare-strip">
+    <div class="section-label" style="margin-bottom:10px;">与上周对比（2026-05-25 ~ 2026-05-31）</div>
+    <div class="compare-grid">
+      <div class="cmp dn">
+        <div class="lbl">总跟进量</div>
+        <div class="val">▼ 11.7%</div>
+        <div class="prev">5,668 → 5,006</div>
+      </div>
+      <div class="cmp dn">
+        <div class="lbl">总有效跟进量</div>
+        <div class="val">▼ 6.1%</div>
+        <div class="prev">578 → 543</div>
+      </div>
+      <div class="cmp dn">
+        <div class="lbl">Weekly PC</div>
+        <div class="val">▼ 11.7%</div>
+        <div class="prev">128 → 113</div>
+      </div>
+      <div class="cmp q2">
+        <div class="lbl">Q2 季度总PC</div>
+        <div class="val">1,032</div>
+        <div class="prev">4/1 ~ 6/7 累计</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">团队 &amp; 个人业绩数据</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr class="group-row">
+            <th class="g-name" rowspan="1"></th>
+            <th class="g-q2" colspan="1">Q2 累计</th>
+            <th class="g-follow" colspan="3">跟进量（06-01~06-07）</th>
+            <th class="g-new" colspan="3">新 Leads 转化率（06-01~06-07）</th>
+          </tr>
+          <tr class="sub-row">
+            <th>客经</th>
+            <th class="g-q2 q2-col">Q2 PC</th>
+            <th class="g-follow">总跟进量</th>
+            <th class="g-follow">有效跟进量</th>
+            <th class="g-follow pc-col">Weekly PC</th>
+            <th class="g-new">有效跟进率</th>
+            <th class="g-new">跟进转化率</th>
+            <th class="g-new">有效跟进转化率</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="team-row">
+            <td>Team</td>
+            <td class="g-q2 q2-col">1,032</td>
+            <td class="g-follow">5,006</td>
+            <td class="g-follow">543</td>
+            <td class="g-follow pc-col">113</td>
+            <td class="g-new">25.4%</td>
+            <td class="g-new">1.2%</td>
+            <td class="g-new">5.8%</td>
+          </tr>
+          <tr>
+            <td>jacelynlim</td>
+            <td class="g-q2 q2-col">353</td>
+            <td class="g-follow">1,674</td>
+            <td class="g-follow">207</td>
+            <td class="g-follow pc-col">54</td>
+            <td class="g-new">29.4%</td>
+            <td class="g-new">2.8%</td>
+            <td class="g-new">9.4%</td>
+          </tr>
+          <tr>
+            <td>alvinsim</td>
+            <td class="g-q2 q2-col">298</td>
+            <td class="g-follow">1,729</td>
+            <td class="g-follow">163</td>
+            <td class="g-follow pc-col">40</td>
+            <td class="g-new">22.5%</td>
+            <td class="g-new">0.5%</td>
+            <td class="g-new">2.3%</td>
+          </tr>
+          <tr>
+            <td>vincentyew</td>
+            <td class="g-q2 q2-col">381</td>
+            <td class="g-follow">1,603</td>
+            <td class="g-follow">173</td>
+            <td class="g-follow pc-col">19</td>
+            <td class="g-new">24.3%</td>
+            <td class="g-new">1.3%</td>
+            <td class="g-new">5.5%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <div class="section-label">团队近6周转化率趋势</div>
+    <div style="font-size:11px;color:#aaa;margin-bottom:10px;">点击图例可隐藏/显示对应折线</div>
+    <div class="chart-wrap">
+      <canvas id="trendChart"></canvas>
+    </div>
+  </div>
+
+  <div class="text-section">
+    <div class="section-label">二、团队运营</div>
+    <div class="sub-block">
+      <div class="sub-title">【团队管理】</div>
+      <ul>
+        <li>出勤情况：6.1 和 6.2 为公共假期，工作日全勤</li>
+        <li>培训情况：培训客服工作台在线服务的实操、基础业务知识和服务要求；在 6.4 上线支援，合计完成 29 个工单，并在周内完成 3 个待跟进工单；且在组内沉淀和分享首次接线经验</li>
+      </ul>
+    </div>
+    <div class="sub-block">
+      <div class="sub-title">【招聘进展】</div>
+      <ul>
+        <li>暂无新进展；2 人将于 6.15 正式入职</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="text-section">
+    <div class="section-label">三、AI 应用</div>
+    <div class="sub-block">
+      <div class="sub-title">【AI 工具使用情况】</div>
+      <ul>
+        <li>优化周报 skill，添加季度 PC 指标</li>
+      </ul>
+    </div>
+    <div class="sub-block">
+      <div class="sub-title">【AI 应用计划】</div>
+      <ol>
+        <li>试用期员工的业绩跟踪和数据通晒，提前预警</li>
+        <li>团队月实际出勤情况的 Dashboard</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="text-section">
+    <div class="section-label">四、下周计划</div>
+    <div class="sub-block">
+      <ol>
+        <li>强化团队的基础业务知识，联动质培组安排 QA 环节；现场观摩学习咨询客服组的在线服务实操</li>
+        <li>转化客服业务的绩效方案宣导和员工 1v1</li>
+        <li>学习总结 US 咨询客服组的在线跟进问题和经验，沉淀方法论和常见 FAQ</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="note">跟进量 &amp; 转化率：本周数据（06-01~06-07）｜Q2季度总PC：4/1~6/7 累计（外呼+SMS去重）</div>
+
+</div>
+
+<script>
+const WEEKS = ['04-27~05-03','05-04~05-10','05-11~05-17','05-18~05-24','05-25~05-31','06-01~06-07'];
+const DATA = {
+  eff:  [25.9, 27.7, 24.8, 23.5, 24.8, 25.4],
+  conv: [17.7, 17.7, 16.9,  6.9,  6.0,  5.8],
+  alloc:[ 4.6,  4.8,  4.1,  1.7,  1.5,  1.2],
+};
+const DATASETS = [
+  { label:'有效跟进率',     data: DATA.eff,   color:'#1456F0' },
+  { label:'有效跟进转化率', data: DATA.conv,  color:'#f59e0b' },
+  { label:'跟进转化率',     data: DATA.alloc, color:'#10b981' },
+];
+Chart.register(ChartDataLabels);
+window.addEventListener('load', () => {
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: WEEKS,
+      datasets: DATASETS.map(d => ({
+        label: d.label, data: d.data, borderColor: d.color,
+        backgroundColor: d.color + '18', pointBackgroundColor: d.color,
+        pointRadius: 3.5, pointHoverRadius: 5, borderWidth: 2, tension: 0.35, fill: false, spanGaps: false,
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode:'index', intersect:false },
+      plugins: {
+        legend: { position:'bottom', labels:{ boxWidth:14, font:{size:10.5}, padding:12, usePointStyle:true } },
+        tooltip: { callbacks: { label: c => c.parsed.y != null ? ` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}%` : '' } },
+        datalabels: { display: true, align: 'top', offset: 3, font: { size: 8.5, weight: '600' }, color: ctx => ctx.dataset.borderColor, formatter: v => v != null ? v.toFixed(1) + '%' : '' },
+      },
+      scales: {
+        x: { grid:{ color:'#f0f0f0' }, ticks:{ font:{size:10}, color:'#999' } },
+        y: { grid:{ color:'#f0f0f0' }, ticks:{ font:{size:10}, color:'#999', callback: v => v+'%' }, min:0, max:35 }
+      },
+      layout: { padding: { top: 10 } },
+    }
+  });
+  const tbody = document.querySelector('tbody');
+  const staffRows = Array.from(tbody.querySelectorAll('tr:not(.team-row)'));
+  const colCount = 7;
+  for (let ci = 1; ci <= colCount; ci++) {
+    const cells = staffRows.map(r => r.cells[ci]);
+    const vals = cells.map(c => parseFloat(c.textContent.replace(/[,%]/g, '')));
+    const validVals = vals.filter(v => !isNaN(v));
+    if (validVals.length === 0) continue;
+    const max = Math.max(...validVals), min = Math.min(...validVals);
+    cells.forEach((c, i) => {
+      if (isNaN(vals[i])) return;
+      if (vals[i] === max) c.classList.add('col-max');
+      else if (vals[i] === min) c.classList.add('col-min');
+    });
+  }
+  const d = new Date('2026-06-01');
+  const thu = new Date(d);
+  thu.setDate(d.getDate() - ((d.getDay() + 6) % 7) + 3);
+  const yearStart = new Date(thu.getFullYear(), 0, 1);
+  const week = Math.ceil(((thu - yearStart) / 86400000 + 1) / 7);
+  document.getElementById('weekBadge').textContent = `Week ${week}`;
+});
+</script>
+</body>
+</html>
