@@ -1265,7 +1265,7 @@ async function main() {
   const html = generateHTML(data, start, end);
   const outFile = outArg || path.join(
     process.env.USERPROFILE || process.env.HOME || '.',
-    `weekly_report_${start}.html`
+    `weekly_report_${start}_${end.slice(5).replace('-', '')}.html`
   );
   fs.writeFileSync(outFile, html, 'utf8');
   console.log(`Report saved: ${outFile}`);
