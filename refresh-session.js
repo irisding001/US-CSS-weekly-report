@@ -3,9 +3,10 @@
  * 每日运行：用 PASSPORT_SUPERSIG 走 SSO 流程，刷新 PASSPORT_SUPERSIG + EGG_SESS
  * Windows 任务计划每天中午执行
  */
-const https = require('https');
-const path  = require('path');
-const fs    = require('fs');
+const https   = require('https');
+const path    = require('path');
+const fs      = require('fs');
+const { execSync } = require('child_process');
 
 const ENV_FILE = path.join(__dirname, '.env');
 
@@ -56,6 +57,69 @@ function extractCookie(setCookieArr, name) {
     if (m) return m[1];
   }
   return null;
+}
+
+// ── 飞书通知 ─────────────────────────────────────────────────────────────────
+function sendFeishuAlert(title, body, template = 'red') {
+  const content = JSON.stringify({
+    config: { wide_screen_mode: true },
+    header: { title: { tag: 'plain_text', content: title }, template },
+    elements: [{ tag: 'div', text: { tag: 'lark_md', content: body } }],
+  });
+  try {
+    execSync(
+      `lark-cli --profile us-ccs im +messages-send ` +
+      `--user-id ou_423989c914515582660dfef99848b0e7 ` +
+      `--as bot --msg-type interactive --content '${content}'`,
+      { stdio: 'pipe' }
+    );
+  } catch (e) {
+    console.error('[WARN] 飞书通知发送失败:', e.message);
+  }
+}
+
+// ── JWT 到期检测 ───────────────────────────────────────────────────────────────
+function checkDataCookieExpiry(dataCookie) {
+  if (!dataCookie) {
+    sendFeishuAlert(
+      '⚠️ US CSS 周报 — DATA_COOKIE 未配置',
+      '**DATA_COOKIE 为空**，自动周报将无法运行。\n\n请前往 `us.data.futuoa.com`，F12 → Network → Cookie，复制 `uIdToken=...; uIdToken.sig=...` 到 `.env` 文件。',
+      'orange'
+    );
+    return;
+  }
+
+  // 从 Cookie 字符串提取 uIdToken 的 JWT
+  const m = dataCookie.match(/uIdToken=([^;]+)/);
+  if (!m) return;
+
+  try {
+    const [, payload] = m[1].split('.');
+    const { exp } = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    if (!exp) return;
+
+    const nowSec  = Math.floor(Date.now() / 1000);
+    const daysLeft = Math.floor((exp - nowSec) / 86400);
+    const expDate  = new Date(exp * 1000).toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' });
+
+    if (daysLeft < 0) {
+      sendFeishuAlert(
+        '🚨 US CSS 周报 — DATA_COOKIE 已过期',
+        `**uIdToken 已于 ${expDate} 过期**，自动周报将失败。\n\n请立即前往 \`us.data.futuoa.com\`，F12 → Network → Cookie，复制最新 \`uIdToken\` 到 \`.env\`。`,
+        'red'
+      );
+      console.error(`[ERROR] DATA_COOKIE 已过期 (${expDate})`);
+    } else if (daysLeft <= 3) {
+      sendFeishuAlert(
+        `⏰ US CSS 周报 — DATA_COOKIE 还有 ${daysLeft} 天过期`,
+        `**uIdToken 将于 ${expDate} 过期**（剩余 ${daysLeft} 天）。\n\n请前往 \`us.data.futuoa.com\`，F12 → Network → Cookie，提前更新 \`.env\` 中的 \`DATA_COOKIE\`。`,
+        'orange'
+      );
+      console.warn(`[WARN] DATA_COOKIE 将于 ${expDate} 过期（还有 ${daysLeft} 天）`);
+    } else {
+      console.log(`[OK] DATA_COOKIE 有效，到期日: ${expDate}（还有 ${daysLeft} 天）`);
+    }
+  } catch {}
 }
 
 // ── SSO 流程 ──────────────────────────────────────────────────────────────────
@@ -124,6 +188,10 @@ async function refreshSession() {
   console.log(`[OK] Session 刷新成功 @ ${ts}`);
   if (newSuperSig) console.log('[OK] PASSPORT_SUPERSIG 已更新');
   console.log(`[OK] EGG_SESS 已更新 (csrfToken=${csrfToken})`);
+
+  // 检查 DATA_COOKIE 到期，提前提醒
+  const latestEnv = readEnv();
+  checkDataCookieExpiry(latestEnv.DATA_COOKIE);
 }
 
 refreshSession().catch(e => { console.error(e); process.exit(1); });
