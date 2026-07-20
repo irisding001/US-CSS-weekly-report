@@ -10,8 +10,11 @@ const fs   = require('fs');
 const DIR         = __dirname;
 const ENV_FILE    = path.join(DIR, '.env');
 const MARKER_FILE = path.join(DIR, '.reply-marker.json');
-const REPO_DIR    = 'C:/Users/irisding/us-css-weeklyreport';
+const REPO_DIR    = 'C:/Users/irisding/US-CSS-weekly-report';
 const USER_OPEN_ID = 'ou_423989c914515582660dfef99848b0e7';
+const LARK_CLI_JS  = path.join(
+  process.env.APPDATA, 'npm', 'node_modules', '@futu', 'ft-lark-cli', 'scripts', 'run.js'
+);
 
 // ── 飞书通知 ─────────────────────────────────────────────────────────────────
 function sendFeishuAlert(title, body, template = 'red') {
@@ -21,12 +24,12 @@ function sendFeishuAlert(title, body, template = 'red') {
     elements: [{ tag: 'div', text: { tag: 'lark_md', content: body } }],
   });
   try {
-    execSync(
-      `lark-cli --profile us-ccs im +messages-send ` +
-      `--user-id ${USER_OPEN_ID} ` +
-      `--as bot --msg-type interactive --content '${content}'`,
-      { stdio: 'pipe' }
-    );
+    const r = spawnSync(process.execPath, [
+      LARK_CLI_JS, '--profile', 'us-ccs', 'im', '+messages-send',
+      '--user-id', USER_OPEN_ID, '--as', 'bot',
+      '--msg-type', 'interactive', '--content', content,
+    ], { encoding: 'utf8' });
+    if (r.status !== 0) throw new Error(r.stderr || r.stdout);
   } catch (e) {
     console.error('[WARN] 飞书通知发送失败:', e.message);
   }
@@ -65,7 +68,7 @@ function run(cmd, opts = {}) {
   return execSync(cmd, { stdio: 'inherit', shell: true, ...opts });
 }
 
-// ── 读取飞书回复（三/四节） ───────────────────────────────────────────────────
+// ── 读取飞书回复（四/五节） ───────────────────────────────────────────────────
 function readFeishuReply() {
   if (!fs.existsSync(MARKER_FILE)) {
     console.log('[INFO] 未找到 17:00 收集标记，跳过内容读取');
@@ -81,12 +84,13 @@ function readFeishuReply() {
 
   let raw;
   try {
-    raw = execSync(
-      `lark-cli --profile us-ccs im +chat-messages-list ` +
-      `--user-id ${USER_OPEN_ID} ` +
-      `--as bot --start "${sentAt}" --sort asc --page-size 20 --format json`,
-      { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
-    );
+    const lr = spawnSync(process.execPath, [
+      LARK_CLI_JS, '--profile', 'us-ccs', 'im', '+chat-messages-list',
+      '--user-id', USER_OPEN_ID, '--as', 'bot',
+      '--start', sentAt, '--sort', 'asc', '--page-size', '20', '--format', 'json',
+    ], { encoding: 'utf8' });
+    if (lr.status !== 0) throw new Error(lr.stderr || lr.stdout);
+    raw = lr.stdout;
   } catch (e) {
     console.error('[WARN] 读取飞书回复失败:', e.message);
     return null;
@@ -100,7 +104,7 @@ function readFeishuReply() {
   // 只取用户发送的消息（排除 bot 自身）
   const userMsgs = items.filter(m => m.sender?.sender_type === 'user');
   if (!userMsgs.length) {
-    console.log('[INFO] 未收到用户回复，三/四节保留空白占位');
+    console.log('[INFO] 未收到用户回复，四/五节保留空白占位');
     return null;
   }
 
@@ -118,14 +122,14 @@ function readFeishuReply() {
   const plans      = extractSection(text, '【下周安排】', null);
 
   if (!highlights && !plans) {
-    console.log('[INFO] 回复未匹配格式，三/四节保留空白占位');
+    console.log('[INFO] 回复未匹配格式，四/五节保留空白占位');
     return null;
   }
 
   // 清理标记文件
   try { fs.unlinkSync(MARKER_FILE); } catch {}
 
-  console.log('[OK] 已读取三/四节用户回复');
+  console.log('[OK] 已读取四/五节用户回复');
   return { highlights, plans };
 }
 
@@ -144,7 +148,7 @@ async function main() {
 
   // 1. 刷新 session
   console.log('\n[1/5] 刷新 Session...');
-  const r = spawnSync('node', [path.join(DIR, 'refresh-session.js')], { stdio: 'inherit' });
+  const r = spawnSync(process.execPath, [path.join(DIR, 'refresh-session.js')], { stdio: 'inherit' });
   if (r.status !== 0) {
     console.error('[ERROR] Session 刷新失败，请检查 .env 中的凭证');
     process.exit(1);
@@ -183,8 +187,8 @@ async function main() {
     } catch {}
   }
 
-  // 3. 读取飞书三/四节回复
-  console.log('\n[2/5] 读取飞书三/四节回复...');
+  // 3. 读取飞书四/五节回复
+  console.log('\n[2/5] 读取飞书四/五节回复...');
   const reply = readFeishuReply();
 
   // 4. 生成报告
@@ -198,13 +202,13 @@ async function main() {
     `node "${path.join(DIR, 'run.js')}" --week-start ${weekStart} --out "${outFile}"`
   );
 
-  // 注入三/四节
+  // 注入四/五节
   if (reply && (reply.highlights || reply.plans)) {
     let html = fs.readFileSync(outFile, 'utf8');
     if (reply.highlights) html = html.replace('请填写本周重点工作...', reply.highlights);
     if (reply.plans)      html = html.replace('请填写下周安排...', reply.plans);
     fs.writeFileSync(outFile, html, 'utf8');
-    console.log('[OK] 三/四节内容已写入报告');
+    console.log('[OK] 四/五节内容已写入报告');
   }
 
   // 5. 推送 GitHub Pages
@@ -217,8 +221,8 @@ async function main() {
   console.log('\n[5/5] 飞书通知...');
   const startMD  = weekStart.slice(5).replace('-', '-');
   const endMD    = weekEnd.slice(5).replace('-', '-');
-  const pageUrl  = `https://irisding001.github.io/us-css-weeklyreport/${filename}`;
-  const histUrl  = 'https://irisding001.github.io/us-css-weeklyreport/';
+  const pageUrl  = `https://irisding001.github.io/US-CSS-weekly-report/${filename}`;
+  const histUrl  = 'https://irisding001.github.io/US-CSS-weekly-report/';
   const hasReply = !!(reply?.highlights || reply?.plans);
 
   const card = JSON.stringify({
@@ -233,8 +237,8 @@ async function main() {
         text: {
           tag: 'lark_md',
           content: hasReply
-            ? '✅ 三/四节内容已自动填入'
-            : '⚠️ 未收到三/四节回复，可在浏览器中直接编辑',
+            ? '✅ 四/五节内容已自动填入'
+            : '⚠️ 未收到四/五节回复，可在浏览器中直接编辑',
         },
       },
       {
@@ -247,11 +251,12 @@ async function main() {
     ],
   });
 
-  run(
-    `lark-cli --profile us-ccs im +messages-send ` +
-    `--user-id ${USER_OPEN_ID} ` +
-    `--as bot --msg-type interactive --content '${card}'`
-  );
+  const nr = spawnSync(process.execPath, [
+    LARK_CLI_JS, '--profile', 'us-ccs', 'im', '+messages-send',
+    '--user-id', USER_OPEN_ID, '--as', 'bot',
+    '--msg-type', 'interactive', '--content', card,
+  ], { encoding: 'utf8', stdio: 'inherit' });
+  if (nr.status !== 0) throw new Error('飞书通知发送失败');
 
   console.log(`\n✓ 完成！报告已发布：${pageUrl}`);
 }
