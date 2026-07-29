@@ -42,6 +42,9 @@ const outArg       = getArg('--out');
 const lcPCArg      = getArg('--lc-pc');
 const phonePCArg   = getArg('--phone-pc');
 const emailPCArg   = getArg('--email-pc');
+const lcCSATArg      = getArg('--lc-csat');
+const phoneCSATArg   = getArg('--phone-csat');
+const emailCSATArg   = getArg('--email-csat');
 const agentConsultPCArg = getArg('--agent-consult-pc');
 const agentConsultPCMap = {};
 if (agentConsultPCArg) {
@@ -58,7 +61,23 @@ if (agentMonthlyConsultPCArg) {
     if (eq > 0) agentMonthlyConsultPCMap[pair.slice(0, eq).trim()] = parseInt(pair.slice(eq + 1).trim()) || 0;
   }
 }
+const agentAttendanceArg = getArg('--agent-attendance');
+const agentAttendanceMap = {};
+if (agentAttendanceArg) {
+  for (const pair of agentAttendanceArg.split(',')) {
+    const eq = pair.indexOf('=');
+    if (eq > 0) agentAttendanceMap[pair.slice(0, eq).trim()] = parseInt(pair.slice(eq + 1).trim()) || 0;
+  }
+}
 const NO_HIGHLIGHTS = args.includes('--no-highlights');
+const prevLcTickets   = getArg('--prev-lc-tickets');
+const prevLcCsat      = getArg('--prev-lc-csat');
+const prevPhoneTickets= getArg('--prev-phone-tickets');
+const prevPhoneCsat   = getArg('--prev-phone-csat');
+const prevEmailTickets= getArg('--prev-email-tickets');
+const prevEmailCsat   = getArg('--prev-email-csat');
+const prevObPc        = getArg('--prev-ob-pc');
+const prevWeeklyPc    = getArg('--prev-weekly-pc');
 
 // ─────────────────────────────────────────────────────────────────
 // ENV / AUTH
@@ -297,6 +316,18 @@ function httpRequest(options, body) {
     if (body) req.write(body);
     req.end();
   });
+}
+
+async function httpGetPlain(url) {
+  const parsed = new URL(url);
+  const res = await httpRequest({
+    hostname: parsed.hostname,
+    path: parsed.pathname + (parsed.search || ''),
+    method: 'GET',
+    headers: { 'User-Agent': 'US-CSS-Report-Bot/1.0', 'Accept': 'text/html' },
+  });
+  if (res.status !== 200) throw new Error(`HTTP ${res.status} for ${url}`);
+  return res.raw;
 }
 
 const vParamCache = {};
@@ -1082,7 +1113,26 @@ async function fetchWsSat(dataStart, dataEnd) {
 
   // optionSatisfied: 0=Superb,1=Good,2=Average,3=Dissatisfied,4=Bad (all are rated)
   // channel: 1=LiveChat, 2=Phone, 7=Email
+  const CAT_NAME = {
+    1605:'平台基础体验',1607:'出金',1608:'入金',1609:'开户前咨询',1622:'其他',3189:'销户',3880:'开户后咨询',
+    1606:'税务',1619:'社区',1621:'行情',
+    1625:'通用设置',1627:'登录相关',1628:'短信验证码',1635:'其他',1639:'WIRE出金操作',1640:'ACH出金进度/催出金',
+    1648:'ACH入金异常',1649:'ACH入金操作',1650:'美国身份开户咨询',1651:'台湾身份开户咨询',1652:'其他身份开户咨询',
+    1657:'其他问题',1745:'问题不明确',1732:'禁言申诉/举报',1742:'证券分析功能',1744:'非我司业务',
+    3209:'注销证券账户（已开户）',3213:'放弃开户/注销moomooID（未开户）',3752:'绑卡相关',3881:'修改资料',
+    3884:'w8/w9表格相关',4025:'重置审核',4829:'重复开户',4838:'旧设备验证',4842:'注销现金/融资账户',4848:'借记卡',
+    3210:'不使用（薅完羊毛等）',3214:'不使用（薅完羊毛等）',4854:'修改电话号码/忘记密码',4856:'其他',
+    1658:'开户驳回',1659:'开户前问题',1660:'开户填写',1663:'开户前问题',1667:'开户前问题',3876:'催开户',3878:'催开户',
+  };
+  const CAT_LEVEL = {
+    1605:1,1607:1,1608:1,1609:1,1622:1,3189:1,3880:1,1606:1,1619:1,1621:1,
+    1625:2,1627:2,1628:2,1635:2,1639:2,1640:2,1648:2,1649:2,1650:2,1651:2,1652:2,
+    1657:2,1745:2,1732:2,1742:2,1744:2,3209:2,3213:2,3752:2,3881:2,3884:2,4025:2,4829:2,4838:2,4842:2,4848:2,
+    3210:3,3214:3,4854:3,4856:3,1658:3,1659:3,1660:3,1663:3,1667:3,3876:3,3878:3,
+  };
+
   const bySid = {};
+  const negCatMap = {};
   for (const e of allItems) {
     if (!WS_TEAM_SIDS.has(e.sid)) continue;
     if (!bySid[e.sid]) bySid[e.sid] = { total: 0, lc: 0, phone: 0, email: 0, superb: 0, good: 0, avg: 0, dissatisfied: 0, bad: 0 };
@@ -1097,6 +1147,13 @@ async function fetchWsSat(dataStart, dataEnd) {
     else if (o === 2) s.avg++;
     else if (o === 3) s.dissatisfied++;
     else if (o === 4) s.bad++;
+    if (o === 3 || o === 4) {
+      for (const cid of (Array.isArray(e.categoryInfo) ? e.categoryInfo : [])) {
+        if (CAT_LEVEL[cid] !== 2) continue;
+        if (!negCatMap[cid]) negCatMap[cid] = { id: cid, name: CAT_NAME[cid] || String(cid), count: 0 };
+        negCatMap[cid].count++;
+      }
+    }
   }
 
   let teamTotal = 0, teamLc = 0, teamPhone = 0, teamEmail = 0;
@@ -1114,10 +1171,12 @@ async function fetchWsSat(dataStart, dataEnd) {
     return { name, ...v, satisfaction: sat };
   });
 
-  console.log(`[OK] WS CSAT: ${allItems.length} evals (${teamTotal} team), team sat ${teamSat}`);
+  const negCategories = Object.values(negCatMap).sort((a, b) => b.count - a.count);
+  console.log(`[OK] WS CSAT: ${allItems.length} evals (${teamTotal} team), team sat ${teamSat}, neg-cat2 types: ${negCategories.length}`);
   return {
     team: { satisfaction: teamSat, total: teamTotal, lc: teamLc, phone: teamPhone, email: teamEmail, superb: teamSuperb, good: teamGood, avg: teamAvg, dissatisfied: teamDissatisfied, bad: teamBad },
     agents,
+    negCategories,
   };
 }
 
@@ -1134,18 +1193,22 @@ function tr(...cells) {
 }
 function trB(...cells) {
   return '<tr class="team-row">' + cells.map(c => {
-    const inner = typeof c === 'string' && c.startsWith('<') ? c : `<strong>${esc(c)}</strong>`;
+    const inner = typeof c !== 'string' ? `<strong>${esc(c)}</strong>`
+      : c.startsWith('<strong>') ? c
+      : c.includes('<') ? `<strong>${c}</strong>`
+      : `<strong>${esc(c)}</strong>`;
     return `<td>${inner}</td>`;
   }).join('') + '</tr>';
 }
 function cvCell(val, dotHtml = '', sub = '') {
-  const subLine = sub ? `<br><span class="sub-lbl">${sub}</span>` : '';
-  if (!dotHtml) return `<strong>${esc(String(val))}</strong>${subLine}`;
-  return `<span class="val-wrap"><strong>${esc(String(val))}</strong>${dotHtml}</span>${subLine}`;
+  const inlineSub = sub ? `<span class="tgt" style="margin-left:5px">${sub.replace(/<[^>]*>/g,'')}</span>` : '';
+  if (!dotHtml) return `<strong>${esc(String(val))}</strong>${inlineSub}`;
+  return `<span class="val-wrap"><strong>${esc(String(val))}</strong>${dotHtml}${inlineSub}</span>`;
 }
 function ansCell(label, val, dotHtml = '', target = '') {
-  const subParts = [label ? `<span class="lbl">${esc(label)}</span>` : '', target ? `<span class="tgt">≥${target}</span>` : ''].filter(Boolean).join('');
-  return cvCell(val, dotHtml, subParts);
+  const base = dotHtml ? `<span class="val-wrap"><strong>${esc(String(val))}</strong>${dotHtml}</span>` : `<strong>${esc(String(val))}</strong>`;
+  const sub = [label, target ? `≥${target}` : ''].filter(Boolean).join('');
+  return sub ? `${base}<br><span class="lbl">${esc(sub)}</span>` : base;
 }
 function dot(pctStr, threshold) {
   if (!pctStr || pctStr === '-') return '';
@@ -1171,6 +1234,8 @@ function kpiCell(val, threshold) {
   return { html: `${esc(String(val))}<span class="dot dot-red"></span>` };
 }
 function b(zh, en) { return `${zh}<br><span class="en">${en}</span>`; }
+function bCsat() { return `满意度<br><span class="en">CSAT <span style="font-size:10px;color:#bbb;font-weight:400">≥84%</span></span>`; }
+function bFcr() { return `一次性解决率<br><span class="en">FCR <span style="font-size:10px;color:#bbb;font-weight:400">≥95%</span></span>`; }
 function tbl(header, rows, emptyMsg = '暂无数据', colgroup = '', cls = '') {
   const body = rows.length ? rows.join('') : `<tr><td colspan="20" class="empty">${emptyMsg}</td></tr>`;
   const clsAttr = cls ? ` class="${cls}"` : '';
@@ -1227,7 +1292,7 @@ function buildCsatSection(wsSat, lcSat, phoneSat, emailSat) {
   );
 
   const teamSatV = parseFloat(team.satisfaction);
-  const teamSatCell = `<span class="val-wrap"><strong>${team.satisfaction}</strong><span class="dot dot-${teamSatV >= 84 ? 'green' : 'red'}"></span></span><br><span class="sub-lbl"><span class="tgt">≥84%</span></span>`;
+  const teamSatCell = `<span class="val-wrap"><strong>${team.satisfaction}</strong><span class="dot dot-${teamSatV >= 84 ? 'green' : 'red'}"></span><span class="tgt" style="margin-left:5px">≥84%</span></span>`;
   const totalRow = `<tr class="consult-total-row">`
     + `<td><strong>合计 Total</strong></td><td><strong>${team.total}</strong></td>`
     + `<td><strong>${team.lc || 0}</strong></td><td><strong>${team.phone || 0}</strong></td><td><strong>${team.email || 0}</strong></td>`
@@ -1296,23 +1361,62 @@ function buildCsatSection(wsSat, lcSat, phoneSat, emailSat) {
       + `</div>`
     : `<div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:6px;padding:12px 16px;font-size:13px;color:#15803d">本周团队满意度表现良好，无明显待改善项</div>`;
 
+  const negTotal = (team.dissatisfied || 0) + (team.bad || 0);
+  const teamSatV2 = parseFloat(team.satisfaction);
+  const metTarget = !isNaN(teamSatV2) && teamSatV2 >= 84;
+  const sortedBySat = [...agents].filter(a => a.satisfaction !== '-').sort((a, b) => parseFloat(b.satisfaction) - parseFloat(a.satisfaction));
+  const topAgent = sortedBySat[0];
+  const bot3 = [...sortedBySat].reverse().slice(0, 3);
+  const statusText = metTarget
+    ? `<span style="color:#16a34a;font-weight:700">符合目标 ≥84%</span>`
+    : `<span style="color:#dc2626;font-weight:700">未达目标 ≥84%</span>`;
+  const topText = topAgent ? `团队最高满意度：<strong>${esc(topAgent.name)}</strong>（${topAgent.satisfaction}）；` : '';
+  const bot3Text = bot3.length > 0 ? `最低 ${bot3.length} 名：${bot3.map(a => `<strong>${esc(a.name)}</strong>（${a.satisfaction}）`).join('、')}` : '';
+  const overviewHtml = `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;color:#444;line-height:1.9">`
+    + `本周被评价工单 <strong>${team.total}</strong> 条，超赞 <strong>${team.superb || 0}</strong> 条（占比 ${superbPct}%），`
+    + `不满意及糟糕工单 <strong>${negTotal}</strong> 条；团队满意度 <strong>${team.satisfaction}</strong>，${statusText}。`
+    + (topText || bot3Text ? `<br>${topText}${bot3Text}。` : '')
+    + `</div>`;
+
   const summary = `<h3 style="margin-top:18px">满意度小结</h3><div style="margin-top:10px">`
-    + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">`
-    + `<div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:6px;padding:12px 16px">`
-    + `<div style="font-size:11px;font-weight:700;color:#16a34a;letter-spacing:1px;margin-bottom:10px">亮点</div>`
-    + `<div style="display:flex;flex-direction:column;gap:2px">`
-    + `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #dcfce7;font-size:12.5px"><span style="color:#555">超赞占比</span><span style="color:#15803d;font-weight:700;white-space:nowrap;margin-left:12px">${superbPct}%（${team.superb || 0}/${team.total}）</span></div>`
-    + `</div>`
-    + (perfectAgents.length > 0 ? `<div style="margin-top:10px;font-size:12px;color:#444;line-height:1.7"><span style="font-weight:700;color:#16a34a">个人 CSAT 100%：</span>${perfectAgents.join('、')}</div>` : '')
-    + `</div></div>`
-    + improvHtml + `</div>`;
+    + overviewHtml
+    + `</div>`;
+
+  const negCats = (wsSat?.negCategories || []).filter(c => c.count > 0);
+  const negCatHtml = negCats.length > 0
+    ? `<div class="subsect-title" style="margin-top:22px">不满意工单分类分布（二级）<span class="en"> Dissatisfied Ticket Category Breakdown (L2)</span></div>`
+      + `<table style="width:auto;min-width:320px"><thead><tr>`
+      + `<th style="text-align:left">分类</th><th style="text-align:center;min-width:60px">工单数</th><th style="text-align:center;min-width:60px">占比</th>`
+      + `</tr></thead><tbody>`
+      + (() => {
+          const negTotal2 = negCats.reduce((s, x) => s + x.count, 0);
+          return negCats.map(c => {
+            const pct = negTotal2 > 0 ? (c.count / negTotal2 * 100).toFixed(1) : '0';
+            return `<tr><td>${esc(c.name)}</td><td style="text-align:center">${c.count}</td><td style="text-align:center">${pct}%</td></tr>`;
+          }).join('');
+        })()
+      + `</tbody></table>`
+    : '';
 
   return `<div class="subsect-title">个人满意度明细 <span class="en">Individual Satisfaction Breakdown</span></div>`
-    + tableHtml + summary;
+    + tableHtml + summary + negCatHtml;
 }
 
 function generateHTML(data, weekStart, weekEnd) {
-  const { lc, util, phone, phoneUtil, email, emailSat, sla, outbound, qcSat, wsSat, monthlyLc, monthlyPhone, monthlyEmail } = data;
+  const { lc, util, phone, phoneUtil, email, emailSat, sla, outbound, qcSat, wsSat, monthlyLc, monthlyPhone, monthlyEmail, prev } = data;
+
+  // WoW delta: green = better (higher), red = worse; neutral for tickets (gray)
+  function wowDelta(curr, prevVal, higherIsBetter = true, isInt = false) {
+    const c = parseFloat(curr), p = parseFloat(prevVal);
+    if (isNaN(c) || isNaN(p)) return '';
+    const d = c - p;
+    if (Math.abs(d) < (isInt ? 0.5 : 0.05)) return '';
+    const better = higherIsBetter ? d > 0 : d < 0;
+    const color = better ? '#16a34a' : '#dc2626';
+    const arrow = d > 0 ? '↑' : '↓';
+    const fmt = isInt ? Math.abs(Math.round(d)).toString() : Math.abs(d).toFixed(1).replace(/\.0$/, '');
+    return `<br><span style="font-size:10px;color:${color};font-weight:500">${arrow}${fmt} <span style="color:#9ca3af;font-weight:400">vs LW</span></span>`;
+  }
 
   // Build lookup maps
   const utilMap    = {};  (util.agents    || []).forEach(a => { utilMap[a.name]    = a; });
@@ -1365,28 +1469,28 @@ function generateHTML(data, weekStart, weekEnd) {
     + '</colgroup>';
 
   const consultTable = tbl(
-    th(b('渠道','Channel'), b('工单量','Volume'), b('咨询PC','Consult PC'), b('满意度','CSAT'), b('接通率','Answer Rate'), b('一次性解决率','FCR'), b('平均处理时长','Avg Handle')),
+    th(b('渠道','Channel'), b('工单量','Volume'), b('咨询PC','Consult PC'), bCsat(), b('接通率','Answer Rate'), bFcr(), b('平均处理时长','Avg Handle')),
     [
       // 合计 row
-      `<tr class="consult-total-row"><td><strong>合计 Total</strong></td><td><strong>${consultTotalTickets || '-'}</strong></td><td><strong>${consultPC}</strong></td><td>${cvCell(consultCSAT, dot(consultCSAT, 84), '<span class="tgt">≥84%</span>')}</td><td>-</td><td>-</td><td>-</td></tr>`,
+      `<tr class="consult-total-row"><td><strong>合计 Total</strong></td><td><strong>${consultTotalTickets || '-'}</strong></td><td><strong>${consultPC}</strong></td><td>${cvCell(consultCSAT, dot(consultCSAT, 84))}</td><td>-</td><td>-</td><td>-</td></tr>`,
       trB('在线 Live Chat',
-        consultLC,
+        consultLC + wowDelta(consultLC, prev?.lc?.tickets, true, true),
         lcPC,
-        cvCell(lc.team.satisfaction, dot(lc.team.satisfaction, 84), '<span class="tgt">≥84%</span>'),
+        cvCell(lc.team.satisfaction, dot(lc.team.satisfaction, 84)) + wowDelta(lc.team.satisfaction, prev?.lc?.satisfaction),
         ansCell('30s接通', lc.team.thirtySecRate, dot(lc.team.thirtySecRate, 90), '90%'),
-        cvCell(lc.team.fcr, dot(lc.team.fcr, 95), '<span class="tgt">≥95%</span>'),
+        cvCell(lc.team.fcr, dot(lc.team.fcr, 95)),
         lc.team.avgHandle),
       trB('电话 Phone',
-        consultPhone,
+        consultPhone + wowDelta(consultPhone, prev?.phone?.tickets, true, true),
         phonePC,
-        cvCell(phone.team.satisfaction, dot(phone.team.satisfaction, 84), '<span class="tgt">≥84%</span>'),
+        cvCell(phone.team.satisfaction, dot(phone.team.satisfaction, 84)) + wowDelta(phone.team.satisfaction, prev?.phone?.satisfaction),
         ansCell('20s接通', phone.team.ans20s, dot(phone.team.ans20s, 95), '95%'),
-        cvCell(phone.team.fcr, dot(phone.team.fcr, 95), '<span class="tgt">≥95%</span>'),
+        cvCell(phone.team.fcr, dot(phone.team.fcr, 95)),
         phone.team.avgDuration),
       trB('邮件 Email',
-        consultEmail,
+        consultEmail + wowDelta(consultEmail, prev?.email?.tickets, true, true),
         emailPC,
-        cvCell(emailSat.team.satisfaction, dot(emailSat.team.satisfaction, 84), '<span class="tgt">≥84%</span>'),
+        cvCell(emailSat.team.satisfaction, dot(emailSat.team.satisfaction, 84)) + wowDelta(emailSat.team.satisfaction, prev?.email?.satisfaction),
         ansCell('Overall SLA', sla.overallSLA, dot(sla.overallSLA, 90), '90%'),
         '-',
         '-'),
@@ -1442,9 +1546,12 @@ function generateHTML(data, weekStart, weekEnd) {
     const csatNum  = agentCsat !== '-' ? parseFloat(agentCsat) : null;
     const omniRaw  = (utilMap[name]||{}).omniUtil;
     const omniNum  = omniRaw && omniRaw !== '-' ? parseFloat(omniRaw) : null;
+    const attendance = agentAttendanceArg != null
+      ? (agentAttendanceMap.hasOwnProperty(name) ? agentAttendanceMap[name] : null)
+      : null;
     return { name, total, consultPC: agentConsultPC, salesPC: agentSalesPC, weeklyTotal: agentWeeklyTotal,
              monthlyTickets: agentMonthlyTickets, monthlyConsult: agentMonthlyConsult, monthlySales: agentMonthlySales, monthlyPC: agentMonthlyPC,
-             csatNum, csatRaw: agentCsat, omniNum, omniRaw };
+             csatNum, csatRaw: agentCsat, omniNum, omniRaw, attendance };
   }).sort((a, b) => b.total - a.total);
 
   // Pass 2: per-column rank (top=max → green, bot=min → red; ties all highlighted)
@@ -1473,11 +1580,14 @@ function generateHTML(data, weekStart, weekEnd) {
     return cls ? ` class="${cls}"` : '';
   }
 
+  const hasAttendance = agentAttendanceArg != null;
+
   const agentSummaryRows = agentSummaryData.map((d, i) => {
     const csatHtml = withDot(d.csatRaw, d.csatRaw !== '-' ? dotRed(d.csatRaw, 84) : '');
     const omniHtml = d.omniRaw && d.omniRaw !== '-' ? withDot(d.omniRaw, dotRed(d.omniRaw, 90)) : '-';
     return '<tr>'
       + `<td>${esc(d.name)}</td>`
+      + (hasAttendance ? `<td style="text-align:center">${d.attendance != null ? d.attendance : '-'}</td>` : '')
       + `<td${rc(i,'total')}>${esc(String(d.total || '-'))}</td>`
       + `<td${rc(i,'consultPC')}>${esc(String(d.consultPC))}</td>`
       + `<td${rc(i,'salesPC')}>${esc(String(d.salesPC))}</td>`
@@ -1494,10 +1604,11 @@ function generateHTML(data, weekStart, weekEnd) {
   const teamSatDisplay = wsTeamSat !== '-' ? wsTeamSat : qcTeamSat;
   const indGroupHeader = '<tr class="group-header">'
     + '<th rowspan="2" style="vertical-align:middle">客服<br><span class="en">Agent</span></th>'
-    + `<th colspan="6" class="zone-weekly">周度业绩 <span class="en">Weekly</span></th>`
+    + `<th colspan="${hasAttendance ? 7 : 6}" class="zone-weekly">周度业绩 <span class="en">Weekly</span></th>`
     + '<th colspan="2" class="zone-monthly">月度业绩 <span class="en">Monthly</span></th>'
     + '</tr>';
   const indColHeader = '<tr>'
+    + (hasAttendance ? `<th style="text-align:center">${b('出勤','Days')}</th>` : '')
     + `<th style="text-align:center">${b('工单量','Total Tickets')}</th>`
     + `<th>${b('咨询PC','Consult PC')}</th>`
     + `<th>${b('转化PC','Conv. PC')}</th>`
@@ -1507,7 +1618,29 @@ function generateHTML(data, weekStart, weekEnd) {
     + `<th>${b('月度总工单','Monthly Tickets')}</th>`
     + `<th>${b('月度总PC','Monthly Total PC')}</th>`
     + '</tr>';
-  const individualSummaryTable = tbl(indGroupHeader + indColHeader, agentSummaryRows);
+  const indTotalTickets    = agentSummaryData.reduce((s, d) => s + (parseInt(d.total)        || 0), 0);
+  const indTotalConsultPC  = agentSummaryData.reduce((s, d) => s + (parseInt(d.consultPC)    || 0), 0);
+  const indTotalSalesPC    = agentSummaryData.reduce((s, d) => s + (parseInt(d.salesPC)      || 0), 0);
+  const indTotalWeeklyPC   = agentSummaryData.reduce((s, d) => s + (parseInt(d.weeklyTotal)  || 0), 0);
+  const indTotalMonthlyTix = agentSummaryData.reduce((s, d) => s + (parseInt(d.monthlyTickets)|| 0), 0);
+  const indTotalMonthlyPC  = agentSummaryData.reduce((s, d) => s + (parseInt(d.monthlyPC)    || 0), 0);
+  const teamCsatHtml = withDot(teamSatDisplay, teamSatDisplay !== '-' ? dotRed(teamSatDisplay, 84) : '');
+  const indTotalAttendance = hasAttendance
+    ? agentSummaryData.reduce((s, d) => s + (d.attendance != null ? d.attendance : 0), 0)
+    : null;
+  const indTotalRow = '<tr class="consult-total-row">'
+    + `<td><strong>合计 Total</strong></td>`
+    + (hasAttendance ? `<td style="text-align:center"><strong>${indTotalAttendance}</strong></td>` : '')
+    + `<td>${indTotalTickets || '-'}</td>`
+    + `<td>${indTotalConsultPC || '-'}</td>`
+    + `<td>${indTotalSalesPC || '-'}</td>`
+    + `<td>${indTotalWeeklyPC || '-'}</td>`
+    + `<td>${teamCsatHtml}</td>`
+    + `<td style="border-right:2px solid #c0cadf">--</td>`
+    + `<td>${indTotalMonthlyTix || '-'}</td>`
+    + `<td>${indTotalMonthlyPC || '-'}</td>`
+    + '</tr>';
+  const individualSummaryTable = tbl(indGroupHeader + indColHeader, [...agentSummaryRows, indTotalRow]);
 
   // ── Section II.A: Live Chat Individual ─────────────────────────
   const lcIndRows = TEAM_ORDER
@@ -1583,23 +1716,19 @@ function generateHTML(data, weekStart, weekEnd) {
     [...monthlyPCRows, trB('合计 Total', totalMTickets || '-', totalMConsult, totalMSales, totalMPC)]
   );
 
-  // ── Section II.E: Performance Analysis ────────────────────────
+  // ── Section II.E: Performance Analysis (no CSAT — covered in Section III) ──
   const analysisItems = [];
   const metricChecks = [
-    { label: '在线 30s接通率 Live Chat 30s Answer Rate', val: lc.team.thirtySecRate,       target: 90, type: '异常' },
-    { label: '在线满意度 Live Chat CSAT',                val: lc.team.satisfaction,        target: 84, type: '异常' },
-    { label: '在线 FCR Live Chat FCR',                   val: lc.team.fcr,                 target: 95, type: '待提升' },
-    { label: '电话 20s接通率 Phone 20s Answer Rate',     val: phone.team.ans20s,           target: 95, type: '异常' },
-    { label: '电话满意度 Phone CSAT',                    val: phone.team.satisfaction,     target: 84, type: '异常' },
-    { label: '电话 FCR Phone FCR',                       val: phone.team.fcr,              target: 95, type: '待提升' },
-    { label: '邮件满意度 Email CSAT',                    val: emailSat.team.satisfaction,  target: 84, type: '待提升' },
-    { label: '团队 Overall SLA Team Overall SLA',        val: sla.overallSLA,              target: 90, type: '异常' },
-    { label: '团队综合满意度 Team Overall CSAT',         val: wsSat?.team?.satisfaction,   target: 84, type: '异常' },
+    { id: 'lc30s',      label: '在线 30s接通率 Live Chat 30s Rate',   val: lc.team.thirtySecRate,  target: 90 },
+    { id: 'lcFcr',      label: '在线 FCR Live Chat FCR',              val: lc.team.fcr,            target: 95 },
+    { id: 'phoneSla',   label: '电话 20s接通率 Phone 20s Rate',       val: phone.team.ans20s,      target: 95 },
+    { id: 'phoneFcr',   label: '电话 FCR Phone FCR',                  val: phone.team.fcr,         target: 95 },
+    { id: 'overallSla', label: '整体 SLA Overall SLA',                val: sla.overallSLA,         target: 90 },
   ];
-  for (const { label, val, target, type } of metricChecks) {
+  for (const { id, label, val, target } of metricChecks) {
     const n = parseFloat(val);
     if (!isNaN(n) && val !== '-' && n < target) {
-      analysisItems.push({ type, text: `${label} <strong>${val}</strong>，低于目标 below target ≥${target}%` });
+      analysisItems.push({ id, label, val, target, type: n < target * 0.9 ? '异常' : '待提升' });
     }
   }
   // Per-agent low email SLA
@@ -1607,71 +1736,124 @@ function generateHTML(data, weekStart, weekEnd) {
     .filter(name => toInt((emailMap[name]||{}).tickets) > 0 && parseFloat((emailMap[name]||{}).slaRate) < 90)
     .map(name => `${name}(${(emailMap[name]||{}).slaRate||'-'})`);
   if (lowEmailSla.length > 0)
-    analysisItems.push({ type: '待提升', text: `邮件 SLA 未达 Email SLA below 90%：${lowEmailSla.join('、')}` });
-  // Per-agent low combined CSAT
-  const lowCsatAgents = [];
-  for (const name of TEAM_ORDER) {
-    const lcD = lcMap[name]||{}, phD = phoneMap[name]||{}, emD = emailSatMap[name]||{};
-    const lcT = toInt(lcD.tickets), phT = toInt(phD.inbound), emT = toInt((emailMap[name]||{}).tickets);
-    const tot = lcT + phT + emT;
-    if (tot === 0) continue;
-    const w = (lcT*(parseFloat(lcD.satisfaction)||0) + phT*(parseFloat(phD.satisfaction)||0) + emT*(parseFloat(emD.satisfaction)||0)) / tot;
-    if (w < 84) lowCsatAgents.push(`${name}(${w.toFixed(1)}%)`);
-  }
-  if (lowCsatAgents.length > 0)
-    analysisItems.push({ type: '待提升', text: `综合满意度低于 Overall CSAT below 84%：${lowCsatAgents.join('、')}` });
-  // Zero weekly PC agents (who have outbound record)
-  const zeroPcAgents = TEAM_ORDER.filter(name => {
-    const ob = obMap[name];
-    return ob && (ob.weeklyPC === 0 || ob.weeklyPC === '0' || !ob.weeklyPC);
+    analysisItems.push({ id: 'emailSla', label: '邮件个人 SLA 未达标 Email SLA below 90%', val: lowEmailSla.join('、'), target: 90, type: '待提升' });
+  // Low omni utilization agents (< 70%)
+  const lowUtilAgents = TEAM_ORDER.filter(name => {
+    const d = agentSummaryData.find(x => x.name === name);
+    const u = d ? parseFloat(d.omniRaw) : NaN;
+    return !isNaN(u) && u < 70;
+  }).map(name => {
+    const d = agentSummaryData.find(x => x.name === name);
+    return `${name}(${d.omniRaw})`;
   });
-  if (zeroPcAgents.length > 0)
-    analysisItems.push({ type: '待提升', text: `本周 PC 为 0 Zero PC this week：${zeroPcAgents.join('、')}` });
+  if (lowUtilAgents.length > 0)
+    analysisItems.push({ id: 'lowUtil', label: '工时利用率偏低 Omni Util below 70%', val: lowUtilAgents.join('、'), target: 70, type: '待提升' });
 
-  // Auto-generate 亮点 items for metrics meeting targets
+  // Highlights — efficiency & volume metrics only (no CSAT)
   const highlightItems = [];
   const highlightChecks = [
-    { label: '电话满意度 Phone CSAT',                    val: phone.team.satisfaction, target: 84 },
-    { label: '电话 FCR Phone FCR',                       val: phone.team.fcr,          target: 95 },
-    { label: '在线满意度 Live Chat CSAT',                val: lc.team.satisfaction,    target: 84 },
-    { label: '在线 30s接通率 Live Chat 30s Answer Rate', val: lc.team.thirtySecRate,   target: 90 },
-    { label: '在线 FCR Live Chat FCR',                   val: lc.team.fcr,             target: 95 },
-    { label: '邮件满意度 Email CSAT',                    val: emailSat.team.satisfaction, target: 84 },
-    { label: '邮件 Email Overall SLA',                   val: sla.overallSLA,          target: 90 },
-    { label: '电话 20s接通率 Phone 20s Answer Rate',     val: phone.team.ans20s,       target: 95 },
+    { label: '在线 30s接通率 LC 30s Rate', val: lc.team.thirtySecRate,  target: 90 },
+    { label: '在线 FCR LC FCR',            val: lc.team.fcr,            target: 95 },
+    { label: '电话 20s接通率 Phone Rate',  val: phone.team.ans20s,      target: 95 },
+    { label: '电话 FCR Phone FCR',         val: phone.team.fcr,         target: 95 },
+    { label: '整体 SLA Overall SLA',       val: sla.overallSLA,         target: 90 },
   ];
   for (const { label, val, target } of highlightChecks) {
     const n = parseFloat(val);
     if (!isNaN(n) && val !== '-' && n >= target)
-      highlightItems.push(`${label} <strong>${val}</strong>，达成目标 met target ≥${target}%`);
+      highlightItems.push(`${label} <strong>${val}</strong>，达成目标 ≥${target}%`);
   }
-  // Top individual CSAT (>= 85%)
-  const topCsat = [];
-  for (const name of TEAM_ORDER) {
-    const c = (wsSatMap[name]||{}).satisfaction || (qcSatMap[name]||{}).satisfaction;
-    if (c && c !== '-' && parseFloat(c) >= 85) topCsat.push(`${name}(<strong>${c}</strong>)`);
-  }
-  if (topCsat.length > 0)
-    highlightItems.push(`个人 CSAT 优秀 Top Individual CSAT：${topCsat.join('、')}`);
+  // Top PC agents this week
+  const topPcAgents = [...agentSummaryData]
+    .filter(d => parseInt(d.weeklyTotal) > 0)
+    .sort((a, b) => (parseInt(b.weeklyTotal) || 0) - (parseInt(a.weeklyTotal) || 0))
+    .slice(0, 3)
+    .map(d => `${d.name}(<strong>${d.weeklyTotal}</strong>)`);
+  if (topPcAgents.length > 0)
+    highlightItems.push(`周 PC Top 3：${topPcAgents.join('、')}`);
 
-  function block(bg, border, titleColor, titleZh, titleEn, items) {
-    if (items.length === 0) return '';
-    const rows = items.map(t =>
-      `<div style="font-size:13px;color:#333;line-height:1.6;margin-bottom:6px">${t}</div>`
+  // Solution templates
+  const SOLUTIONS = {
+    lc30s:      ['排查高峰时段排班缺口，适时补充坐席', '复查接入技能组分配是否合理'],
+    lcFcr:      ['梳理重复来电 Top 问题，补充标准话术', '识别转接率高的工单类型，减少不必要转接'],
+    phoneSla:   ['分析漏接高峰时段，调整排班覆盖', '确认话机状态，排查坐席接通障碍'],
+    phoneFcr:   ['提炼电话高频问题，强化一次性解决能力', '跟进需多步骤处理的案例，规范跟进流程'],
+    overallSla: ['梳理超时工单分布，定位延误渠道', '建立优先级处理规范，缩短响应周期'],
+    emailSla:   ['梳理个人超时工单，分析延误根因', '建立邮件优先级处理规范'],
+    lowUtil:    ['核查坐席在线时长及空闲比例', '调整班次安排，提升工时有效覆盖'],
+    zeroPc:     ['排查外呼记录，确认是否漏跟进', '针对高意向客户制定二次跟进计划'],
+  };
+
+  function issueCard(severity, titleHtml, solutions) {
+    const colors = {
+      high:   { bg: '#fef2f2', border: '#ef4444', tag: '#dc2626', tagBg: '#fee2e2', tagText: '重点关注' },
+      medium: { bg: '#fffbeb', border: '#f59e0b', tag: '#b45309', tagBg: '#fef3c7', tagText: '待提升' },
+    };
+    const c = colors[severity] || colors.medium;
+    const bullets = solutions.map(s =>
+      `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px">` +
+      `<span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span>` +
+      `<span style="font-size:12px;color:#374151;line-height:1.5">${s}</span></div>`
     ).join('');
-    return `<div style="background:${bg};border-left:4px solid ${border};border-radius:4px;padding:10px 14px;margin-bottom:12px">` +
-      `<div style="font-size:11px;font-weight:700;color:${titleColor};letter-spacing:1px;margin-bottom:8px">${titleZh} ${titleEn}</div>` +
-      rows + `</div>`;
+    return `<div style="background:${c.bg};border-left:3px solid ${c.border};border-radius:6px;padding:10px 14px;margin-bottom:10px">` +
+      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">` +
+      `<span style="font-size:11px;font-weight:700;background:${c.tagBg};color:${c.tag};padding:1px 6px;border-radius:3px">${c.tagText}</span>` +
+      `<span style="font-size:13px;font-weight:600;color:#1a1a2e">${titleHtml}</span></div>` +
+      `<div style="margin-left:4px">${bullets}</div></div>`;
   }
 
-  const abnormal   = analysisItems.filter(i => i.type === '异常').map(i => i.text);
-  const improve    = analysisItems.filter(i => i.type === '待提升').map(i => i.text);
+  // Build issue cards
+  const issueCards = [];
+  for (const item of analysisItems) {
+    const v = item.val, tgt = item.target;
+    const severity = item.type === '异常' ? 'high' : 'medium';
+    const gap = v && v !== '-' ? ` <span style="color:${severity==='high'?'#dc2626':'#d97706'};font-weight:700">${v}</span> <span style="font-size:11px;color:#9ca3af">目标≥${tgt}%</span>` : '';
+    const titleHtml = `${item.label}${gap}`;
 
-  const analysisHtml = (highlightItems.length === 0 && abnormal.length === 0 && improve.length === 0)
-    ? '<p style="color:#22c55e;font-size:13px;font-weight:500">本周各项指标均达标，团队表现良好。All metrics met targets this week.</p>'
-    : block('#f0fdf4','#22c55e','#16a34a','亮点','HIGHLIGHTS', highlightItems)
-    + block('#fef2f2','#ef4444','#dc2626','异常','ISSUES',     abnormal)
-    + block('#fffbeb','#f59e0b','#d97706','待提升','IMPROVEMENT', improve);
+    const sols = SOLUTIONS[item.id] || ['排查根因，制定针对性改进措施'];
+
+    issueCards.push(issueCard(severity, titleHtml, sols));
+  }
+
+  // Compact highlights line
+  const highlightLine = highlightItems.length > 0
+    ? `<div style="background:#f0fdf4;border-left:3px solid #22c55e;border-radius:6px;padding:8px 14px;margin-bottom:10px;font-size:12.5px;color:#15803d">` +
+      `<strong>亮点</strong>　${highlightItems.join('　·　')}</div>`
+    : '';
+
+  const analysisHtml = (highlightItems.length === 0 && issueCards.length === 0)
+    ? '<p style="color:#22c55e;font-size:13px;font-weight:500">本周各项指标均达标，团队表现良好。</p>'
+    : highlightLine + issueCards.join('');
+
+  // ── One-liner summary ─────────────────────────────────────────
+  const _sat = (v) => { const n = parseFloat(v); return isNaN(n) ? null : n; };
+  const _fmt = (label, val) => `${label}（${val}）`;
+  const csatOk   = [], csatBad = [];
+  if (_sat(lc.team.satisfaction)       != null) (_sat(lc.team.satisfaction)       >= 84 ? csatOk : csatBad).push(_fmt('在线', lc.team.satisfaction));
+  if (_sat(phone.team.satisfaction)    != null) (_sat(phone.team.satisfaction)    >= 84 ? csatOk : csatBad).push(_fmt('电话', phone.team.satisfaction));
+  if (_sat(emailSat.team.satisfaction) != null) (_sat(emailSat.team.satisfaction) >= 84 ? csatOk : csatBad).push(_fmt('邮件', emailSat.team.satisfaction));
+  const wsSatVal = _sat(wsSat?.team?.satisfaction);
+  const obWeeklyPC = outbound.agents.reduce((s, a) => s + (parseInt(a.convPC) || 0), 0)
+                   + (outbound.team ? parseInt(outbound.team.weeklyPC) || 0 : 0);
+  const obPCTotal = parseInt(outbound.team?.weeklyPC) || outbound.agents.reduce((s,a) => s+(parseInt(a.convPC)||0),0);
+
+  // Summary bar chips
+  function chip(label, val, ok) {
+    const c = ok === true ? '#16a34a' : ok === false ? '#dc2626' : '#1456F0';
+    const bg = ok === true ? '#f0fdf4' : ok === false ? '#fef2f2' : '#f0f4ff';
+    const bd = ok === true ? '#bbf7d0' : ok === false ? '#fecaca' : '#c7d6f7';
+    return `<span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid ${bd};background:${bg};color:${c};white-space:nowrap"><strong>${label}</strong> ${val}</span>`;
+  }
+  const chips = [];
+  chips.push(chip('周咨询PC', `${indTotalConsultPC} 单`, null));
+  if (obPCTotal > 0) chips.push(chip('外呼转化PC', `${obPCTotal} 单`, null));
+  chips.push(chip('月度PC', `${indTotalMonthlyPC} 单`, null));
+  if (wsSatVal != null) chips.push(chip('综合满意度', wsSat.team.satisfaction, wsSatVal >= 84));
+  for (const x of csatOk)  chips.push(chip(x.split('（')[0] + ' CSAT', x.match(/（(.+)）/)?.[1] || x, true));
+  for (const x of csatBad) chips.push(chip(x.split('（')[0] + ' CSAT', x.match(/（(.+)）/)?.[1] || x, false));
+  const oneLinerSummary = chips.length > 0
+    ? `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;padding:10px 14px;background:#f8faff;border:1.5px solid #c7d6f7;border-radius:6px"><span style="font-size:11px;font-weight:700;color:#6b7280;letter-spacing:.05em;margin-right:2px">本周概览</span>${chips.join('')}</div>`
+    : '';
 
   // ── Full HTML ──────────────────────────────────────────────────
   return `<!DOCTYPE html>
@@ -1706,7 +1888,7 @@ td:first-child { text-align: left; }
 .bold-row td { font-weight: 700; background: #eef2ff; }
 .consult-total-row td { font-weight: 700; background: #dce6ff; border-top: 2px solid #1456F0; border-bottom: 2px solid #1456F0; }
 tr:hover td { background: #f8f9ff; }
-.team-row td { font-weight: 600; background: #f0f4ff; }
+.team-row td { font-weight: 600; background: #f0f4ff; padding: 5px 8px; line-height: 1.25; }
 td.empty { color: #aaa; text-align: center; }
 .en { font-size: 11px; color: #999; font-weight: 400; }
 .lbl { font-size: 11px; color: #aaa; font-weight: 400; }
@@ -1740,6 +1922,7 @@ td.rank-bot   { color:#dc2626 !important; font-weight:700; }
 <p class="subtitle">${obStartArg ? obStartArg.slice(5) + ' ~ ' + weekEnd.slice(5) : weekStart + ' ~ ' + weekEnd} &nbsp;|&nbsp; Conversion CS Team (${TEAM_ORDER.length} agents)</p>
 
 ${sect('一', '业绩情况', 'Performance Overview', `
+  ${oneLinerSummary}
   <h3>Channel Team Summary</h3>
   ${teamSummaryTable}
   <h3 style="margin-top:18px">Individual Summary</h3>
@@ -1760,9 +1943,6 @@ ${sect('二', '个人业绩分析', 'Individual Breakdown', `
       <h3 style="margin-top:16px">外呼 Outbound</h3>
       <p class="meta">Calendar day: ${obStartArg || weekStart} ~ ${obEndArg || weekEnd} BT</p>
       ${obIndTable}
-      <h3 style="margin-top:16px">月度个人PC汇总 Monthly PC Breakdown</h3>
-      <p class="meta">月内 Month-to-date: ${monthStart(weekEnd) < DATA_FLOOR ? DATA_FLOOR : monthStart(weekEnd)} ~ ${weekEnd}</p>
-      ${monthlyPCTable}
     </div>
   </div>
   <h3 style="margin-top:18px">业绩分析 Performance Analysis</h3>
@@ -1794,6 +1974,70 @@ ${sect('五', '下周计划', 'Next Week Plans', `
 // ─────────────────────────────────────────────────────────────────
 // MAIN
 // ─────────────────────────────────────────────────────────────────
+const GITHUB_REPORT_BASE = 'https://irisding001.github.io/US-CSS-weekly-report';
+
+function parsePrevReport(html) {
+  const stripHtml = s => s.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const rows = [];
+  const trRe = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
+  let m;
+  while ((m = trRe.exec(html)) !== null) {
+    const cells = [];
+    const tdRe = /<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g;
+    let tm;
+    while ((tm = tdRe.exec(m[1])) !== null) cells.push(stripHtml(tm[1]));
+    if (cells.length >= 2) rows.push(cells);
+  }
+  const findRow = label => rows.find(r => r[0]?.includes(label));
+  const firstNum = s => { const m = s?.match(/(\d[\d,]*)/); return m ? parseInt(m[1].replace(',','')) : null; };
+  const firstPct = s => { const m = s?.match(/([\d.]+)%/); return m ? m[1] + '%' : null; };
+
+  const lcRow    = findRow('在线 Live Chat');
+  const phoneRow = findRow('电话 Phone');
+  const emailRow = findRow('邮件 Email');
+  const totalRow = findRow('合计 Total');
+  // Outbound row: find row where first cell is a pure number >= 100 (follow count)
+  const obRow = rows.find(r => /^\d{2,}$/.test(r[0]) && r.length >= 4);
+
+  return {
+    lc:    { tickets: firstNum(lcRow?.[1]),    satisfaction: firstPct(lcRow?.[3]) },
+    phone: { tickets: firstNum(phoneRow?.[1]), satisfaction: firstPct(phoneRow?.[3]) },
+    email: { tickets: firstNum(emailRow?.[1]), satisfaction: firstPct(emailRow?.[3]) },
+    total: { tickets: firstNum(totalRow?.[1]), satisfaction: firstPct(totalRow?.[3]) },
+    ob:    { follow: firstNum(obRow?.[0]), weeklyPC: firstNum(obRow?.[3]) },
+  };
+}
+
+async function fetchPrevWeekReport(weekStart) {
+  try {
+    const d = new Date(weekStart + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() - 7);
+    const prevStart = d.toISOString().slice(0, 10);
+    const prevEnd   = new Date(d.getTime() + 6 * 86400000).toISOString().slice(0, 10);
+    const mmdd      = prevEnd.slice(5).replace('-', '');
+    // Try new format first, then fall back to old format (without end-date suffix)
+    const urls = [
+      `${GITHUB_REPORT_BASE}/weekly_report_${prevStart}_${mmdd}.html`,
+      `${GITHUB_REPORT_BASE}/weekly_report_${prevStart}.html`,
+    ];
+    for (const url of urls) {
+      try {
+        console.log(`[INFO] Fetching prev week report: ${url}`);
+        const html = await httpGetPlain(url);
+        const parsed = parsePrevReport(html);
+        console.log(`[INFO] Prev week parsed: LC ${parsed.lc.tickets}, Phone ${parsed.phone.tickets}, Email ${parsed.email.tickets}`);
+        return parsed;
+      } catch (e2) {
+        console.warn(`[WARN] ${url} → ${e2.message}`);
+      }
+    }
+    return null;
+  } catch (e) {
+    console.warn(`[WARN] Prev week report unavailable: ${e.message}`);
+    return null;
+  }
+}
+
 async function main() {
   if (DISCOVER) { await runDiscover(); return; }
 
@@ -1839,6 +2083,36 @@ async function main() {
     monthlyPhone: unwrap(mPhoneR, '月度Phone', { team: {}, agents: [] }),
     monthlyEmail: unwrap(mEmailR, '月度Email', { team: {}, agents: [] }),
   };
+
+  function toCSAT(v) { return v.includes('%') ? v : v + '%'; }
+  if (lcCSATArg)    data.lc.team.satisfaction       = toCSAT(lcCSATArg);
+  if (phoneCSATArg) data.phone.team.satisfaction    = toCSAT(phoneCSATArg);
+  if (emailCSATArg) data.emailSat.team.satisfaction = toCSAT(emailCSATArg);
+
+  data.prev = await fetchPrevWeekReport(start);
+
+  // Manual prev-week override (takes precedence over GitHub fetch)
+  const hasPrevArgs = prevLcTickets || prevLcCsat || prevPhoneTickets || prevPhoneCsat || prevEmailTickets || prevEmailCsat;
+  if (hasPrevArgs) {
+    data.prev = data.prev || {};
+    if (prevLcTickets || prevLcCsat) {
+      data.prev.lc = data.prev.lc || {};
+      if (prevLcTickets) data.prev.lc.tickets    = prevLcTickets;
+      if (prevLcCsat)    data.prev.lc.satisfaction = prevLcCsat.includes('%') ? prevLcCsat : prevLcCsat + '%';
+    }
+    if (prevPhoneTickets || prevPhoneCsat) {
+      data.prev.phone = data.prev.phone || {};
+      if (prevPhoneTickets) data.prev.phone.tickets    = prevPhoneTickets;
+      if (prevPhoneCsat)    data.prev.phone.satisfaction = prevPhoneCsat.includes('%') ? prevPhoneCsat : prevPhoneCsat + '%';
+    }
+    if (prevEmailTickets || prevEmailCsat) {
+      data.prev.email = data.prev.email || {};
+      if (prevEmailTickets) data.prev.email.tickets    = prevEmailTickets;
+      if (prevEmailCsat)    data.prev.email.satisfaction = prevEmailCsat.includes('%') ? prevEmailCsat : prevEmailCsat + '%';
+    }
+    if (prevObPc)      { data.prev.ob = data.prev.ob || {}; data.prev.ob.weeklyPC = prevObPc; }
+    if (prevWeeklyPc)  { data.prev.total = data.prev.total || {}; data.prev.total.weeklyPC = prevWeeklyPc; }
+  }
 
   const html = generateHTML(data, start, end);
   const outFile = outArg || path.join(
