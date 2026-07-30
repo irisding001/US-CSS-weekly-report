@@ -1671,6 +1671,7 @@ function generateHTML(data, weekStart, weekEnd) {
       + `<td>${esc(String(d.monthlyEmTix || '-'))}</td>`
       + `<td${rc(i,'monthlyTickets')}>${esc(String(d.monthlyTickets || '-'))}</td>`
       + `<td${rc(i,'monthlyPC')}>${esc(String(d.monthlyPC))}</td>`
+      + (() => { const pct = d.monthlyPC > 0 ? Math.round(d.monthlyPC / 100 * 100) : null; return pct != null ? `<td style="font-weight:700;color:${pct >= 100 ? '#15803d' : '#dc2626'}">${pct}%</td>` : '<td>-</td>'; })()
       + '</tr>';
   });
 
@@ -1680,7 +1681,7 @@ function generateHTML(data, weekStart, weekEnd) {
   const indGroupHeader = '<tr class="group-header">'
     + '<th rowspan="2" style="vertical-align:middle">客服<br><span class="en">Agent</span></th>'
     + `<th colspan="${hasAttendance ? 7 : 6}" class="zone-weekly">周度业绩 <span class="en">Weekly</span></th>`
-    + '<th colspan="5" class="zone-monthly">月度业绩 <span class="en">Monthly</span></th>'
+    + '<th colspan="6" class="zone-monthly">月度业绩 <span class="en">Monthly</span></th>'
     + '</tr>';
   const indColHeader = '<tr>'
     + (hasAttendance ? `<th style="text-align:center">${b('出勤','Days')}</th>` : '')
@@ -1695,6 +1696,7 @@ function generateHTML(data, weekStart, weekEnd) {
     + `<th>${b('月度Email','Monthly Email')}</th>`
     + `<th>${b('月度总工单','Monthly Tickets')}</th>`
     + `<th>${b('月度总PC','Monthly Total PC')}</th>`
+    + `<th>${b('月度KPI达成','Monthly KPI%')}</th>`
     + '</tr>';
   const indTotalTickets    = agentSummaryData.reduce((s, d) => s + (parseInt(d.total)        || 0), 0);
   const indTotalConsultPC  = agentSummaryData.reduce((s, d) => s + (parseInt(d.consultPC)    || 0), 0);
@@ -1723,8 +1725,23 @@ function generateHTML(data, weekStart, weekEnd) {
     + `<td>${indTotalMonthlyEm || '-'}</td>`
     + `<td>${indTotalMonthlyTix || '-'}</td>`
     + `<td>${indTotalMonthlyPC || '-'}</td>`
+    + (() => { const pct = indTotalMonthlyPC > 0 ? Math.round(indTotalMonthlyPC / (TEAM_ORDER.length * 100) * 100) : null; return pct != null ? `<td style="font-weight:700;color:${pct >= 100 ? '#15803d' : '#dc2626'}">${pct}%</td>` : '<td>-</td>'; })()
     + '</tr>';
   const individualSummaryTable = tbl(indGroupHeader + indColHeader, [...agentSummaryRows, indTotalRow]);
+
+  const csatSorted = agentSummaryData.filter(d => d.csatNum != null).sort((a, b) => b.csatNum - a.csatNum);
+  const csatRankSection = csatSorted.length >= 2 ? (() => {
+    const n = Math.min(3, csatSorted.length);
+    const top = csatSorted.slice(0, n);
+    const bot = csatSorted.slice(-n).reverse();
+    const mkRow = (d, color) => `<tr><td style="color:${color};font-weight:700">${esc(d.name)}</td><td style="color:${color};font-weight:700">${d.csatRaw}%</td></tr>`;
+    return `<div style="margin-top:16px;display:flex;gap:24px;align-items:start">
+  <div><div class="subsect-title" style="color:#15803d;margin-bottom:6px">CSAT Top ${n}</div>
+  <table style="min-width:180px"><thead><tr><th style="text-align:left">客服 Agent</th><th>满意度 CSAT</th></tr></thead><tbody>${top.map(d => mkRow(d,'#15803d')).join('')}</tbody></table></div>
+  <div><div class="subsect-title" style="color:#dc2626;margin-bottom:6px">CSAT Bottom ${n}</div>
+  <table style="min-width:180px"><thead><tr><th style="text-align:left">客服 Agent</th><th>满意度 CSAT</th></tr></thead><tbody>${bot.map(d => mkRow(d,'#dc2626')).join('')}</tbody></table></div>
+</div>`;
+  })() : '';
 
   // ── Section II.A: Live Chat Individual ─────────────────────────
   const lcIndRows = TEAM_ORDER
@@ -2029,6 +2046,7 @@ ${sect('一', '业绩情况', 'Performance Overview', `
   ${teamSummaryTable}
   <h3 style="margin-top:18px">Individual Summary</h3>
   ${individualSummaryTable}
+  ${csatRankSection}
   ${topCatSection}
 `)}
 
