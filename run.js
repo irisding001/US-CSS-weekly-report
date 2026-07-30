@@ -1032,6 +1032,53 @@ async function fetchOutbound(start, end) {
   };
 }
 
+// ── TOP 10 Business Categories ────────────────────────────────────
+async function fetchLcTopCategories(start, end) {
+  try {
+    const catDim = mkDim('e142a1c0e20e84d7fa17ab01', '业务分二级');
+    const ticketMetric = { fdId: F.LC_TICKETS, name: '工单数', fdType: 'DOUBLE', metaType: 'METRIC',
+      isAggregated: true, calculationType: 'aggregation', key: 'lcCat001', level: 'dataset',
+      formula: 'count(distinct [工单号])' };
+    const filters = [
+      mkDateFilter(F.LC_DATE, start, end, F.LC_DS_ID, CARDS.LC_QUEUE, F.LC_DATE_SRC),
+      { name: 'agent', fdId: F.LC_AGENT, key: F.LC_AGENT, fdType: 'STRING',
+        filterType: 'IN', filterValue: [...CONVERSION_TEAM], dsId: F.LC_DS_ID, cdId: CARDS.LC_QUEUE },
+    ];
+    const resp = await guandataPost(CARDS.LC_QUEUE, buildBody([catDim], [ticketMetric], filters, [], 500, 'LC Top Cat'));
+    return agentRows(resp)
+      .filter(r => r.name && r.name !== '-' && (r.vals[0] || 0) > 0)
+      .sort((a, b) => (b.vals[0] || 0) - (a.vals[0] || 0))
+      .slice(0, 10)
+      .map(r => ({ name: r.name, count: toInt(r.vals[0]) }));
+  } catch (e) { console.warn('[WARN] LC top categories:', e.message); return []; }
+}
+
+async function fetchPhoneTopCategories(start, end) {
+  try {
+    const catDim = mkDim('va5d86efacfb443adbd3794e', '二级业务分类');
+    const ticketMetric = { fdId: 'd0a5a44ec09c64ede83a9cae', name: '工单数', fdType: 'DOUBLE', metaType: 'METRIC',
+      isAggregated: true, calculationType: 'aggregation', key: 'phCat001', level: 'dataset' };
+    const filters = [
+      mkDateFilter(F.PH_DATE, start, end, F.PH_DS_ID, CARDS.PHONE, F.PH_DATE_SRC),
+      { name: 'dept', fdId: F.PH_TEAM, key: F.PH_TEAM, fdType: 'STRING',
+        filterType: 'IN', filterValue: ['US Conversion CS Team'], dsId: F.PH_DS_ID, cdId: CARDS.PHONE },
+    ];
+    const resp = await guandataPost(CARDS.PHONE, buildBody([catDim], [ticketMetric], filters, [], 500, 'Phone Top Cat'));
+    return agentRows(resp)
+      .filter(r => r.name && r.name !== '-' && (r.vals[0] || 0) > 0)
+      .sort((a, b) => (b.vals[0] || 0) - (a.vals[0] || 0))
+      .slice(0, 10)
+      .map(r => ({ name: r.name, count: toInt(r.vals[0]) }));
+  } catch (e) { console.warn('[WARN] Phone top categories:', e.message); return []; }
+}
+
+async function fetchEmailTopCategories(start, end) {
+  // TODO: Discover fdId for '工单二级分类' (alias: category_name_lv2) and group filter
+  //       from card s9171c1087a664ae689047c4, dataset ncd519d0a95e74646bf48e5f
+  //       Run: DATA_COOKIE="..." node run.js --discover  (needs valid DATA_COOKIE)
+  return [];
+}
+
 async function fetchQcSat(start, end) {
   const makeBody = (row, cdId) => ({
     offset: 0, limit: 200,
@@ -1403,7 +1450,7 @@ function buildCsatSection(wsSat, lcSat, phoneSat, emailSat) {
 }
 
 function generateHTML(data, weekStart, weekEnd) {
-  const { lc, util, phone, phoneUtil, email, emailSat, sla, outbound, qcSat, wsSat, monthlyLc, monthlyPhone, monthlyEmail, prev } = data;
+  const { lc, util, phone, phoneUtil, email, emailSat, sla, outbound, qcSat, wsSat, monthlyLc, monthlyPhone, monthlyEmail, prev, lcTopCats, phoneTopCats, emailTopCats } = data;
 
   // WoW delta: green = better (higher), red = worse; neutral for tickets (gray)
   function wowDelta(curr, prevVal, higherIsBetter = true, isInt = false) {
@@ -1657,6 +1704,24 @@ function generateHTML(data, weekStart, weekEnd) {
     th(b('客服','Agent'), b('工单','Tickets'), b('30s接通','30s Rate'), b('满意度','CSAT'), b('一次性解决率','FCR'), b('平均处理时长','Avg Handle')),
     lcIndRows
   );
+
+  // ── TOP 10 Business Categories ─────────────────────────────────
+  function buildTopCatTable(cats) {
+    if (!cats || cats.length === 0) return '<p class="meta" style="font-size:12px;color:#aaa;margin:8px 0">暂无数据 No data</p>';
+    const total = cats.reduce((s, c) => s + c.count, 0);
+    const rows = cats.map((c, i) =>
+      `<tr><td style="color:#6b7280;font-size:11px;width:20px;text-align:center">${i + 1}</td><td style="text-align:left">${esc(c.name)}</td><td>${c.count}</td><td>${total > 0 ? (c.count / total * 100).toFixed(1) + '%' : '-'}</td></tr>`
+    ).join('');
+    return `<table><thead><tr><th style="width:20px;text-align:center">#</th><th style="text-align:left">分类 Category</th><th>工单数</th><th>占比</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  const topCatSection = (lcTopCats?.length || phoneTopCats?.length || emailTopCats?.length)
+    ? `<h3 style="margin-top:18px">渠道业务分类 TOP 10 Business Category TOP 10</h3>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start;margin-top:10px">
+  <div><div class="subsect-title">在线 Live Chat</div>${buildTopCatTable(lcTopCats)}</div>
+  <div><div class="subsect-title">电话 Phone</div>${buildTopCatTable(phoneTopCats)}</div>
+  <div><div class="subsect-title">邮件 Email</div>${buildTopCatTable(emailTopCats)}</div>
+</div>`
+    : '';
 
   // ── Section II.B: Phone Individual ─────────────────────────────
   const phIndRows = TEAM_ORDER
@@ -1927,6 +1992,7 @@ ${sect('一', '业绩情况', 'Performance Overview', `
   ${teamSummaryTable}
   <h3 style="margin-top:18px">Individual Summary</h3>
   ${individualSummaryTable}
+  ${topCatSection}
 `)}
 
 ${sect('二', '个人业绩分析', 'Individual Breakdown', `
@@ -2046,7 +2112,7 @@ async function main() {
   console.log(`Generating weekly report: ${start} ~ ${end}${dataStart !== start ? ` (channel data from ${dataStart})` : ''}`);
 
   const mFloor = monthStart(end) < DATA_FLOOR ? DATA_FLOOR : monthStart(end);
-  const [lcR, utilR, phoneR, puR, emailR, emailSatR, slaR, obR, qcSatR, wsSatR, mLcR, mPhoneR, mEmailR] = await Promise.allSettled([
+  const [lcR, utilR, phoneR, puR, emailR, emailSatR, slaR, obR, qcSatR, wsSatR, mLcR, mPhoneR, mEmailR, lcTopR, phoneTopR, emailTopR] = await Promise.allSettled([
     fetchLiveChatQueue(dataStart, end),
     fetchLiveChatUtil(dataStart, end),
     fetchPhone(dataStart, end),
@@ -2060,6 +2126,9 @@ async function main() {
     fetchLiveChatQueue(mFloor, end),
     fetchPhone(mFloor, end),
     fetchEmail(mFloor, end),
+    fetchLcTopCategories(dataStart, end),
+    fetchPhoneTopCategories(dataStart, end),
+    fetchEmailTopCategories(dataStart, end),
   ]);
 
   function unwrap(r, label, fallback) {
@@ -2082,6 +2151,9 @@ async function main() {
     monthlyLc:    unwrap(mLcR,    '月度LC',    { team: {}, agents: [] }),
     monthlyPhone: unwrap(mPhoneR, '月度Phone', { team: {}, agents: [] }),
     monthlyEmail: unwrap(mEmailR, '月度Email', { team: {}, agents: [] }),
+    lcTopCats:    unwrap(lcTopR,    'LC Top Cat',    []),
+    phoneTopCats: unwrap(phoneTopR, 'Phone Top Cat', []),
+    emailTopCats: unwrap(emailTopR, 'Email Top Cat', []),
   };
 
   function toCSAT(v) { return v.includes('%') ? v : v + '%'; }
