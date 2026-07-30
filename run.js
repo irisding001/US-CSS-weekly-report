@@ -1610,7 +1610,10 @@ function generateHTML(data, weekStart, weekEnd) {
       : (ob.monthlyConsultPC || 0);
     const agentMonthlySales = (ob.monthlyPC != null && ob.monthlyPC !== '-') ? ob.monthlyPC : 0;
     const agentMonthlyPC    = agentMonthlyConsult + agentMonthlySales;
-    const agentMonthlyTickets = toInt((mLcMap[name]||{}).tickets) + toInt((mPhoneMap[name]||{}).inbound) + toInt((mEmailMap[name]||{}).tickets);
+    const monthlyLcTix    = toInt((mLcMap[name]||{}).tickets);
+    const monthlyPhTix    = toInt((mPhoneMap[name]||{}).inbound);
+    const monthlyEmTix    = toInt((mEmailMap[name]||{}).tickets);
+    const agentMonthlyTickets = monthlyLcTix + monthlyPhTix + monthlyEmTix;
     const csatNum  = agentCsat !== '-' ? parseFloat(agentCsat) : null;
     const omniRaw  = (utilMap[name]||{}).omniUtil;
     const omniNum  = omniRaw && omniRaw !== '-' ? parseFloat(omniRaw) : null;
@@ -1618,7 +1621,8 @@ function generateHTML(data, weekStart, weekEnd) {
       ? (agentAttendanceMap.hasOwnProperty(name) ? agentAttendanceMap[name] : null)
       : null;
     return { name, total, consultPC: agentConsultPC, salesPC: agentSalesPC, weeklyTotal: agentWeeklyTotal,
-             monthlyTickets: agentMonthlyTickets, monthlyConsult: agentMonthlyConsult, monthlySales: agentMonthlySales, monthlyPC: agentMonthlyPC,
+             monthlyTickets: agentMonthlyTickets, monthlyLcTix, monthlyPhTix, monthlyEmTix,
+             monthlyConsult: agentMonthlyConsult, monthlySales: agentMonthlySales, monthlyPC: agentMonthlyPC,
              csatNum, csatRaw: agentCsat, omniNum, omniRaw, attendance };
   }).sort((a, b) => b.total - a.total);
 
@@ -1662,6 +1666,9 @@ function generateHTML(data, weekStart, weekEnd) {
       + `<td${rc(i,'weeklyTotal')}>${esc(String(d.weeklyTotal))}</td>`
       + `<td${rc(i,'csat')}>${csatHtml}</td>`
       + `<td${rc(i,'omni','zone-end')}>${omniHtml}</td>`
+      + `<td>${esc(String(d.monthlyLcTix || '-'))}</td>`
+      + `<td>${esc(String(d.monthlyPhTix || '-'))}</td>`
+      + `<td>${esc(String(d.monthlyEmTix || '-'))}</td>`
       + `<td${rc(i,'monthlyTickets')}>${esc(String(d.monthlyTickets || '-'))}</td>`
       + `<td${rc(i,'monthlyPC')}>${esc(String(d.monthlyPC))}</td>`
       + '</tr>';
@@ -1673,7 +1680,7 @@ function generateHTML(data, weekStart, weekEnd) {
   const indGroupHeader = '<tr class="group-header">'
     + '<th rowspan="2" style="vertical-align:middle">客服<br><span class="en">Agent</span></th>'
     + `<th colspan="${hasAttendance ? 7 : 6}" class="zone-weekly">周度业绩 <span class="en">Weekly</span></th>`
-    + '<th colspan="2" class="zone-monthly">月度业绩 <span class="en">Monthly</span></th>'
+    + '<th colspan="5" class="zone-monthly">月度业绩 <span class="en">Monthly</span></th>'
     + '</tr>';
   const indColHeader = '<tr>'
     + (hasAttendance ? `<th style="text-align:center">${b('出勤','Days')}</th>` : '')
@@ -1683,6 +1690,9 @@ function generateHTML(data, weekStart, weekEnd) {
     + `<th>${b('周度总PC','Weekly Total PC')}</th>`
     + `<th>${b('满意度','CSAT')}</th>`
     + `<th style="border-right:2px solid #c0cadf">${b('全渠道工时利用率','Omni Util')}</th>`
+    + `<th>${b('月度LC','Monthly LC')}</th>`
+    + `<th>${b('月度Phone','Monthly Phone')}</th>`
+    + `<th>${b('月度Email','Monthly Email')}</th>`
     + `<th>${b('月度总工单','Monthly Tickets')}</th>`
     + `<th>${b('月度总PC','Monthly Total PC')}</th>`
     + '</tr>';
@@ -1690,6 +1700,9 @@ function generateHTML(data, weekStart, weekEnd) {
   const indTotalConsultPC  = agentSummaryData.reduce((s, d) => s + (parseInt(d.consultPC)    || 0), 0);
   const indTotalSalesPC    = agentSummaryData.reduce((s, d) => s + (parseInt(d.salesPC)      || 0), 0);
   const indTotalWeeklyPC   = agentSummaryData.reduce((s, d) => s + (parseInt(d.weeklyTotal)  || 0), 0);
+  const indTotalMonthlyLc  = agentSummaryData.reduce((s, d) => s + (d.monthlyLcTix || 0), 0);
+  const indTotalMonthlyPh  = agentSummaryData.reduce((s, d) => s + (d.monthlyPhTix || 0), 0);
+  const indTotalMonthlyEm  = agentSummaryData.reduce((s, d) => s + (d.monthlyEmTix || 0), 0);
   const indTotalMonthlyTix = agentSummaryData.reduce((s, d) => s + (parseInt(d.monthlyTickets)|| 0), 0);
   const indTotalMonthlyPC  = agentSummaryData.reduce((s, d) => s + (parseInt(d.monthlyPC)    || 0), 0);
   const teamCsatHtml = withDot(teamSatDisplay, teamSatDisplay !== '-' ? dotRed(teamSatDisplay, 84) : '');
@@ -1705,6 +1718,9 @@ function generateHTML(data, weekStart, weekEnd) {
     + `<td>${indTotalWeeklyPC || '-'}</td>`
     + `<td>${teamCsatHtml}</td>`
     + `<td style="border-right:2px solid #c0cadf">--</td>`
+    + `<td>${indTotalMonthlyLc || '-'}</td>`
+    + `<td>${indTotalMonthlyPh || '-'}</td>`
+    + `<td>${indTotalMonthlyEm || '-'}</td>`
     + `<td>${indTotalMonthlyTix || '-'}</td>`
     + `<td>${indTotalMonthlyPC || '-'}</td>`
     + '</tr>';
