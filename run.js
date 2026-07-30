@@ -1073,10 +1073,31 @@ async function fetchPhoneTopCategories(start, end) {
 }
 
 async function fetchEmailTopCategories(start, end) {
-  // TODO: Discover fdId for '工单二级分类' (alias: category_name_lv2) and group filter
-  //       from card s9171c1087a664ae689047c4, dataset ncd519d0a95e74646bf48e5f
-  //       Run: DATA_COOKIE="..." node run.js --discover  (needs valid DATA_COOKIE)
-  return [];
+  try {
+    const EM_CARD = 's9171c1087a664ae689047c4';
+    const EM_DS   = 'ncd519d0a95e74646bf48e5f';
+    const EM_DATE = 'a04853e434ab34d21970334a';
+    const EM_CAT  = 'td846c97cd41441ef91dc758';
+    const EM_MAIL = 'o579a0748b992414da789a38';
+    const EM_TICK = 'fffd3c45db0fb4d859ec7c57';
+    const catDim = mkDim(EM_CAT, '工单二级分类');
+    const ticketMetric = { fdId: EM_TICK, name: '工单数', fdType: 'DOUBLE', metaType: 'METRIC',
+      isAggregated: true, calculationType: 'aggregation', key: 'emCat001', level: 'dataset' };
+    const filters = [
+      { name: '工单创建-日', fdId: EM_DATE, key: EM_DATE, fdType: 'STRING',
+        filterType: 'BT', filterValue: [start, end], displayValue: [start, end],
+        dsId: EM_DS, cdId: EM_CARD },
+      { name: 'account_mail', fdId: EM_MAIL, key: EM_MAIL, fdType: 'STRING',
+        filterType: 'IN', filterValue: ['ca@us.moomoo.com', 'cs@us.moomoo.com', 'pcs@us.moomoo.com', 'support@moomoocrypto.com'],
+        dsId: EM_DS, cdId: EM_CARD },
+    ];
+    const resp = await guandataPost(EM_CARD, buildBody([catDim], [ticketMetric], filters, [], 500, 'Email Top Cat'));
+    return agentRows(resp)
+      .filter(r => r.name && r.name !== '-' && (r.vals[0] || 0) > 0)
+      .sort((a, b) => (b.vals[0] || 0) - (a.vals[0] || 0))
+      .slice(0, 10)
+      .map(r => ({ name: r.name, count: toInt(r.vals[0]) }));
+  } catch (e) { console.warn('[WARN] Email top categories:', e.message); return []; }
 }
 
 async function fetchQcSat(start, end) {
