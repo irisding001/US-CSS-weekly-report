@@ -167,9 +167,27 @@ node "C:/Users/irisding/patch_neg_cards.js"
 
 ---
 
-## Step 4：填写第四、五节
+## Step 3.5：填写差错分析（第四节）
 
-脚本生成的 HTML 中，第四节和第五节为浏览器可编辑区域，收集用户内容后用以下命令替换：
+从 BI 截图读取本周 + 月累计差错数据，运行 `rebuild_section4.py`（或直接编辑脚本顶部 `agents` 列表后运行）。
+
+**每周需更新 `rebuild_section4.py` 中：**
+- `agents` 列表：每人的 (weekly_fatal, weekly_nonfatal, monthly_fatal, monthly_nonfatal)
+- 卡片和表头中的日期范围（如 `07/24~30`、`07/01~30`）
+- 文件路径（脚本第4行）
+
+**运行：**
+```bash
+python C:/Users/irisding/rebuild_section4.py
+```
+
+**布局：** 左列（220px）为本周/月累计汇总卡片，右列（1fr）为个人明细表（4列：周致命/周非致命/月致命/月非致命）。
+
+---
+
+## Step 4：填写第五、六节
+
+从用户处收集本周重点工作和下周计划内容，写入第五节和第六节（浏览器可编辑区）。可直接编辑 HTML 或用脚本替换占位符：
 
 ```bash
 node -e "
@@ -179,7 +197,7 @@ let h = fs.readFileSync(f, 'utf8');
 h = h.replace('请填写本周重点工作...', process.argv[2]);
 h = h.replace('请填写下周安排...', process.argv[3]);
 fs.writeFileSync(f, h);
-" "C:/Users/irisding/weekly_report_YYYY-MM-DD_MMDD.html" "本周重点工作内容" "下周安排内容"
+" "C:/Users/irisding/us-css-weeklyreport/weekly_report_YYYY-MM-DD_MMDD.html" "本周重点工作内容" "下周安排内容"
 ```
 
 ---
@@ -187,28 +205,36 @@ fs.writeFileSync(f, h);
 ## Step 5：推送 GitHub Pages
 
 ```bash
-cp "C:/Users/irisding/weekly_report_{date}.html" "C:/Users/irisding/US-CSS-weekly-report/"
-cd "C:/Users/irisding/US-CSS-weekly-report"
+cp "C:/Users/irisding/weekly_report_{date}.html" "C:/Users/irisding/us-css-weeklyreport/"
+cd "C:/Users/irisding/us-css-weeklyreport"
+node update_index.js
 git add "weekly_report_{date}.html" index.html
 git commit -m "Add US CSS weekly report {start} ~ {end}"
 git pull --rebase origin main
 git push origin main
 ```
 
-URL：`https://irisding001.github.io/US-CSS-weekly-report/weekly_report_{date}.html`
+URL：`https://irisding001.github.io/us-css-weeklyreport/weekly_report_{date}.html`
 
 ---
 
-## Step 6：飞书通知（Bot 私信给 Iris）
+## Step 6：飞书通知（需 Iris 文字确认后再发）
 
-```bash
-lark-cli --profile us-ccs im +messages-send \
-  --user-id ou_423989c914515582660dfef99848b0e7 \
-  --as bot --msg-type interactive \
-  --content '{"config":{"wide_screen_mode":true},"header":{"title":{"tag":"plain_text","content":"US CSS Weekly Report | {MM-DD} ~ {MM-DD}"},"template":"blue"},"elements":[{"tag":"div","text":{"tag":"lark_md","content":"本周报告已更新，含满意度分析及不满意工单分析"}},{"tag":"action","actions":[{"tag":"button","text":{"tag":"plain_text","content":"查看周报 View Report"},"type":"primary","url":"https://irisding001.github.io/us-css-weeklyreport/weekly_report_YYYY-MM-DD_MMDD.html"},{"tag":"button","text":{"tag":"plain_text","content":"历史周报 History"},"type":"default","url":"https://irisding001.github.io/us-css-weeklyreport/"}]}]}'
+**每次发送前必须等 Iris 明确文字确认，不得自动发送。**
+
+**每周先更新 `send_weekly_notify.js` 顶部三个常量：**
+```js
+const REPORT_URL = 'https://irisding001.github.io/us-css-weeklyreport/weekly_report_YYYY-MM-DD_MMDD.html';
+const WEEK_RANGE = 'MM-DD ~ MM-DD';
 ```
 
-open_id 固定：`ou_423989c914515582660dfef99848b0e7`（us-ccs profile）
+**确认后运行：**
+```bash
+node C:/Users/irisding/us-css-weeklyreport/send_weekly_notify.js
+```
+
+默认发送到群（`oc_6b53fdf35d29e9203579c4fc7b70acde`，US CSS Weekly Report 群）。  
+发给 Iris 个人：`node send_weekly_notify.js ou_423989c914515582660dfef99848b0e7`
 
 ---
 
@@ -216,8 +242,12 @@ open_id 固定：`ou_423989c914515582660dfef99848b0e7`（us-ccs profile）
 
 | 脚本 | 位置 | 作用 |
 |------|------|------|
-| `run.js` | skill 目录 | 主报告生成（一~三节框架 + 四五节占位） |
+| `run.js` | skill 目录 | 主报告生成（一~三节框架 + 五六节占位） |
 | `patch_neg_cards.js` | `C:/Users/irisding/` | 插入不满意工单分析表 + 小结（需 WS_COOKIE） |
+| `rebuild_section4.py` | `C:/Users/irisding/` | 重建第四节差错分析（左卡片 + 右明细表） |
+| `inject_wow_kpi.js` | `C:/Users/irisding/` | 注入 WoW 周环比指标 + KPI 进度条 |
+| `update_index.js` | `us-css-weeklyreport/` | 重新生成历史报告索引（2026-07-03 起） |
+| `send_weekly_notify.js` | `us-css-weeklyreport/` | 发飞书通知卡片到群（需先确认） |
 | `auto-report.js` | skill 目录 | 定时任务入口（每周五 20:00 BT 自动运行） |
 | `refresh-session.js` | skill 目录 | 每日 12:00 刷新 USCM_COOKIE/CSRF |
 
