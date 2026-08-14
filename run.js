@@ -24,6 +24,7 @@
  */
 
 const https = require('https');
+const http  = require('http');
 const fs    = require('fs');
 const path  = require('path');
 
@@ -380,15 +381,37 @@ function findVParam(obj, depth) {
   return null;
 }
 
-async function guandataGet(urlPath) {
-  const res = await httpRequest({
-    hostname: 'us.data.futuoa.com', path: urlPath, method: 'GET',
-    headers: {
-      'raw-backend-response': 'TRUE',
-      'user-id': 'aXJpc2Rpbmc=', 'x-dom-id': 'Z3VhbmJp',
-      'Cookie': DATA_COOKIE,
-    },
+// Proxy request to setup_cookies.py localhost:8765 — uses browser session to bypass 1018
+const DATA_PROXY_PORT = 8765;
+
+function proxyRequest(urlPath, method, extraHeaders, body) {
+  const headers = {
+    'raw-backend-response': 'TRUE',
+    'user-id': 'aXJpc2Rpbmc=', 'x-dom-id': 'Z3VhbmJp',
+    ...extraHeaders,
+  };
+  if (body) headers['Content-Length'] = String(Buffer.byteLength(body));
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      { hostname: 'localhost', port: DATA_PROXY_PORT, path: urlPath, method, headers },
+      res => {
+        const chunks = [];
+        res.on('data', c => chunks.push(c));
+        res.on('end', () => {
+          const raw = Buffer.concat(chunks).toString();
+          try { resolve({ status: res.statusCode, body: JSON.parse(raw), raw }); }
+          catch { resolve({ status: res.statusCode, body: raw, raw }); }
+        });
+      }
+    );
+    req.on('error', reject);
+    if (body) req.write(body);
+    req.end();
   });
+}
+
+async function guandataGet(urlPath) {
+  const res = await proxyRequest(urlPath, 'GET', {});
   if (res.status !== 200) throw new Error(`GET ${urlPath}: HTTP ${res.status}`);
   return res.body;
 }
@@ -407,18 +430,11 @@ async function resolveVParam(cardId) {
 async function guandataPost(cardId, bodyObj) {
   const v = await resolveVParam(cardId);
   const bodyStr = JSON.stringify(bodyObj);
-  const res = await httpRequest({
-    hostname: 'us.data.futuoa.com',
-    path: `/api/card/${cardId}/data?v=${v}`,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'raw-backend-response': 'TRUE',
-      'user-id': 'aXJpc2Rpbmc=', 'x-dom-id': 'Z3VhbmJp',
-      'Cookie': DATA_COOKIE,
-      'Content-Length': Buffer.byteLength(bodyStr),
-    },
-  }, bodyStr);
+  const res = await proxyRequest(
+    `/api/card/${cardId}/data?v=${v}`, 'POST',
+    { 'Content-Type': 'application/json' },
+    bodyStr
+  );
   if (res.status !== 200) throw new Error(`Card ${cardId}: HTTP ${res.status} — ${res.raw.slice(0,200)}`);
   return res.body;
 }
