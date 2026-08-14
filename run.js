@@ -122,7 +122,7 @@ const CARDS = {
   LC_QUEUE:  'n897ad21677424c66af5aad8',
   LC_UTIL:   'u6b720a2a07f246b8ba5ed1c',
   PHONE:     'p387a9f31ddc842f89a058eb',
-  EMAIL:     'j4e69d8b9111b4f0a86bfb93',
+  EMAIL:     'fa9508e7b7ef0432bb2f68ea',
   EMAIL_SAT: 'db4225f75c16b49a0b6ef227',
   SLA:       'i962341c6f44c422f8eb998e',
 };
@@ -132,7 +132,7 @@ const CARD_VPARAMS = {
   [CARDS.LC_QUEUE]: 'TFUsDZAqXcxCwqCzQlvZIQRT',
   [CARDS.LC_UTIL]:  'SYRdxWeqRlzviTWngneskcEk',
   [CARDS.PHONE]:    'LoZeFSbcPCYrMOEKfCEenGqH',
-  [CARDS.EMAIL]:    'rwBQAsirGzsCMpndPwUVKhzL',
+  // EMAIL: auto-resolved via GET /api/card/{id}
   [CARDS.SLA]:      'ZedMDVjfQRBbjcfVycpPIPMU',
   // PHONE_UTIL_CARD: auto-resolved via GET /api/card/{id}
 };
@@ -184,17 +184,19 @@ const F = {
   PU_UTIL:         'wc5a3079cbe6d43b5ad0d6c8',  // 工时利用率
   PU_TEAM:         'w56b8a86990244f84b00a677',  // 客服组名称
 
-  // ── Email (j4e69d8b9111b4f0a86bfb93) ─────────────────────────
-  EM_DS_ID:        'j4dbefb8670a149afbd8a960',
-  EM_DATE:         'ibf197b7482b3471a9d30074',
-  EM_DATE_KEY:     'kLBKZbzGDhkvhCPMHpkaRSOH',
-  EM_MAIL_FDID:    'g678165f34aa0418b89dbb92',
-  EM_MAIL_SRC:     'o9e26b4da81cf441cac822d2',
-  EM_AGENT:        'sd76cc38f77ca4c1eb7bcf76',
-  EM_USER_EMAILS:  'xa5915843201d46f88ae30c1',
-  EM_REPLIED:      'kb139048426f1492ea0c428f',
-  EM_SLA_30MIN:    'qe5c68f1d93d54660a277994',
-  EM_AVG_REPLY:    'v801bc3c2e3304ae297fd0c6',
+  // ── Email (fa9508e7b7ef0432bb2f68ea) 北京时区邮件工单 ──────────
+  EM_DS_ID:        'b2c3bbdd011c8413c9efea28',
+  EM_DATE:         'd9cd5c72c8fab4ba080a791a',  // 工单创建时间-日
+  EM_DATE_SRC:     'd444e38cd461147bd8942d7e',  // 日期选择器
+  EM_MAIL_FDID:    'xbca60b4a398b499f9c78141',  // account_mail
+  EM_MAIL_SRC:     'cc383edc9498f42db9eb7668',  // 客服邮箱选择器
+  EM_AGENT:        'j27936392a84a4e3eab12845',  // 归档人
+  EM_AGENT_SRC:    'cfd950c1cb4ac4df1b95e4ad',  // 归档人选择器
+  EM_TICKETS:      'fffd3c45db0fb4d859ec7c57',  // 工单数 COUNT DISTINCT
+  EM_USER_EMAILS:  'j75d1e72a7c7e4714a7eaa59',  // 用户邮件咨询总量
+  EM_REPLIED:      'a077066530c3c411ba022ec3',  // 已回复邮件总量
+  EM_SLA_30MIN:    'ib9578e14b4b54d7dac5f114',  // 30min回复率
+  EM_AVG_REPLY:    'd0e7e70fb294248989c6cc45',  // 工单平均处理时长(分钟)
 
   // ── Email Reception / Satisfaction (db4225f75c16b49a0b6ef227) ─
   ESA_DS_ID:       'w605094686a92446b9da361b',
@@ -629,17 +631,17 @@ const PH_AGENT_DIM = {
 // ── Email ─────────────────────────────────────────────────────────
 const EM_COL = [{ name: '度量名', metaType: 'MPH', key: 'VmZwSehqdXATpitHKQGYKjBW', nameTranslated: '度量名', alias: '度量名' }];
 const EM_METRICS = [
-  { fdId: F.EM_USER_EMAILS, name: '用户邮件咨询量', fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation', level: 'dataset', formula: 'COUNT([mail_id])', key: 'dKUBPzQoBJFWYRXZczXIpTKc' },
-  { fdId: F.EM_REPLIED,     name: '已回复邮件量',   fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation', level: 'dataset', formula: 'SUM([是否已回复])',  key: 'KCqWmysCPfcXOvuQPIssAdjh' },
-  { fdId: F.EM_SLA_30MIN,   name: '30min回复率',   fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation',                                               key: 'OEiGvisdqsIwaKkFwiMUIDEk' },
-  { fdId: F.EM_AVG_REPLY,   name: '邮件平均回复时长', fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation',                                             key: 'v801bc3c2e3304ae297fd0c6' },
+  { fdId: F.EM_TICKETS,   name: '工单数',          fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation', level: 'dataset', formula: 'COUNT(DISTINCT([工单号]))', key: F.EM_TICKETS },
+  { fdId: F.EM_REPLIED,   name: '已回复邮件总量',   fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation', level: 'dataset', formula: 'SUM([工单已回复邮件量])',    key: F.EM_REPLIED },
+  { fdId: F.EM_SLA_30MIN, name: '30min回复率',      fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation',                                                          key: F.EM_SLA_30MIN },
+  { fdId: F.EM_AVG_REPLY, name: '工单平均处理时长',  fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation',                                                          key: F.EM_AVG_REPLY },
 ];
-// indices: 0=userEmails, 1=replied, 2=sla30min
+// indices: 0=tickets, 1=replied, 2=sla30min, 3=avgReply
 
 const EM_AGENT_DIM = {
-  fdId: F.EM_AGENT, name: 'reply_sid_nick', fdType: 'STRING', metaType: 'DIM',
+  fdId: F.EM_AGENT, name: '归档人', fdType: 'STRING', metaType: 'DIM',
   isAggregated: false, calculationType: 'normal',
-  key: 'YfzfXuShhSiMJXDQASvgDOSB', nameTranslated: 'reply_sid_nick', alias: 'reply_sid_nick',
+  key: F.EM_AGENT, nameTranslated: '归档人', alias: '归档人',
 };
 
 // ── Email Satisfaction (db4225f75c16b49a0b6ef227) ────────────────
@@ -869,14 +871,14 @@ async function fetchEmail(start, end) {
       dsId: F.EM_DS_ID, cdId: CARDS.EMAIL, sourceCdId: F.EM_MAIL_SRC,
     },
     {
-      name: 'consult_time_date', fdId: F.EM_DATE, key: F.EM_DATE_KEY, fdType: 'STRING',
+      name: '工单创建时间-日', fdId: F.EM_DATE, key: F.EM_DATE, fdType: 'STRING',
       filterType: 'BT', filterValue: [start, end], displayValue: [start, end],
-      dsId: F.EM_DS_ID, cdId: CARDS.EMAIL,
+      dsId: F.EM_DS_ID, cdId: CARDS.EMAIL, sourceCdId: F.EM_DATE_SRC,
     },
     {
-      name: 'reply_sid_nick', fdId: F.EM_AGENT, key: F.EM_AGENT, fdType: 'STRING',
+      name: '归档人', fdId: F.EM_AGENT, key: F.EM_AGENT, fdType: 'STRING',
       filterType: 'IN', filterValue: [...CONVERSION_TEAM],
-      dsId: F.EM_DS_ID, cdId: CARDS.EMAIL,
+      dsId: F.EM_DS_ID, cdId: CARDS.EMAIL, sourceCdId: F.EM_AGENT_SRC,
     },
   ];
 
@@ -886,13 +888,13 @@ async function fetchEmail(start, end) {
   ]);
 
   const tv = teamValues(teamResp);
-  // 0=userEmails, 1=replied, 2=sla30min, 3=avgRespTime
+  // 0=tickets, 1=replied, 2=sla30min, 3=avgReply
 
   return {
-    team: { userEmails: num(tv[0]), replied: num(tv[1]), sla30min: pct(tv[2]), avgRespTime: mins(tv[3]) },
+    team: { replied: num(tv[0]), userEmails: num(tv[1]), sla30min: pct(tv[2]), avgRespTime: mins(tv[3]) },
     agents: agentRows(agentResp)
       .filter(({ name }) => CONVERSION_TEAM.has(name))
-      .map(({ name, vals }) => ({ name, tickets: num(vals[1]), slaRate: pct(vals[2]), avgRespTime: mins(vals[3]) })),
+      .map(({ name, vals }) => ({ name, tickets: num(vals[0]), slaRate: pct(vals[2]), avgRespTime: mins(vals[3]) })),
   };
 }
 
@@ -1431,8 +1433,8 @@ async function fetchTeamVolSummary(start, end) {
   ];
   const emFilters = [
     { name:'account_mail', fdId:F.EM_MAIL_FDID, key:F.EM_MAIL_FDID, fdType:'STRING', filterType:'IN', filterValue:['ca@us.moomoo.com','cs@us.moomoo.com','pcs@us.moomoo.com','support@moomoocrypto.com'], dsId:F.EM_DS_ID, cdId:CARDS.EMAIL, sourceCdId:F.EM_MAIL_SRC },
-    { name:'consult_time_date', fdId:F.EM_DATE, key:F.EM_DATE_KEY, fdType:'STRING', filterType:'BT', filterValue:[start,end], displayValue:[start,end], dsId:F.EM_DS_ID, cdId:CARDS.EMAIL },
-    { name:'reply_sid_nick', fdId:F.EM_AGENT, key:F.EM_AGENT, fdType:'STRING', filterType:'IN', filterValue:[...CONVERSION_TEAM], dsId:F.EM_DS_ID, cdId:CARDS.EMAIL },
+    { name:'工单创建时间-日', fdId:F.EM_DATE, key:F.EM_DATE, fdType:'STRING', filterType:'BT', filterValue:[start,end], displayValue:[start,end], dsId:F.EM_DS_ID, cdId:CARDS.EMAIL, sourceCdId:F.EM_DATE_SRC },
+    { name:'归档人', fdId:F.EM_AGENT, key:F.EM_AGENT, fdType:'STRING', filterType:'IN', filterValue:[...CONVERSION_TEAM], dsId:F.EM_DS_ID, cdId:CARDS.EMAIL, sourceCdId:F.EM_AGENT_SRC },
   ];
   const [lcR, phR, emR] = await Promise.allSettled([
     guandataPost(CARDS.LC_QUEUE, buildBody([], LC_METRICS, lcFilters, [], 1, '工单量')),
@@ -1441,7 +1443,7 @@ async function fetchTeamVolSummary(start, end) {
   ]);
   const lcTix = lcR.status === 'fulfilled' ? toInt(teamValues(lcR.value)[0]) : 0;
   const phTix = phR.status === 'fulfilled' ? toInt(teamValues(phR.value)[0]) : 0;
-  const emTix = emR.status === 'fulfilled' ? toInt(teamValues(emR.value)[1]) : 0;
+  const emTix = emR.status === 'fulfilled' ? toInt(teamValues(emR.value)[0]) : 0;
   return { vol: lcTix + phTix + emTix };
 }
 
