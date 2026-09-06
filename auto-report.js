@@ -51,7 +51,8 @@ function getWeekRange() {
   const bt  = new Date(now.getTime() + 8 * 3600000);
   const dow = bt.getUTCDay();
 
-  const daysToLastFri = (dow >= 5) ? (dow - 5) : (dow + 2);
+  // dow=5 (Fri): use last week's Friday (7 days ago), not today
+  const daysToLastFri = (dow === 5) ? 7 : (dow > 5) ? (dow - 5) : (dow + 2);
   const fri = new Date(bt);
   fri.setUTCDate(bt.getUTCDate() - daysToLastFri);
   const weekStart = fri.toISOString().slice(0, 10);

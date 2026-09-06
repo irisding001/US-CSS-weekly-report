@@ -8,41 +8,85 @@ description: US CSS 团队周报生成器（12人 Conversion CS Team，四模块
 周期：**周五 ~ 周四（北京时间 UTC+8）**  
 团队：jacelynlim / terrychen / muhamadfaisal / calventan / azamuddin / jeanliew / whitneylee / alvinsim / zaydentan / vincentyew / wilsonwong / zyonnleong
 
-## 凭证（`.env`）
+> ⚠️ **仓库区分（严禁推错）**  
+> - 本 skill（`US-CCS-weekly-report`）→ 仓库 `us-css-weeklyreport`（周五~周四）  
+> - `us-css-weeklyperformance` skill → 仓库 `us-css-weeklyperformance`（周一~周日）  
+> - 两个 skill/仓库完全独立，推送前必须确认目标仓库正确
 
-路径：`C:\Users\irisding\.claude\skills\US-CCS-weekly-report\.env`
+## 凭证
 
-| 变量 | 有效期 | 备注 |
-|------|--------|------|
-| `DATA_COOKIE` | ~2周 | 到期前3天自动预警 |
-| `WS_COOKIE` | 数天 | 不满意工单分析，手动更新 |
-| `USCM_COOKIE` / `USCM_CSRF` | ~1天 | 外呼；每日12:00自动刷新 |
-| `PASSPORT_SESS_ID` | 数周 | 手动更新 |
+Cookie 统一存储在 `C:\Users\irisding\run_weekly_config.json`，脚本自动读取，无需手动传入：
+
+| 字段 | 用途 | 有效期 |
+|------|------|--------|
+| `DATA_COOKIE` | us.data.futuoa.com（BI 数据） | ~2周 |
+| `USCM_COOKIE` / `USCM_CSRF` | uscm.futuoa.com（USCM 工单） | ~1天 |
+| `WS_COOKIE` | us-workspace.futuoa.com（不满意工单） | 数天 |
+
+Cookie 过期时（报 401），**双击** `C:\Users\irisding\refresh_cookies.bat`，登录三个站点后回 CMD 按 ENTER，看到 `Updated` 后重跑脚本。**不要**在 Warp 终端或用 `!` 前缀运行。
+
+`.env` 文件（`C:\Users\irisding\.claude\skills\US-CCS-weekly-report\.env`）仍作为备用读取源，但以 `run_weekly_config.json` 为准（后者会覆盖 `.env` 中相同字段）。
+
+---
+
+## 一键运行（推荐）
+
+所有步骤（Step 1 ~ Step 2.5）已串联为单条命令，每步完成后自动校验结构，任一步失败立即停止：
+
+```bash
+node C:/Users/irisding/run_report.js \
+  --week-start YYYY-MM-DD \
+  [--monthly-pc-kpi N]
+```
+
+- 自动验证 `--week-start` 是周五，否则报错
+- 每步完成后校验 section 唯一性 + 哨兵注入次数
+- 输出文件：`%USERPROFILE%\weekly_report_{weekStart}_{weekEndMMdd}.html`
+
+> 只需手动预填 `inject_wow_kpi.js` 中的 `monthlyPC`/`lastWeekChannel`/`thisWeekChannel`，其余全自动。
 
 ---
 
 ## Step 1：生成主报告
 
-**个人咨询PC 从 BI 自动抓取**（card `ndfe729d2affb4323a070459`），不需要 `--agent-consult-pc`。  
-渠道级咨询PC（LC/Phone/Email）仍需从 USCM 截图手动读取。  
-周外呼转化PC = 客经侧已转化PC（BI 自动抓取，无需手动传入）。
+**PC 数据来源（全部 BI 自动抓取）：**
+- 咨询PC（LC/Phone/Email）：pbb45c BI card `oa724299e80dd4e4daaa9301`，按「最终有效跟进方式」统计 UID 数
+  - 取数方式：6个 row 维度（地区/牛牛号UID/转化时间/处理人/有效跟进方式/最近跟进时间），每行 = 1条PC记录，直接 count 各方式行数
+  - 时间范围：`${start} 00:00:00` ~ `${end} 23:59:59`（含当天，不用次日 00:00:00）
+  - 在线PC = 方式含「在线」的行数；电话PC = 方式含「电话」的行数；邮件PC = 方式含「邮件」的行数
+  - ⚠️ 不能只用 method+agent 两个维度，会折叠同一 agent 的多条记录导致计数偏低
+- 外呼转化PC（`channelPC.ob`）：同一 card，方式 = 外呼 or SMS 行数
+- 个人咨询PC：card `q675815b12e4246afa871c94`（page a367cbb），字段「客服侧PC」
+
+概览栏显示：`周咨询PC`（在线+电话+邮件）+ `周总PC`（咨询PC + 外呼转化PC）  
+**不再需要 `--lc-pc / --phone-pc / --email-pc` 参数。**
 
 ```bash
 node "C:\Users\irisding\.claude\skills\US-CCS-weekly-report\run.js" \
   --week-start YYYY-MM-DD \
-  --lc-pc N --phone-pc N --email-pc N \
-  --monthly-pc-kpi N
+  [--monthly-pc-kpi N]
 ```
 
-`--monthly-pc-kpi`：当月PC目标（如 `100`），用于 Section 二 KPI 进度条展示。skill 调用格式：`August PC KPI 100`。
+`--monthly-pc-kpi`：当月PC目标，默认 `80`。月度变动时传入，否则可省略。
 
 输出：`%USERPROFILE%\weekly_report_{weekStart}_{weekEndMMdd}.html`
+
+**Section 二 渠道详情布局：**  
+在线 / 电话 / 邮件 三列并排（同一行）；外呼单独一行在下方。
+
+**月度个人汇总表：**  
+月度业绩区仅显示合计工单量（月度总工单），不再分渠道（LC/Phone/Email）拆列。
 
 ---
 
 ## Step 1.5：注入 WoW + KPI（inject_wow_kpi.js）
 
-更新脚本顶部 `lastWeekIndividual`（仅 weekPC，CSAT 列已改为趋势色块由 run.js 自动生成）、`monthlyPC`、`lastWeekChannel`、`thisWeekChannel`，然后：
+每周更新 `monthlyPC`、`lastWeekChannel`、`thisWeekChannel`（`lastWeekIndividual` 已移除，不再注入 Individual Summary WoW）：
+
+**注意：**
+- WoW 箭头只注入渠道汇总表（合计/在线/电话/邮件4行），Individual Summary 表不加 WoW
+- Individual Breakdown 列标注：**彩色字体**（非色点）；满意度 <84% 标红字；接通率/FCR/SLA：底部值红字、顶部值绿字，仅当 colMin < colMax 时才标；全列相同不标
+- 外呼表各业绩列：顶部值绿字 / 底部值红字，inline style，不再用 rank-top/rank-bot CSS class
 
 ```bash
 node C:/Users/irisding/inject_wow_kpi.js [report_path]
@@ -50,114 +94,187 @@ node C:/Users/irisding/inject_wow_kpi.js [report_path]
 
 ---
 
-## Step 2：不满意工单分析（patch_neg_cards.js）
+## Step 1.6：各渠道近6周趋势（inject_channel_trend.js）
 
-每周更新两处：① `begin`/`endTs` 时间戳（北京时间）；② 底部 `f` 变量（HTML 文件路径），然后：
+自动从 BI + USCM 抓取过去6周的渠道工单量/CSAT/外呼数据，插入 Section 一"各渠道近6周趋势"三图（工单量 / 转化PC / 满意度）。  
+**无需手动修改数据**，每周只需传入正确的 `--week-start` 即可：
 
 ```bash
-node "C:/Users/irisding/patch_neg_cards.js"
+node C:/Users/irisding/inject_channel_trend.js --week-start YYYY-MM-DD
+```
+
+**重要**：此脚本同时写出 `C:/Users/irisding/csat_trend_data.json`，供后续 `patch_auto.js` 读取渠道 CSAT 数据。**必须在 `patch_auto.js` 之前运行。**
+
+**chart-conv PC 趋势图包含两条线：**
+- 橙色虚线：外呼转化PC（外呼+SMS，从 pbb45c BI card 实时抓取）
+- 绿色实线：总PC（外呼转化PC + 咨询PC，从 USCM total_pc 获取）
+
+⚠️ 依赖 `DATA_COOKIE`（`uIdToken` 约2周有效）+ `USCM_COOKIE`。若出现 401，更新 Cookie 后重跑。
+
+---
+
+## Step 2：不满意工单分析（patch_neg_cards.js）
+
+时间戳和报告路径已参数化，无需手动修改脚本：
+
+```bash
+node "C:/Users/irisding/patch_neg_cards.js" \
+  --week-start YYYY-MM-DD \
+  --report /path/to/weekly_report.html
 ```
 
 未知分类 ID → USCM 截图匹配后补入 `CAT_NAME`，同步更新 memory `ws_category_ids.md`。
 
 ---
 
-## Step 2.5：外呼排名标注 + 满意度改版
+## Step 2.5：外呼排名 + 满意度（patch_auto.js）
 
-更新 `patch_all_27_29_30.js` 顶部数据后运行：
-
-```bash
-node C:/Users/irisding/patch_all_27_29_30.js
-node C:/Users/irisding/patch_3in1row.js
-```
-
-**patch_all_27_29_30.js 每周需更新：**
-- Part 1 外呼排名：4列（有效跟进/周PC/分配転化率月/有效転化率月）的 top1/bottom1 agent 姓名和数值
-- Part 2 CSAT SVG：`csatPct`（近5周）、`weeks5` 标签
-- Part 2 负评分布小结文字：渠道分布/糟糕工单/不满意工单各条原因
-
-**近5周 combo 图（总评价量 + 负评量 + CSAT 折线）数据来源：**
-- 总评价量 / 负评量：从近5周报告 HTML 或 patch_csat_combo_bars.js 手动录入
-- 负评量辅助公式：`neg = round(total × (1 − CSAT/100))` 可辅助计算历史数据
-- CSAT 折线 + 数据点 tooltip：`patch_vol_csat_5weeks.js` 自动生成，鼠标悬停显示周次+渠道+数值
-
-每周运行 `patch_vol_csat_5weeks.js` 前，更新脚本顶部：
-- `volData`：5×3 数组（在线/电话/邮件 各周工单量，近5周从旧到新）
-- `csatData`：5×4 数组（在线/电话/邮件/综合 CSAT%，近5周从旧到新）
-- `labels`：5个周次标签（如 `['0703-0709', '0710-0716', ...]`）
-
-历史数据从往期报告 HTML 中读取；当周数据由 run.js 生成后手动补入。
+**全自动，无需手动填数据。** 读取 HTML + `csat_trend_data.json` + 实时抓取 workspace 6周数据：
 
 ```bash
-node C:/Users/irisding/patch_vol_csat_5weeks.js [report_path]
+node C:/Users/irisding/patch_auto.js --week-start YYYY-MM-DD
 ```
 
-**满意度节（Section 三）最终结构：**
-1. **满意度小结**（内含负评分布小结）：需提供有意义的解读，不是数据罗列
-   - 开头：CSAT 达标与否 + 与上周对比 + 负评量是否创新低/新高
-   - 渠道层面：哪个渠道超/低于目标，Email/Phone 如有持续问题需点出
-   - 个人层面：本周负评集中在哪些人（具体名字 + 条数），CSAT 低于目标的人
-   - 负评分布：按渠道分布 → 最高频分类及成因 → 每类一句话行动建议
-2. **近5周综合满意度趋势**（SVG combo chart）：CSAT折线 + 总评价量/负评量双柱，5周均显示
-3. **一行 flex**：趋势图 | 分渠道负评分布表 | 二级分类表（三列并排）
-4. **不满意工单明细**：默认折叠（▶ 点击展开），含 agent/rating/分类 三级筛选器
+**自动完成以下三件事：**
 
-**patch_3in1row.js** 无需修改（仅做布局调整，结构稳定）。
+**① 外呼排名标注**（无需 API，直接解析 HTML 外呼排名表）  
+4列各找 top1（绿字）/ bottom1（红字），自动写入 inline style：
+- 有效跟进 Eff. Follow
+- 周PC Weekly PC
+- 分配转化率月 Dist. Conv%
+- 有效转化率月 Eff. Conv%
+- vincentyew 自动排除（自 2026-08-14 起）
 
-**周転化PC 数据来源说明：**
-- 当周 = Individual Summary 表中 転化PC 列合计（run.js `agentSalesPC`）
-- 历史5周数据**无法从 API 获取**，从往期报告 HTML 手动读取或用户截图提供
+**② 近6周 CSAT combo 图**（Section 三）  
+从 workspace `GetBadEvaluations` 并发抓取近6周评价数据，自动计算：
+- 每周总评价量（totalTx）、负评量（negTx）、综合 CSAT%
+- 渠道 CSAT 折线从 `csat_trend_data.json` 读取（inject_channel_trend.js 生成）
+- 生成 SVG combo 图（总评价量柱 + 负评量柱 + CSAT 折线）注入 Section 三
+
+**③ 满意度小结**（自动生成文字）  
+- CSAT 达标与否 + 与上周对比
+- 渠道分布（LC/Phone/Email 各多少条负评）
+- 负评集中 agent（姓名 + 条数）
+- 个人 CSAT 低于 84% 的 agent（需 ≥3 条评价）
+
+**Section 三最终结构：**
+1. 满意度小结（自动生成，可人工补充解读）
+2. 近6周综合满意度趋势（SVG combo chart）
+   - 图例项均可点击切换显示/隐藏：总评价量 / 负评量 / 综合CSAT / 目标≥84% / 在线LC / 电话Phone / 邮件Email
+   - 在线/电话/邮件各渠道 CSAT 折线从 `csat_trend_data.json` 读取（虚线，与综合CSAT实线区分）
+   - 点击逻辑由 SVG 内联 `togCsatCh(ch, btn)` 实现，ID 命名：`csat-bars-total/neg`、`csat-target`、`csat-ch-lc/ph/em`、`csat-overall`
+3. 不满意工单明细（默认折叠，含 agent/rating/分类三级筛选器，由 patch_neg_cards.js 生成）
+
+**已废弃脚本（不再运行）：**
+- `patch_all_27_29_30.js` → 由 `patch_auto.js` 完全替代
+- `patch_vol_csat_5weeks.js` → Section 一图表由 `inject_channel_trend.js` 维护，Section 三 combo 由 `patch_auto.js` 维护，此脚本作废
+- `patch_3in1row.js` → 已为 no-op，不需运行
 
 ---
 
-## Step 3：数据检查（推送前必须通过）
+## Step 3：数据检查 + 全报告内容复查（推送前必须通过）
 
 打开 HTML 逐项确认，**任意异常停下来问用户，不得推送：**
 
+**数据存在性（不得缺失）：**
 - 个人/月度咨询PC（12人）大部分 > 0
 - 渠道PC合计不为 0
 - 团队工单量（LC/Phone/Email）均 > 0
-- 外呼跟进量/転化PC > 0
+- 外呼跟进量/转化PC > 0
 - Email CSAT 在 40%~100%
-- 月度PC ≥ 周度PC
 - 第三节末有不满意工单明细表（折叠状态），分类列显示文字名称
-- 外呼表4列已标绿/标红（rank-top/rank-bot）
+- Individual Breakdown 所有 12 人均有数据，无空白行
+- Section 三有满意度小结文字（非空）+ combo chart（有数据点）
+
+**数据一致性（不得冲突）：**
+- 月度PC ≥ 周度PC
+- **PC 数据校验（必须通过才推送）**：
+  - `周咨询PC`（顶部栏）= 渠道表在线+电话+邮件 PC 之和
+  - `周总PC`（顶部栏）= 周咨询PC + 外呼转化PC
+  - `渠道合计 PC` = 在线PC + 电话PC + 邮件PC
+  - `Individual Summary 咨询PC 合计` = 渠道合计 PC（两处数值一致）
+  - `Individual Summary 总PC 合计` = 周总PC（顶部栏一致）
+- 工单量合计 = LC + Phone + Email 之和
+
+**格式校验：**
+- 外呼排名表 4 列已有彩色字体标注（inline style `color:#16a34a` / `color:#dc2626`，非 rank-top/rank-bot class）
+- Individual Breakdown 满意度/接通率/FCR 列用彩色字体标注（非色点），全列相同时不标
 - 满意度节无独立"个人满意度明细"表（已删除）
-- Section 二 待提升卡片内容已更新本周数据（Phone CSAT / FCR / 転化率）
+- Section 二 待提升卡片内容已更新本周数据（Phone CSAT / FCR / 转化率）
+
+**报告视觉格式检查（对照上周报告逐项比较）：**
+
+上周报告路径：`C:/Users/irisding/us-css-weeklyreport/` 目录下上一份 HTML 文件。
+
+- **表格布局**：列数、列宽与上周一致；无列内容溢出或截断
+- **间距**：各 Section 之间 padding/margin 与上周一致，无异常压缩或撑开
+- **字体大小**：表头、数据行、小标签字号与上周一致
+- **图表**：趋势图（Section 一）、CSAT combo chart（Section 三）与上周尺寸一致，数据点可见、无空白图
+- **内容不重叠**：SVG/图表内文字不遮挡，柱图/折线不超出边框
+- **颜色标注**：彩色字体（绿/红 inline style）位置与上周一致，无多余标注也无漏标
+- **折叠组件**：不满意工单明细默认折叠（`<details>` 未展开）
+- **移动端/宽屏**：Section 二三列并排（在线/电话/邮件）布局正常，外呼单独一行
+- **整体高度**：报告总高度与上周大致相当；若差异 > 20%，检查是否有内容块意外重复或缺失
+
+**分析内容复查（避免本周报告残留上周内容）：**
+- **Section 一 小结文字**：检查趋势图描述、本周工单/PC/CSAT 概况是否对应本周数据，不残留上周文字
+- **Section 二 待提升卡片**：
+  - 电话 CSAT 卡片：agent 名字 + CSAT 值是否本周数据（非上周名单）
+  - 在线 FCR 卡片：agent 名字 + FCR 值是否本周数据
+  - 月度有效转化率卡片：低转化 agent 名单和比值是否本周数据
+- **Section 三 满意度小结**：
+  - CSAT% 是否本周实际值
+  - 渠道分布（LC/Phone/Email 负评条数）是否对应本周
+  - 负评集中 agent 名单是否本周负评数据
+  - 个人 CSAT 低于 84% 名单是否本周数据
+- **WoW 箭头**：渠道汇总表合计/在线/电话/邮件4行的 WoW 差值是否本周 vs 上周的真实差值（非上周的差值复制）
+- **概览栏**：周咨询PC / 周总PC / 月度PC / 外呼转化PC 数值与表格合计一致
+- **通用错误**：无残留占位符（`XXX`、`TODO`、`___`）、无未填字段、无空 `div`
 
 ---
 
-## Step 3.5：差错分析（rebuild_section4.py）
+## Step 3.5：Section 二 待提升内容更新
 
-更新脚本中：① `agents` 各人数据；② 日期范围字符串；③ 第4行文件路径，然后：
+Section 二（WoW变化）末尾有**待提升卡片**，每周依据本周数据更新以下3项：
 
-```bash
-python C:/Users/irisding/rebuild_section4.py
-```
-
----
-
-## Step 3.6：Section 二 待提升内容更新
-
-Section 二（WoW变化）末尾有**待提升卡片**，每周依据本周数据更新以下3项（SLA 卡片已删除）：
+> ⚠️ **SLA 永久排除**：业绩分析（待提升/亮点）任何时候都不提 SLA 异常，run.js 已移除 emailSla 卡片生成逻辑。
 
 | 卡片 | 关注点 | 更新内容 |
 |------|--------|----------|
 | 电话 CSAT | Phone/个人 CSAT 低于 84% | 具体 agent 名字 + CSAT 值 |
 | 在线 FCR | LC FCR 低于 95% | 具体 agent 名字 + FCR 值 |
-| 月度有效転化率 | 转化率与最高对比 | 低转化 agent + 比值 vs 高效 agent |
+| 月度有效转化率 | BI 新例子有效跟进转化率差距 | 低转化 agent + 比值 vs 高效 agent |
 
+月度有效转化率卡片由 run.js **自动生成**（USCM `/api/visitor/overseas-statistics/marketing-work` 月度区间，`effective_follow_user_count` 字段），无需手动更新。  
 若某项本周无异常可删去该卡片；若有其他维度异常可新增。
 
 ---
 
-## Step 4：填写第五、六节
+## Step 3.5：向 Iris 收集第四、五节内容
 
-向用户收集本周重点工作和下周计划，写入 HTML 第五、六节占位符。
+数据检查（Step 3）全部通过后：
+
+1. **告知 Iris**：数据部分已完整，所有数字均通过校验
+2. **询问以下两项内容**：
+   - 本周重点工作（Section 四）
+   - 下周计划（Section 五）
+3. **等待 Iris 提供**，收到后写入 HTML 对应节
+4. **确认全部内容完整**后，再询问是否推送
+
+> ⚠️ 未收到第四、五节内容前，**不得询问是否推送**，更不得自行推送。
 
 ---
 
-## Step 5：推送 GitHub Pages
+## Step 4：推送 GitHub Pages
+
+> ⚠️ **执行前必须向 Iris 确认**：列出将要执行的命令，等待 Iris 明确回复"确认"或"yes"后再执行。
+
+**推送前先检查报告列表：**
+- 确认 `us-css-weeklyreport/` 目录中无多余/重复/错误命名文件
+- 新报告文件名格式：`weekly_report_{weekStart}_{weekEndMMdd}.html`（如 `weekly_report_2026-08-28_0903.html`）
+- `weekStart` 必须是**周五**（可用 `date -d YYYY-MM-DD +%A` 验证）
+- 历史列表应连续，无日期重叠或缺漏
+- **push 后、发飞书前**：访问 GitHub Pages 首页，确认历史报告列表完整、周期全部为周五开始
 
 ```bash
 cp "C:/Users/irisding/weekly_report_{date}.html" "C:/Users/irisding/us-css-weeklyreport/"
@@ -169,12 +286,15 @@ git pull --rebase origin main
 git push origin main
 ```
 
-**注意**：index.html 由 `update_index.js` 自动读取本地所有 `weekly_report_YYYY-MM-DD_MMDD.html` 生成。  
-推送前确认本地目录只有正确命名的报告文件（`{weekStart}_{weekEndMMdd}` 格式），删除任何错误/重复文件后再运行 `update_index.js`。
+**注意**：index.html 由 `update_index.js` 自动生成，按文件名倒序排列（最新在最上）。
 
 ---
 
-## Step 6：飞书通知（需 Iris 文字确认后再发）
+## Step 5：飞书通知
+
+> ⚠️ **执行前必须向 Iris 确认**：列出将要执行的命令，等待 Iris 明确回复"确认"或"yes"后再执行。  
+> ⚠️ **必须等 GitHub Pages 部署完成**（访问 URL 确认页面有数据）后再发飞书通知，否则用户点开是 404。  
+> ⚠️ **发飞书前复查历史报告列表**：访问 GitHub Pages 首页，确认历史报告完整连续、周期全部为周五开始，无异常才发通知。
 
 更新 `send_weekly_notify.js` 中 `REPORT_URL` 和 `WEEK_RANGE`，等 Iris 确认后：
 
@@ -182,5 +302,5 @@ git push origin main
 node C:/Users/irisding/us-css-weeklyreport/send_weekly_notify.js oc_6b53fdf35d29e9203579c4fc7b70acde
 ```
 
-默认发群 `oc_6b53fdf35d29e9203579c4fc7b70acde`（US CSS Weekly Report 群）。  
+**推送群固定为 "US CSS Weekly Report" 群**（chat_id: `oc_6b53fdf35d29e9203579c4fc7b70acde`），不要发到其他群。  
 发给 Iris 个人加参数：`ou_423989c914515582660dfef99848b0e7`

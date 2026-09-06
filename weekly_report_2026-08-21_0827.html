@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>US CSS Weekly Report — 2026-08-21 ~ 2026-08-27</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; background: #f5f7fa; color: #1a1a2e; padding: 32px 28px; max-width: 1480px; margin: 0 auto; }
+h1 { font-size: 24px; font-weight: 700; color: #1456F0; margin-bottom: 6px; border-bottom: 3px solid #1456F0; padding-bottom: 12px; text-align: center; letter-spacing: .3px; }
+.subtitle { font-size: 13px; color: #666; margin-bottom: 28px; text-align: center; }
+h2 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 16px; padding: 10px 18px;
+     background: linear-gradient(135deg, #1456F0, #3d7ff5); border-radius: 8px; display: flex; align-items: center; gap: 8px; }
+.sect-num { background: rgba(255,255,255,.25); border-radius: 4px; padding: 2px 8px; font-size: 13px; }
+h3 { font-size: 11.5px; font-weight: 700; color: #1456F0; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: .8px; }
+.section { background: #fff; border-radius: 12px; padding: 26px 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.cols-wide { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.cols-wide > div { min-width: 0; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+th { background: #eef2ff; color: #1456F0; text-align: center; padding: 10px 10px; border-bottom: 2px solid #c0d0f0; white-space: nowrap; }
+th:first-child { text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #eef0f5; white-space: nowrap; text-align: center; vertical-align: middle; }
+td:first-child { text-align: left; }
+.team-summary { table-layout: fixed; }
+.team-summary th { text-align: center; }
+.team-summary th:first-child { text-align: left; }
+.team-summary td { white-space: normal; overflow-wrap: break-word; vertical-align: middle; padding: 8px 10px; text-align: center; }
+.team-summary td:first-child { text-align: left; }
+.subsect-title { font-size: 13.5px; font-weight: 700; color: #1456F0; margin: 0 0 10px 0; padding: 5px 0 7px; border-bottom: 1px solid #d0daf8; letter-spacing: .2px; }
+.bold-row td { font-weight: 700; background: #eef2ff; }
+.consult-total-row td { font-weight: 700; background: #dce6ff; border-top: 2px solid #1456F0; border-bottom: 2px solid #1456F0; }
+tr:hover td { background: #f8f9ff; }
+.team-row td { font-weight: 600; background: #f0f4ff; padding: 5px 8px; line-height: 1.25; }
+td.empty { color: #aaa; text-align: center; }
+.en { font-size: 11px; color: #999; font-weight: 400; }
+.lbl { font-size: 11px; color: #aaa; font-weight: 400; }
+.editable-area { min-height: 130px; border: 1px solid #e0e4f0; border-radius: 8px; padding: 14px 18px;
+                 font-size: 13px; color: #333; line-height: 1.8; outline: none;
+                 background: #fafbff; }
+.editable-area:focus { border-color: #1456F0; box-shadow: 0 0 0 2px rgba(20,86,240,.1); }
+.editable-hint { font-size: 11px; color: #aaa; margin-bottom: 8px; }
+.meta { font-size: 11px; color: #aaa; margin-top: 12px; text-align: center; }
+.dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-left:4px; vertical-align:middle; }
+.val-wrap { position:relative; display:inline-block; }
+.val-wrap .dot { position:absolute; left:calc(100% + 3px); top:50%; transform:translateY(-50%); margin:0; }
+.sub-lbl { display:block; font-size:10px; color:#bbb; font-weight:400; margin-top:2px; }
+.dot-green { background:#22c55e; }
+.cpt th { padding:4px 7px !important; font-size:11px; }
+.cpt td { padding:3px 7px !important; font-size:12px; }
+.dot-red { background:#ef4444; }
+.cell-fail { color:#ef4444; }
+.tgt { font-size:10px; color:#bbb; font-weight:400; margin-left:4px; }
+.zone-weekly  { background:#dbeafe; color:#1456F0; border-right:2px solid #bfdbfe; }
+.zone-monthly { background:#ede9fe; color:#6d28d9; border-right:2px solid #ddd6fe; }
+.zone-csat    { background:#cffafe; color:#0e7490; border-right:2px solid #a5f3fc; }
+.zone-util    { background:#d1fae5; color:#065f46; }
+.group-header th { padding:6px 10px; font-size:12px; letter-spacing:.2px; }
+td.zone-end   { border-right:2px solid #c0cadf; }
+td.rank-top   { color:#15803d !important; font-weight:700; }
+td.rank-bot   { color:#dc2626 !important; font-weight:700; }
+@media (max-width: 800px) { .cols2, .cols-wide { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<h1>US CSS Weekly Report</h1>
+<p class="subtitle">2026-08-21 ~ 2026-08-27 &nbsp;|&nbsp; Conversion CS Team (11 agents)</p>
+
+<div class="section" id="一"><h2><span class="sect-num">一</span>业绩情况 <span class="en">Performance Overview</span></h2>
+  <div style="display:flex;align-items:center;flex-wrap:nowrap;overflow-x:auto;gap:8px;margin-bottom:16px;padding:10px 14px;background:#f8faff;border:1.5px solid #c7d6f7;border-radius:6px"><span style="font-size:11px;font-weight:700;color:#6b7280;letter-spacing:.05em;margin-right:2px">本周概览</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #c7d6f7;background:#f0f4ff;color:#1456F0;white-space:nowrap"><strong>周咨询PC</strong> 50 单</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #c7d6f7;background:#f0f4ff;color:#1456F0;white-space:nowrap"><strong>周总PC</strong> 90 单</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #c7d6f7;background:#f0f4ff;color:#1456F0;white-space:nowrap"><strong>月度PC</strong> 314 单</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #bbf7d0;background:#f0fdf4;color:#16a34a;white-space:nowrap"><strong>综合满意度</strong> 87.1%</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #bbf7d0;background:#f0fdf4;color:#16a34a;white-space:nowrap"><strong>在线 CSAT</strong> 89.4%</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;white-space:nowrap"><strong>电话 CSAT</strong> 72.7%</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;white-space:nowrap"><strong>邮件 CSAT</strong> 75.0%</span></div>
+  <h3>Channel Team Summary</h3>
+  <div class="subsect-title">咨询业务 <span class="en">Consultation</span></div><table class="team-summary"><colgroup><col style="width:12%"><col style="width:9%"><col style="width:8%"><col style="width:18%"><col style="width:18%"><col style="width:15%"><col style="width:20%"></colgroup><thead><tr><th>渠道<br><span class="en">Channel</span></th><th>工单量<br><span class="en">Volume</span></th><th>咨询PC<br><span class="en">Consult PC</span></th><th>满意度<br><span class="en">CSAT <span style="font-size:10px;color:#bbb;font-weight:400">≥84%</span></span></th><th>接通率<br><span class="en">Answer Rate</span></th><th>一次性解决率<br><span class="en">FCR <span style="font-size:10px;color:#bbb;font-weight:400">≥95%</span></span></th><th>平均处理时长<br><span class="en">Avg Handle</span></th></tr></thead><tbody><tr class="consult-total-row"><td><strong>合计 Total</strong></td><td><strong>1166</strong><span style="display:block;font-size:9px;color:#16a34a;line-height:1.2;margin-top:1px">▲+138</span></td><td><strong>50</strong></td><td><span class="val-wrap"><strong>87.1%</strong><span style="display:block;font-size:9px;color:#dc2626;line-height:1.2;margin-top:1px">▼−1.7pp</span></span></td><td>-</td><td>-</td><td>-</td></tr><tr class="team-row"><td><strong>在线 Live Chat</strong></td><td><strong>481</strong><span style="display:block;font-size:9px;color:#16a34a;line-height:1.2;margin-top:1px">▲+56</span></td><td><strong>27</strong></td><td><strong><span class="val-wrap"><strong>89.4%</strong><span style="display:block;font-size:9px;color:#16a34a;line-height:1.2;margin-top:1px">▲+4.6pp</span></span></strong></td><td><strong><span class="val-wrap"><strong>100.0%</strong></span><br><span class="lbl">30s接通≥90%</span></strong></td><td><strong><span class="val-wrap"><strong>95.6%</strong></span></strong></td><td><strong>11.8m</strong></td></tr><tr class="team-row"><td><strong>电话 Phone</strong></td><td><strong>259</strong><span style="display:block;font-size:9px;color:#16a34a;line-height:1.2;margin-top:1px">▲+3</span></td><td><strong>18</strong></td><td><strong><span class="val-wrap"><strong>72.7%</strong><span style="display:block;font-size:9px;color:#dc2626;line-height:1.2;margin-top:1px">▼−27.3pp</span></span></strong></td><td><strong><span class="val-wrap"><strong>94.6%</strong></span><br><span class="lbl">20s接通≥95%</span></strong></td><td><strong><span class="val-wrap"><strong>97.7%</strong></span></strong></td><td><strong>11m 14s</strong></td></tr><tr class="team-row"><td><strong>邮件 Email</strong></td><td><strong>426</strong><span style="display:block;font-size:9px;color:#16a34a;line-height:1.2;margin-top:1px">▲+20</span></td><td><strong>5</strong></td><td><strong><span class="val-wrap"><strong>75.0%</strong><span style="display:block;font-size:9px;color:#dc2626;line-height:1.2;margin-top:1px">▼−25.0pp</span></span></strong></td><td><strong><span class="val-wrap"><strong>89.7%</strong></span><br><span class="lbl">Overall SLA≥90%</span></strong></td><td><strong>-</strong></td><td><strong>-</strong></td></tr></tbody></table><div class="subsect-title" style="margin-top:18px">转化业务 <span class="en">Conversion / Outbound</span></div><table class="team-summary"><colgroup><col style="width:18%"><col style="width:20%"><col style="width:18%"><col style="width:22%"><col style="width:22%"></colgroup><thead><tr><th>外呼跟进量<br><span class="en">Outbound Contacts</span></th><th>有效跟进量<br><span class="en">Effective (≥40s)</span></th><th>有效跟进率<br><span class="en">Effective Rate</span></th><th>周外呼转化PC<br><span class="en">Weekly OB Conv. PC</span></th><th>月总PC<br><span class="en">Monthly Total PC</span></th></tr></thead><tbody><tr class="team-row"><td><strong>2096</strong></td><td><strong>362</strong></td><td><strong>17.3%</strong></td><td><strong>40</strong></td><td><strong>314</strong></td></tr></tbody></table>
+<div style="margin-top:20px;margin-bottom:12px">
+<div class="subsect-title">各渠道近6周趋势 <span class="en">6-Week Trends</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:10px"><div style="max-width:100%"><svg width="100%" viewBox="0 0 660 240" style="display:block;font-family:Arial,sans-serif;overflow:visible;max-width:100%"><text x="56" y="17" font-size="10.5" font-weight="700" fill="#374151">工单量 Volume</text><g id="leg-vol-lc" onclick="togVol('lc',this)" style="cursor:pointer"><rect x="190" y="9" width="11" height="8" fill="#3b82f6" fill-opacity="0.75" rx="1.5"/><text x="204" y="17" font-size="9" fill="#374151">在线</text></g><g id="leg-vol-ph" onclick="togVol('ph',this)" style="cursor:pointer"><rect x="235" y="9" width="11" height="8" fill="#d97706" fill-opacity="0.75" rx="1.5"/><text x="249" y="17" font-size="9" fill="#374151">电话</text></g><g id="leg-vol-em" onclick="togVol('em',this)" style="cursor:pointer"><rect x="280" y="9" width="11" height="8" fill="#059669" fill-opacity="0.75" rx="1.5"/><text x="294" y="17" font-size="9" fill="#374151">邮件</text></g><line x1="56" y1="204.0" x2="636" y2="204.0" stroke="#e5e7eb" stroke-width="0.7" /><text x="51" y="207.5" text-anchor="end" font-size="8.5" fill="#9ca3af">0</text><line x1="56" y1="116.0" x2="636" y2="116.0" stroke="#e5e7eb" stroke-width="0.7" stroke-dasharray="3,3"/><text x="51" y="119.5" text-anchor="end" font-size="8.5" fill="#9ca3af">600</text><line x1="56" y1="28.0" x2="636" y2="28.0" stroke="#e5e7eb" stroke-width="0.7" /><text x="51" y="31.5" text-anchor="end" font-size="8.5" fill="#9ca3af">1200</text><line x1="56" y1="28" x2="56" y2="204" stroke="#d1d5db" stroke-width="0.8"/><line x1="56" y1="204" x2="636" y2="204" stroke="#d1d5db" stroke-width="0.8"/><rect x="583.8" y="28" width="104.4" height="176" fill="#eef2ff" opacity="0.55" rx="2"/><rect class="vol-seg-lc" x="42.0" y="155.9" width="28" height="48.1" fill="#3b82f6" fill-opacity="0.7" rx="1.5"/><rect class="vol-seg-ph" x="42.0" y="130.8" width="28" height="25.1" fill="#d97706" fill-opacity="0.7" rx="1.5"/><rect class="vol-seg-em" x="42.0" y="58.7" width="28" height="72.1" fill="#059669" fill-opacity="0.7" rx="1.5"/><text x="56.0" y="54.7" text-anchor="middle" font-size="8" fill="#9ca3af" font-weight="400" class="vol-total">991</text><text x="56.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">07/17~23</text><rect class="vol-seg-lc" x="158.0" y="160.0" width="28" height="44.0" fill="#3b82f6" fill-opacity="0.7" rx="1.5"/><rect class="vol-seg-ph" x="158.0" y="134.6" width="28" height="25.4" fill="#d97706" fill-opacity="0.7" rx="1.5"/><rect class="vol-seg-em" x="158.0" y="84.8" width="28" height="49.8" fill="#059669" fill-opacity="0.7" rx="1.5"/><text x="172.0" y="80.8" text-anchor="middle" font-size="8" fill="#9ca3af" font-weight="400" class="vol-total">813</text><text x="172.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">07/24~30</text><rect class="vol-seg-lc" x="274.0" y="145.3" width="28" height="58.7" fill="#3b82f6" fill-opacity="0.7" rx="1.5"/><rect class="vol-seg-ph" x="274.0" y="124.1" width="28" height="21.2" fill="#d97706" fill-opacity="0.7" rx="1.5"/><rect class="vol-seg-em" x="274.0" y="74.3" width="28" height="49.8" fill="#059669" fill-opacity="0.7" rx="1.5"/><text x="288.0" y="70.3" text-anchor="middle" font-size="8" fill="#9ca3af" font-weight="400" class="vol-total">884</text><text x="288.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">07/31~06</text><rect class="vol-seg-lc" x="390.0" y="155.3" width="28" height="48.7" fill="#3b82f6" fill-opacity="0.7" rx="1.5"/><rect class="vol-seg-ph" x="390.0" y="132.9" width="28" height="22.4" fill="#d97706" fill-opacity="0.7" rx="1.5"/><rect class="vol-seg-em" x="390.0" y="89.7" width="28" height="43.2" fill="#059669" fill-opacity="0.7" rx="1.5"/><text x="404.0" y="85.7" text-anchor="middle" font-size="8" fill="#9ca3af" font-weight="400" class="vol-total">779</text><text x="404.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">08/07~13</text><rect class="vol-seg-lc" x="506.0" y="141.7" width="28" height="62.3" fill="#3b82f6" fill-opacity="0.7" rx="1.5"/><rect class="vol-seg-ph" x="506.0" y="104.1" width="28" height="37.6" fill="#d97706" fill-opacity="0.7" rx="1.5"/><rect class="vol-seg-em" x="506.0" y="44.6" width="28" height="59.5" fill="#059669" fill-opacity="0.7" rx="1.5"/><text x="520.0" y="40.6" text-anchor="middle" font-size="8" fill="#9ca3af" font-weight="400" class="vol-total">1087</text><text x="520.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">08/14~20</text><rect class="vol-seg-lc" x="622.0" y="133.5" width="28" height="70.5" fill="#3b82f6" fill-opacity="0.9" rx="1.5"/><rect class="vol-seg-ph" x="622.0" y="94.3" width="28" height="39.2" fill="#d97706" fill-opacity="0.9" rx="1.5"/><rect class="vol-seg-em" x="622.0" y="28.4" width="28" height="65.9" fill="#059669" fill-opacity="0.9" rx="1.5"/><text x="636.0" y="24.4" text-anchor="middle" font-size="9" fill="#374151" font-weight="700" class="vol-total">1197</text><text x="636.0" y="219" text-anchor="middle" font-size="9" fill="#1456F0" font-weight="700">08/21~27</text></svg></div>
+<div style="max-width:100%"><svg width="100%" viewBox="0 0 660 240" style="display:block;font-family:Arial,sans-serif;overflow:visible;max-width:100%"><text x="56" y="17" font-size="10.5" font-weight="700" fill="#374151">转化趋势 Conversion</text><g id="leg-conv-contact" onclick="togGroup('conv-contact',this)" style="cursor:pointer"><rect x="190" y="9" width="11" height="8" fill="#94a3b8" fill-opacity="0.6" rx="1"/><text x="206" y="17" font-size="9" fill="#374151">跟进量</text></g><g id="leg-conv-effective" onclick="togGroup('conv-effective',this)" style="cursor:pointer"><rect x="248" y="9" width="11" height="8" fill="#1456F0" fill-opacity="0.6" rx="1"/><text x="264" y="17" font-size="9" fill="#374151">有效跟进</text></g><g id="leg-conv-ob-pc" onclick="togGroup('conv-ob-pc',this)" style="cursor:pointer"><line x1="330" y1="13" x2="343" y2="13" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2"/><circle cx="336.5" cy="13" r="2.5" fill="#f59e0b"/><text x="346" y="17" font-size="9" fill="#374151">外呼PC</text></g><g id="leg-conv-total-pc" onclick="togGroup('conv-total-pc',this)" style="cursor:pointer"><line x1="395" y1="13" x2="408" y2="13" stroke="#16a34a" stroke-width="2"/><circle cx="401.5" cy="13" r="2.5" fill="#16a34a"/><text x="411" y="17" font-size="9" fill="#374151">总PC</text></g><line x1="56" y1="204.0" x2="636" y2="204.0" stroke="#e5e7eb" stroke-width="0.7" /><text x="51" y="207.5" text-anchor="end" font-size="8.5" fill="#9ca3af">0</text><line x1="56" y1="116.0" x2="636" y2="116.0" stroke="#e5e7eb" stroke-width="0.7" stroke-dasharray="3,3"/><text x="51" y="119.5" text-anchor="end" font-size="8.5" fill="#9ca3af">1250</text><line x1="56" y1="28.0" x2="636" y2="28.0" stroke="#e5e7eb" stroke-width="0.7" /><text x="51" y="31.5" text-anchor="end" font-size="8.5" fill="#9ca3af">2500</text><line x1="56" y1="28" x2="56" y2="204" stroke="#d1d5db" stroke-width="0.8"/><line x1="56" y1="204" x2="636" y2="204" stroke="#d1d5db" stroke-width="0.8"/><text x="641" y="207.5" font-size="8" fill="#b45309">0</text><text x="641" y="119.5" font-size="8" fill="#b45309">50</text><text x="641" y="31.5" font-size="8" fill="#b45309">100</text><text x="641" y="22" font-size="7.5" fill="#b45309">PC</text><rect x="583.8" y="28" width="104.4" height="176" fill="#eef2ff" opacity="0.55" rx="2"/><g id="conv-contact"><rect x="46.0" y="89.9" width="8" height="114.1" fill="#94a3b8" fill-opacity="0.5" rx="1"/><text x="50.0" y="86.9" text-anchor="middle" font-size="8" fill="#9ca3af">1621</text><rect x="162.0" y="85.1" width="8" height="118.9" fill="#94a3b8" fill-opacity="0.5" rx="1"/><text x="166.0" y="82.1" text-anchor="middle" font-size="8" fill="#9ca3af">1689</text><rect x="278.0" y="42.1" width="8" height="161.9" fill="#94a3b8" fill-opacity="0.5" rx="1"/><text x="282.0" y="39.1" text-anchor="middle" font-size="8" fill="#9ca3af">2300</text><rect x="394.0" y="37.9" width="8" height="166.1" fill="#94a3b8" fill-opacity="0.5" rx="1"/><text x="398.0" y="34.9" text-anchor="middle" font-size="8" fill="#9ca3af">2360</text><rect x="510.0" y="75.1" width="8" height="128.9" fill="#94a3b8" fill-opacity="0.5" rx="1"/><text x="514.0" y="72.1" text-anchor="middle" font-size="8" fill="#9ca3af">1831</text><rect x="626.0" y="56.4" width="8" height="147.6" fill="#94a3b8" fill-opacity="0.5" rx="1"/><text x="630.0" y="53.4" text-anchor="middle" font-size="8" fill="#9ca3af">2096</text></g><g id="conv-effective"><rect x="58.0" y="184.1" width="8" height="19.9" fill="#1456F0" fill-opacity="0.75" rx="1"/><text x="62.0" y="181.1" text-anchor="middle" font-size="8" fill="#1456F0">282</text><rect x="174.0" y="183.2" width="8" height="20.8" fill="#1456F0" fill-opacity="0.75" rx="1"/><text x="178.0" y="180.2" text-anchor="middle" font-size="8" fill="#1456F0">295</text><rect x="290.0" y="173.5" width="8" height="30.5" fill="#1456F0" fill-opacity="0.75" rx="1"/><text x="294.0" y="170.5" text-anchor="middle" font-size="8" fill="#1456F0">433</text><rect x="406.0" y="175.5" width="8" height="28.5" fill="#1456F0" fill-opacity="0.75" rx="1"/><text x="410.0" y="172.5" text-anchor="middle" font-size="8" fill="#1456F0">405</text><rect x="522.0" y="181.4" width="8" height="22.6" fill="#1456F0" fill-opacity="0.75" rx="1"/><text x="526.0" y="178.4" text-anchor="middle" font-size="8" fill="#1456F0">321</text><rect x="638.0" y="178.5" width="8" height="25.5" fill="#1456F0" fill-opacity="0.75" rx="1"/><text x="642.0" y="175.5" text-anchor="middle" font-size="8" fill="#1456F0">362</text></g><g id="conv-ob-pc"><path d="M56.0,133.6 L172.0,142.4 L288.0,142.4 L404.0,116.0 L520.0,128.3 L636.0,133.6" fill="none" stroke="#f59e0b" stroke-width="2.2" stroke-dasharray="5,3" stroke-linejoin="round"/><circle cx="56.0" cy="133.6" r="3" fill="#f59e0b" stroke="white" stroke-width="1.3"/><circle cx="172.0" cy="142.4" r="3" fill="#f59e0b" stroke="white" stroke-width="1.3"/><circle cx="288.0" cy="142.4" r="3" fill="#f59e0b" stroke="white" stroke-width="1.3"/><circle cx="404.0" cy="116.0" r="3" fill="#f59e0b" stroke="white" stroke-width="1.3"/><circle cx="520.0" cy="128.3" r="3" fill="#f59e0b" stroke="white" stroke-width="1.3"/><circle cx="636.0" cy="133.6" r="4" fill="#f59e0b" stroke="white" stroke-width="1.3"/><text x="636.0" y="124.6" text-anchor="middle" font-size="9.5" fill="#f59e0b" font-weight="700">40</text></g><g id="conv-total-pc"><path d="M56.0,72.0 L172.0,86.1 L288.0,98.4 L404.0,75.5 L520.0,43.8 L636.0,45.6" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="72.0" r="3" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="172.0" cy="86.1" r="3" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="288.0" cy="98.4" r="3" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="404.0" cy="75.5" r="3" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="520.0" cy="43.8" r="3" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="636.0" cy="45.6" r="4" fill="#16a34a" stroke="white" stroke-width="1.5"/><text x="636.0" y="36.6" text-anchor="middle" font-size="9.5" fill="#16a34a" font-weight="700">90</text></g><text x="56.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">07/17~23</text><text x="172.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">07/24~30</text><text x="288.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">07/31~06</text><text x="404.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">08/07~13</text><text x="520.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">08/14~20</text><text x="636.0" y="219" text-anchor="middle" font-size="9" fill="#1456F0" font-weight="700">08/21~27</text></svg></div></div></div>
+<div id="csat-trend-chart" style="max-width:700px;margin-top:16px"><svg width="100%" viewBox="0 0 660 240" style="display:block;font-family:Arial,sans-serif;overflow:visible;max-width:660px"><text x="56" y="17" font-size="10.5" font-weight="700" fill="#374151">满意度 CSAT</text>
+<g id="leg-csat-online" onclick="togGroup('csat-online',this)" style="cursor:pointer"><line x1="190" y1="13" x2="203" y2="13" stroke="#3b82f6" stroke-width="2.5"/><circle cx="196.5" cy="13" r="2.5" fill="#3b82f6"/><text x="206" y="17" font-size="9" fill="#374151">在线</text></g><g id="leg-csat-phone" onclick="togGroup('csat-phone',this)" style="cursor:pointer"><line x1="235" y1="13" x2="248" y2="13" stroke="#d97706" stroke-width="2.5"/><circle cx="241.5" cy="13" r="2.5" fill="#d97706"/><text x="251" y="17" font-size="9" fill="#374151">电话</text></g><g id="leg-csat-email" onclick="togGroup('csat-email',this)" style="cursor:pointer"><line x1="280" y1="13" x2="293" y2="13" stroke="#059669" stroke-width="2.5"/><circle cx="286.5" cy="13" r="2.5" fill="#059669"/><text x="296" y="17" font-size="9" fill="#374151">邮件</text></g><g id="leg-csat-total" onclick="togGroup('csat-total',this)" style="cursor:pointer"><line x1="325" y1="13" x2="338" y2="13" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4,2"/><circle cx="331.5" cy="13" r="2.5" fill="#7c3aed"/><text x="341" y="17" font-size="9" fill="#374151">综合</text></g><g id="leg-csat-target" onclick="togGroup('csat-target',this)" style="cursor:pointer"><line x1="372" y1="13" x2="385" y2="13" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="4,2"/><text x="388" y="17" font-size="9" fill="#374151">目标84%</text></g>
+<g style="cursor:pointer"><rect x="448" y="9" width="11" height="8" rx="1.5" fill="#94a3b8" fill-opacity="0.35"/><text x="462" y="17" font-size="9" fill="#374151">评价工单</text></g>
+<g style="cursor:pointer"><rect x="510" y="9" width="11" height="8" rx="1.5" fill="#f87171" fill-opacity="0.5"/><text x="524" y="17" font-size="9" fill="#374151">负评工单</text></g><line x1="56" y1="204.0" x2="636" y2="204.0" stroke="#e5e7eb" stroke-width="0.7" /><text x="51" y="207.5" text-anchor="end" font-size="8.5" fill="#9ca3af">50%</text><line x1="56" y1="168.8" x2="636" y2="168.8" stroke="#e5e7eb" stroke-width="0.7" stroke-dasharray="4,3"/><text x="51" y="172.3" text-anchor="end" font-size="8.5" fill="#9ca3af">60%</text><line x1="56" y1="133.6" x2="636" y2="133.6" stroke="#e5e7eb" stroke-width="0.7" stroke-dasharray="4,3"/><text x="51" y="137.1" text-anchor="end" font-size="8.5" fill="#9ca3af">70%</text><line x1="56" y1="98.4" x2="636" y2="98.4" stroke="#e5e7eb" stroke-width="0.7" stroke-dasharray="4,3"/><text x="51" y="101.9" text-anchor="end" font-size="8.5" fill="#9ca3af">80%</text><line x1="56" y1="63.2" x2="636" y2="63.2" stroke="#e5e7eb" stroke-width="0.7" stroke-dasharray="4,3"/><text x="51" y="66.7" text-anchor="end" font-size="8.5" fill="#9ca3af">90%</text><line x1="56" y1="28.0" x2="636" y2="28.0" stroke="#e5e7eb" stroke-width="0.7" /><text x="51" y="31.5" text-anchor="end" font-size="8.5" fill="#9ca3af">100%</text><line x1="56" y1="28" x2="56" y2="204" stroke="#d1d5db" stroke-width="0.8"/><line x1="56" y1="204" x2="636" y2="204" stroke="#d1d5db" stroke-width="0.8"/><g id="csat-target"><line x1="56" y1="84.3" x2="636" y2="84.3" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="6,3"/><text x="51" y="87.8" text-anchor="end" font-size="8.5" fill="#d97706" font-weight="600">84%</text></g><rect x="583.8" y="28" width="104.4" height="176" fill="#eef2ff" opacity="0.55" rx="2"/>
+<g id="eval-neg-bars">
+<rect x="34" y="157.9" width="20" height="46.1" rx="2" fill="#94a3b8" fill-opacity="0.32"/>
+<rect x="58" y="194.2" width="12" height="9.8" rx="1.5" fill="#f87171" fill-opacity="0.5"/>
+<text x="44" y="155.2" font-size="7.5" fill="#64748b" text-anchor="middle">66</text>
+<text x="64" y="192.2" font-size="7" fill="#dc2626" text-anchor="middle">14</text>
+<rect x="150" y="175.4" width="20" height="28.6" rx="2" fill="#94a3b8" fill-opacity="0.32"/>
+<rect x="174" y="197.7" width="12" height="6.3" rx="1.5" fill="#f87171" fill-opacity="0.5"/>
+<text x="160" y="172.7" font-size="7.5" fill="#64748b" text-anchor="middle">41</text>
+<text x="180" y="195.7" font-size="7" fill="#dc2626" text-anchor="middle">9</text>
+<rect x="266" y="165.1" width="20" height="38.9" rx="2" fill="#94a3b8" fill-opacity="0.32"/>
+<rect x="290" y="198.4" width="12" height="5.6" rx="1.5" fill="#f87171" fill-opacity="0.5"/>
+<text x="276" y="162.4" font-size="7.5" fill="#64748b" text-anchor="middle">56</text>
+<text x="296" y="196.4" font-size="7" fill="#dc2626" text-anchor="middle">8</text>
+<rect x="382" y="165.1" width="20" height="38.9" rx="2" fill="#94a3b8" fill-opacity="0.32"/>
+<rect x="406" y="199.1" width="12" height="4.9" rx="1.5" fill="#f87171" fill-opacity="0.5"/>
+<text x="392" y="162.4" font-size="7.5" fill="#64748b" text-anchor="middle">56</text>
+<text x="412" y="197.1" font-size="7" fill="#dc2626" text-anchor="middle">7</text>
+<rect x="498" y="148.1" width="20" height="55.9" rx="2" fill="#94a3b8" fill-opacity="0.32"/>
+<rect x="522" y="197.7" width="12" height="6.3" rx="1.5" fill="#f87171" fill-opacity="0.5"/>
+<text x="508" y="145.4" font-size="7.5" fill="#64748b" text-anchor="middle">80</text>
+<text x="528" y="195.7" font-size="7" fill="#dc2626" text-anchor="middle">9</text>
+<rect x="614" y="139.1" width="20" height="64.9" rx="2" fill="#475569" fill-opacity="0.4"/>
+<rect x="638" y="195.6" width="12" height="8.4" rx="1.5" fill="#dc2626" fill-opacity="0.6"/>
+<text x="624" y="136.4" font-size="7.5" fill="#374151" font-weight="700" text-anchor="middle">93</text>
+<text x="644" y="193.6" font-size="7" fill="#dc2626" font-weight="700" text-anchor="middle">12</text>
+</g><g id="csat-online"><path d="M56.0,64.7 L172.0,116.0 L288.0,60.0 L404.0,81.6 L520.0,81.7 L636.0,65.3" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="64.7" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="172.0" cy="116.0" r="3.5" fill="#dc2626" stroke="white" stroke-width="1.5"/><circle cx="288.0" cy="60.0" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="404.0" cy="81.6" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="520.0" cy="81.7" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="636.0" cy="65.3" r="5" fill="#16a34a" stroke="white" stroke-width="1.5"/><text x="636.0" y="56.3" text-anchor="middle" font-size="9.5" fill="#3b82f6" font-weight="700">89.4%</text></g><g id="csat-phone"><path d="M56.0,160.0 L172.0,28.0 L288.0,98.4 L404.0,28.0 L520.0,28.0 L636.0,124.1" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="160.0" r="3.5" fill="#dc2626" stroke="white" stroke-width="1.5"/><circle cx="172.0" cy="28.0" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="288.0" cy="98.4" r="3.5" fill="#dc2626" stroke="white" stroke-width="1.5"/><circle cx="404.0" cy="28.0" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="520.0" cy="28.0" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="636.0" cy="124.1" r="5" fill="#dc2626" stroke="white" stroke-width="1.5"/><text x="636.0" y="115.1" text-anchor="middle" font-size="9.5" fill="#d97706" font-weight="700">72.7%</text></g><g id="csat-email"><path d="M56.0,188.0 L172.0,98.4 L288.0,160.0 L404.0,28.0 L520.0,28.0 L636.0,116.0" fill="none" stroke="#059669" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="188.0" r="3.5" fill="#dc2626" stroke="white" stroke-width="1.5"/><circle cx="172.0" cy="98.4" r="3.5" fill="#dc2626" stroke="white" stroke-width="1.5"/><circle cx="288.0" cy="160.0" r="3.5" fill="#dc2626" stroke="white" stroke-width="1.5"/><circle cx="404.0" cy="28.0" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="520.0" cy="28.0" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="636.0" cy="116.0" r="5" fill="#dc2626" stroke="white" stroke-width="1.5"/><text x="636.0" y="107.0" text-anchor="middle" font-size="9.5" fill="#059669" font-weight="700">75.0%</text></g><g id="csat-total"><path d="M56.0,142.3 L172.0,89.9 L288.0,104.6 L404.0,50.8 L520.0,49.0 L636.0,73.4" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4,2" stroke-linejoin="round"/><circle cx="56.0" cy="142.3" r="3.5" fill="#dc2626" stroke="white" stroke-width="1.5"/><circle cx="172.0" cy="89.9" r="3.5" fill="#dc2626" stroke="white" stroke-width="1.5"/><circle cx="288.0" cy="104.6" r="3.5" fill="#dc2626" stroke="white" stroke-width="1.5"/><circle cx="404.0" cy="50.8" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="520.0" cy="49.0" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><circle cx="636.0" cy="73.4" r="5" fill="#16a34a" stroke="white" stroke-width="1.5"/><text x="636.0" y="64.4" text-anchor="middle" font-size="9.5" fill="#7c3aed" font-weight="700">87.1%</text></g><text x="56.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">07/17~23</text><text x="172.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">07/24~30</text><text x="288.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">07/31~06</text><text x="404.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">08/07~13</text><text x="520.0" y="219" text-anchor="middle" font-size="8.5" fill="#64748b" font-weight="400">08/14~20</text><text x="636.0" y="219" text-anchor="middle" font-size="9" fill="#1456F0" font-weight="700">08/21~27</text></svg></div>
+<script>
+if(!window.togGroup){function togGroup(id,btn){var g=document.getElementById(id);if(!g)return;var hidden=g.style.display==='none';g.style.display=hidden?'':'none';btn.style.opacity=hidden?'1':'0.35';}}
+if(!window.togClass){function togClass(cls,btn){var hidden=btn.style.opacity==='0.35';btn.style.opacity=hidden?'1':'0.35';document.querySelectorAll('.'+cls).forEach(function(e){e.style.display=hidden?'':'none';});}}
+</script>
+</div>
+<div style="margin-top:18px;margin-bottom:10px">
+  
+
+
+
+
+
+<script>
+function togVolCh(ch,btn){
+  var hidden=btn.style.opacity==='0.3';
+  btn.style.opacity=hidden?'1':'0.3';
+  var allChs=['online','phone','email'];
+  var visSet=new Set(allChs.filter(function(c){var lb=document.getElementById('leg-vol-'+c);return!lb||lb.style.opacity!=='0.3';}));
+  var chartG=document.getElementById('chart-vol');
+  if(!chartG)return;
+  var CY1=155,CH=135;
+  // ceilVol from first total text data — read from rect data-v sums
+  var ceilVol=0;
+  allChs.forEach(function(c){chartG.querySelectorAll('.vol-'+c).forEach(function(r){ceilVol=Math.max(ceilVol,parseFloat(r.getAttribute('data-v'))||0);});});
+  // more accurately compute from total-vol across all stacks
+  var totals=[];
+  var rects=chartG.querySelectorAll('rect[data-ch]');
+  var byCol={};
+  rects.forEach(function(r){var i=r.getAttribute('x');if(!byCol[i])byCol[i]=0;byCol[i]+=(parseFloat(r.getAttribute('data-v'))||0);});
+  Object.values(byCol).forEach(function(t){totals.push(t);});
+  var maxT=Math.max.apply(null,totals.concat([1]));
+  ceilVol=Math.ceil(maxT/100)*100;
+  var barW=22;
+  // group rects by column-x
+  var cols={};
+  chartG.querySelectorAll('rect[data-ch],text[data-ch]').forEach(function(el){var x=parseFloat(el.getAttribute('x'))||0;var cx=(x+barW/2).toFixed(1);if(!cols[cx])cols[cx]=[];cols[cx].push(el);});
+  Object.keys(cols).forEach(function(cx){
+    var cum=0;
+    allChs.forEach(function(c){
+      var rect=chartG.querySelector('rect.vol-'+c+'[x="'+(parseFloat(cx)-barW/2).toFixed(1)+'"]');
+      var lbl=chartG.querySelector('text.vol-text-'+c+'[x="'+cx+'"]');
+      if(!rect)return;
+      var v=parseFloat(rect.getAttribute('data-v'))||0;
+      if(visSet.has(c)&&v>0){
+        rect.style.display='';
+        var bh=(v/ceilVol)*CH;
+        var segY=CY1-((cum+v)/ceilVol)*CH;
+        rect.setAttribute('y',segY.toFixed(1));
+        rect.setAttribute('height',bh.toFixed(1));
+        if(lbl){if(bh>=10){lbl.setAttribute('y',(segY+bh/2+3).toFixed(1));lbl.style.display='';}else{lbl.style.display='none';}}
+        cum+=v;
+      }else{rect.style.display='none';if(lbl)lbl.style.display='none';}
+    });
+    chartG.querySelectorAll('text.vol-total[x="'+cx+'"]').forEach(function(t){t.style.display=visSet.size===3?'':'none';});
+  });
+}
+</script>
+
+<script>
+function togVolCh(ch,btn){
+  var hidden=btn.style.opacity==='0.3';
+  btn.style.opacity=hidden?'1':'0.3';
+  var allChs=['online','phone','email'];
+  var visSet=new Set(allChs.filter(function(c){var lb=document.getElementById('leg-vol-'+c);return!lb||lb.style.opacity!=='0.3';}));
+  var chartG=document.getElementById('chart-vol');
+  if(!chartG)return;
+  var CY1=155,CH=135;
+  // ceilVol from first total text data — read from rect data-v sums
+  var ceilVol=0;
+  allChs.forEach(function(c){chartG.querySelectorAll('.vol-'+c).forEach(function(r){ceilVol=Math.max(ceilVol,parseFloat(r.getAttribute('data-v'))||0);});});
+  // more accurately compute from total-vol across all stacks
+  var totals=[];
+  var rects=chartG.querySelectorAll('rect[data-ch]');
+  var byCol={};
+  rects.forEach(function(r){var i=r.getAttribute('x');if(!byCol[i])byCol[i]=0;byCol[i]+=(parseFloat(r.getAttribute('data-v'))||0);});
+  Object.values(byCol).forEach(function(t){totals.push(t);});
+  var maxT=Math.max.apply(null,totals.concat([1]));
+  ceilVol=Math.ceil(maxT/100)*100;
+  var barW=22;
+  // group rects by column-x
+  var cols={};
+  chartG.querySelectorAll('rect[data-ch],text[data-ch]').forEach(function(el){var x=parseFloat(el.getAttribute('x'))||0;var cx=(x+barW/2).toFixed(1);if(!cols[cx])cols[cx]=[];cols[cx].push(el);});
+  Object.keys(cols).forEach(function(cx){
+    var cum=0;
+    allChs.forEach(function(c){
+      var rect=chartG.querySelector('rect.vol-'+c+'[x="'+(parseFloat(cx)-barW/2).toFixed(1)+'"]');
+      var lbl=chartG.querySelector('text.vol-text-'+c+'[x="'+cx+'"]');
+      if(!rect)return;
+      var v=parseFloat(rect.getAttribute('data-v'))||0;
+      if(visSet.has(c)&&v>0){
+        rect.style.display='';
+        var bh=(v/ceilVol)*CH;
+        var segY=CY1-((cum+v)/ceilVol)*CH;
+        rect.setAttribute('y',segY.toFixed(1));
+        rect.setAttribute('height',bh.toFixed(1));
+        if(lbl){if(bh>=10){lbl.setAttribute('y',(segY+bh/2+3).toFixed(1));lbl.style.display='';}else{lbl.style.display='none';}}
+        cum+=v;
+      }else{rect.style.display='none';if(lbl)lbl.style.display='none';}
+    });
+    chartG.querySelectorAll('text.vol-total[x="'+cx+'"]').forEach(function(t){t.style.display=visSet.size===3?'':'none';});
+  });
+}
+</script>
+
+<script>
+function togVolCh(ch,btn){
+  var hidden=btn.style.opacity==='0.3';
+  btn.style.opacity=hidden?'1':'0.3';
+  var allChs=['online','phone','email'];
+  var visSet=new Set(allChs.filter(function(c){var lb=document.getElementById('leg-vol-'+c);return!lb||lb.style.opacity!=='0.3';}));
+  var chartG=document.getElementById('chart-vol');
+  if(!chartG)return;
+  var CY1=155,CH=135;
+  // ceilVol from first total text data — read from rect data-v sums
+  var ceilVol=0;
+  allChs.forEach(function(c){chartG.querySelectorAll('.vol-'+c).forEach(function(r){ceilVol=Math.max(ceilVol,parseFloat(r.getAttribute('data-v'))||0);});});
+  // more accurately compute from total-vol across all stacks
+  var totals=[];
+  var rects=chartG.querySelectorAll('rect[data-ch]');
+  var byCol={};
+  rects.forEach(function(r){var i=r.getAttribute('x');if(!byCol[i])byCol[i]=0;byCol[i]+=(parseFloat(r.getAttribute('data-v'))||0);});
+  Object.values(byCol).forEach(function(t){totals.push(t);});
+  var maxT=Math.max.apply(null,totals.concat([1]));
+  ceilVol=Math.ceil(maxT/100)*100;
+  var barW=22;
+  // group rects by column-x
+  var cols={};
+  chartG.querySelectorAll('rect[data-ch],text[data-ch]').forEach(function(el){var x=parseFloat(el.getAttribute('x'))||0;var cx=(x+barW/2).toFixed(1);if(!cols[cx])cols[cx]=[];cols[cx].push(el);});
+  Object.keys(cols).forEach(function(cx){
+    var cum=0;
+    allChs.forEach(function(c){
+      var rect=chartG.querySelector('rect.vol-'+c+'[x="'+(parseFloat(cx)-barW/2).toFixed(1)+'"]');
+      var lbl=chartG.querySelector('text.vol-text-'+c+'[x="'+cx+'"]');
+      if(!rect)return;
+      var v=parseFloat(rect.getAttribute('data-v'))||0;
+      if(visSet.has(c)&&v>0){
+        rect.style.display='';
+        var bh=(v/ceilVol)*CH;
+        var segY=CY1-((cum+v)/ceilVol)*CH;
+        rect.setAttribute('y',segY.toFixed(1));
+        rect.setAttribute('height',bh.toFixed(1));
+        if(lbl){if(bh>=10){lbl.setAttribute('y',(segY+bh/2+3).toFixed(1));lbl.style.display='';}else{lbl.style.display='none';}}
+        cum+=v;
+      }else{rect.style.display='none';if(lbl)lbl.style.display='none';}
+    });
+    chartG.querySelectorAll('text.vol-total[x="'+cx+'"]').forEach(function(t){t.style.display=visSet.size===3?'':'none';});
+  });
+}
+</script>
+
+<script>
+function togVolCh(ch,btn){
+  var hidden=btn.style.opacity==='0.3';
+  btn.style.opacity=hidden?'1':'0.3';
+  var allChs=['online','phone','email'];
+  var visSet=new Set(allChs.filter(function(c){var lb=document.getElementById('leg-vol-'+c);return!lb||lb.style.opacity!=='0.3';}));
+  var chartG=document.getElementById('chart-vol');
+  if(!chartG)return;
+  var CY1=155,CH=135;
+  // ceilVol from first total text data — read from rect data-v sums
+  var ceilVol=0;
+  allChs.forEach(function(c){chartG.querySelectorAll('.vol-'+c).forEach(function(r){ceilVol=Math.max(ceilVol,parseFloat(r.getAttribute('data-v'))||0);});});
+  // more accurately compute from total-vol across all stacks
+  var totals=[];
+  var rects=chartG.querySelectorAll('rect[data-ch]');
+  var byCol={};
+  rects.forEach(function(r){var i=r.getAttribute('x');if(!byCol[i])byCol[i]=0;byCol[i]+=(parseFloat(r.getAttribute('data-v'))||0);});
+  Object.values(byCol).forEach(function(t){totals.push(t);});
+  var maxT=Math.max.apply(null,totals.concat([1]));
+  ceilVol=Math.ceil(maxT/100)*100;
+  var barW=22;
+  // group rects by column-x
+  var cols={};
+  chartG.querySelectorAll('rect[data-ch],text[data-ch]').forEach(function(el){var x=parseFloat(el.getAttribute('x'))||0;var cx=(x+barW/2).toFixed(1);if(!cols[cx])cols[cx]=[];cols[cx].push(el);});
+  Object.keys(cols).forEach(function(cx){
+    var cum=0;
+    allChs.forEach(function(c){
+      var rect=chartG.querySelector('rect.vol-'+c+'[x="'+(parseFloat(cx)-barW/2).toFixed(1)+'"]');
+      var lbl=chartG.querySelector('text.vol-text-'+c+'[x="'+cx+'"]');
+      if(!rect)return;
+      var v=parseFloat(rect.getAttribute('data-v'))||0;
+      if(visSet.has(c)&&v>0){
+        rect.style.display='';
+        var bh=(v/ceilVol)*CH;
+        var segY=CY1-((cum+v)/ceilVol)*CH;
+        rect.setAttribute('y',segY.toFixed(1));
+        rect.setAttribute('height',bh.toFixed(1));
+        if(lbl){if(bh>=10){lbl.setAttribute('y',(segY+bh/2+3).toFixed(1));lbl.style.display='';}else{lbl.style.display='none';}}
+        cum+=v;
+      }else{rect.style.display='none';if(lbl)lbl.style.display='none';}
+    });
+    chartG.querySelectorAll('text.vol-total[x="'+cx+'"]').forEach(function(t){t.style.display=visSet.size===3?'':'none';});
+  });
+}
+</script>
+
+
+</div>
+<script>
+function togVolCh(ch,btn){
+  var hidden=btn.style.opacity==='0.3';
+  btn.style.opacity=hidden?'1':'0.3';
+  var allChs=['online','phone','email'];
+  var visSet=new Set(allChs.filter(function(c){var lb=document.getElementById('leg-vol-'+c);return!lb||lb.style.opacity!=='0.3';}));
+  var chartG=document.getElementById('chart-vol');
+  if(!chartG)return;
+  var CY1=155,CH=135;
+  // ceilVol from first total text data — read from rect data-v sums
+  var ceilVol=0;
+  allChs.forEach(function(c){chartG.querySelectorAll('.vol-'+c).forEach(function(r){ceilVol=Math.max(ceilVol,parseFloat(r.getAttribute('data-v'))||0);});});
+  // more accurately compute from total-vol across all stacks
+  var totals=[];
+  var rects=chartG.querySelectorAll('rect[data-ch]');
+  var byCol={};
+  rects.forEach(function(r){var i=r.getAttribute('x');if(!byCol[i])byCol[i]=0;byCol[i]+=(parseFloat(r.getAttribute('data-v'))||0);});
+  Object.values(byCol).forEach(function(t){totals.push(t);});
+  var maxT=Math.max.apply(null,totals.concat([1]));
+  ceilVol=Math.ceil(maxT/100)*100;
+  var barW=22;
+  // group rects by column-x
+  var cols={};
+  chartG.querySelectorAll('rect[data-ch],text[data-ch]').forEach(function(el){var x=parseFloat(el.getAttribute('x'))||0;var cx=(x+barW/2).toFixed(1);if(!cols[cx])cols[cx]=[];cols[cx].push(el);});
+  Object.keys(cols).forEach(function(cx){
+    var cum=0;
+    allChs.forEach(function(c){
+      var rect=chartG.querySelector('rect.vol-'+c+'[x="'+(parseFloat(cx)-barW/2).toFixed(1)+'"]');
+      var lbl=chartG.querySelector('text.vol-text-'+c+'[x="'+cx+'"]');
+      if(!rect)return;
+      var v=parseFloat(rect.getAttribute('data-v'))||0;
+      if(visSet.has(c)&&v>0){
+        rect.style.display='';
+        var bh=(v/ceilVol)*CH;
+        var segY=CY1-((cum+v)/ceilVol)*CH;
+        rect.setAttribute('y',segY.toFixed(1));
+        rect.setAttribute('height',bh.toFixed(1));
+        if(lbl){if(bh>=10){lbl.setAttribute('y',(segY+bh/2+3).toFixed(1));lbl.style.display='';}else{lbl.style.display='none';}}
+        cum+=v;
+      }else{rect.style.display='none';if(lbl)lbl.style.display='none';}
+    });
+    chartG.querySelectorAll('text.vol-total[x="'+cx+'"]').forEach(function(t){t.style.display=visSet.size===3?'':'none';});
+  });
+}
+</script>
+
+<script>
+function togVolCh(ch,btn){
+  var hidden=btn.style.opacity==='0.3';
+  btn.style.opacity=hidden?'1':'0.3';
+  var allChs=['online','phone','email'];
+  var visSet=new Set(allChs.filter(function(c){var lb=document.getElementById('leg-vol-'+c);return!lb||lb.style.opacity!=='0.3';}));
+  var chartG=document.getElementById('chart-vol');
+  if(!chartG)return;
+  var CY1=155,CH=135;
+  // ceilVol from first total text data — read from rect data-v sums
+  var ceilVol=0;
+  allChs.forEach(function(c){chartG.querySelectorAll('.vol-'+c).forEach(function(r){ceilVol=Math.max(ceilVol,parseFloat(r.getAttribute('data-v'))||0);});});
+  // more accurately compute from total-vol across all stacks
+  var totals=[];
+  var rects=chartG.querySelectorAll('rect[data-ch]');
+  var byCol={};
+  rects.forEach(function(r){var i=r.getAttribute('x');if(!byCol[i])byCol[i]=0;byCol[i]+=(parseFloat(r.getAttribute('data-v'))||0);});
+  Object.values(byCol).forEach(function(t){totals.push(t);});
+  var maxT=Math.max.apply(null,totals.concat([1]));
+  ceilVol=Math.ceil(maxT/100)*100;
+  var barW=22;
+  // group rects by column-x
+  var cols={};
+  chartG.querySelectorAll('rect[data-ch],text[data-ch]').forEach(function(el){var x=parseFloat(el.getAttribute('x'))||0;var cx=(x+barW/2).toFixed(1);if(!cols[cx])cols[cx]=[];cols[cx].push(el);});
+  Object.keys(cols).forEach(function(cx){
+    var cum=0;
+    allChs.forEach(function(c){
+      var rect=chartG.querySelector('rect.vol-'+c+'[x="'+(parseFloat(cx)-barW/2).toFixed(1)+'"]');
+      var lbl=chartG.querySelector('text.vol-text-'+c+'[x="'+cx+'"]');
+      if(!rect)return;
+      var v=parseFloat(rect.getAttribute('data-v'))||0;
+      if(visSet.has(c)&&v>0){
+        rect.style.display='';
+        var bh=(v/ceilVol)*CH;
+        var segY=CY1-((cum+v)/ceilVol)*CH;
+        rect.setAttribute('y',segY.toFixed(1));
+        rect.setAttribute('height',bh.toFixed(1));
+        if(lbl){if(bh>=10){lbl.setAttribute('y',(segY+bh/2+3).toFixed(1));lbl.style.display='';}else{lbl.style.display='none';}}
+        cum+=v;
+      }else{rect.style.display='none';if(lbl)lbl.style.display='none';}
+    });
+    chartG.querySelectorAll('text.vol-total[x="'+cx+'"]').forEach(function(t){t.style.display=visSet.size===3?'':'none';});
+  });
+}
+</script>
+
+<div style="margin-top:18px;margin-bottom:10px">
+<h3 style="margin-top:18px">Individual Summary</h3>
+  <table class="ind-summary"><thead><tr class="group-header"><th rowspan="2" style="vertical-align:middle">客服<br><span class="en">Agent</span></th><th colspan="6" class="zone-weekly">周度业绩 <span class="en">Weekly</span></th><th colspan="6" class="zone-monthly">月度业绩 <span class="en">Monthly</span></th></tr><tr><th style="text-align:center">工单量<br><span class="en">Total Tickets</span></th><th data-col="consultpc">咨询PC<br><span class="en">Consult PC</span></th><th data-col="salespc">转化PC<br><span class="en">Conv. PC</span></th><th>周度总PC<br><span class="en">Weekly Total PC</span></th><th>满意度<br><span class="en">CSAT</span></th><th style="border-right:2px solid #c0cadf">全渠道工时利用率<br><span class="en">Omni Util</span></th><th>月度总工单<br><span class="en">Monthly Tickets</span></th><th>月满意度<br><span class="en">Monthly CSAT</span></th><th style="text-align:center">月度致命差错<br><span class="en">Monthly Fatal</span></th><th style="text-align:center">月度非致命差错<br><span class="en">Monthly Non-Fatal</span></th><th>月度总PC<br><span class="en">Monthly Total PC</span></th><th>月度KPI达成<br><span class="en">Monthly KPI%</span></th></tr></thead><tbody><tr><td>whitneylee</td><td class="rank-top">158</td><td data-col="consultpc">2</td><td data-col="salespc">4</td><td>6</td><td>78.6%</td><td class="zone-end">98.7%</td><td>378</td><td>88.9%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>29</td><td style="font-weight:700;color:#dc2626">36%</td></tr><tr><td>wilsonwong</td><td>147</td><td data-col="consultpc">3</td><td data-col="salespc">5</td><td>8</td><td>72.7%</td><td class="zone-end">96.3%</td><td>437</td><td>82.5%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>36</td><td style="font-weight:700;color:#dc2626">45%</td></tr><tr><td>alvinsim</td><td>139</td><td data-col="consultpc">5</td><td data-col="salespc">5</td><td>10</td><td>100.0%</td><td class="rank-top zone-end">99.9%</td><td>450</td><td class="rank-top">100.0%</td><td style="text-align:center;color:#dc2626;font-weight:700">1</td><td style="text-align:center">0</td><td>29</td><td style="font-weight:700;color:#dc2626">36%</td></tr><tr><td>muhamadfaisal</td><td>117</td><td data-col="consultpc">9</td><td data-col="salespc">5</td><td>14</td><td>100.0%</td><td class="zone-end">99.0%</td><td>319</td><td class="rank-top">100.0%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>37</td><td style="font-weight:700;color:#dc2626">46%</td></tr><tr><td>azamuddin</td><td>113</td><td data-col="consultpc">4</td><td data-col="salespc" class="rank-top">9</td><td>13</td><td>85.7%</td><td class="rank-top zone-end">99.9%</td><td>337</td><td>87.5%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td class="rank-top">44</td><td style="font-weight:700;color:#dc2626">55%</td></tr><tr><td>terrychen</td><td>111</td><td data-col="consultpc">4</td><td data-col="salespc">4</td><td>8</td><td>100.0%</td><td class="rank-top zone-end">99.9%</td><td>305</td><td>96.4%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>21</td><td style="font-weight:700;color:#dc2626">26%</td></tr><tr><td>calventan</td><td>110</td><td data-col="consultpc" class="rank-top">12</td><td data-col="salespc">4</td><td class="rank-top">16</td><td>71.4%</td><td class="zone-end">99.4%</td><td class="rank-top">471</td><td>85.7%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">1</td><td>41</td><td style="font-weight:700;color:#dc2626">51%</td></tr><tr><td>jacelynlim</td><td>106</td><td data-col="consultpc">6</td><td data-col="salespc">3</td><td>9</td><td>85.7%</td><td class="zone-end">99.8%</td><td>379</td><td>85.0%</td><td style="text-align:center;color:#dc2626;font-weight:700">1</td><td style="text-align:center">0</td><td>29</td><td style="font-weight:700;color:#dc2626">36%</td></tr><tr><td>zaydentan</td><td>105</td><td data-col="consultpc">3</td><td data-col="salespc" class="rank-bot">0</td><td>3</td><td>66.7%</td><td class="rank-bot zone-end" style="color:#dc2626;font-weight:700" style="color:#dc2626;font-weight:700">89.2%</td><td>363</td><td>81.3%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>20</td><td style="font-weight:700;color:#dc2626">25%</td></tr><tr><td>jeanliew</td><td>60</td><td data-col="consultpc">2</td><td data-col="salespc">1</td><td class="rank-bot">3</td><td>100.0%</td><td class="zone-end">90.3%</td><td>284</td><td class="rank-bot">68.0%</td><td style="text-align:center;color:#dc2626;font-weight:700">1</td><td style="text-align:center">1</td><td>22</td><td style="font-weight:700;color:#dc2626">28%</td></tr><tr><td>vincentyew</td><td class="rank-bot">-</td><td data-col="consultpc" class="rank-bot">0</td><td data-col="salespc" class="rank-bot">0</td><td class="rank-bot">0</td><td>-</td><td class="zone-end">-</td><td class="rank-bot">59</td><td>85.7%</td><td style="text-align:center;color:#dc2626;font-weight:700">1</td><td style="text-align:center">0</td><td class="rank-bot">6</td><td style="font-weight:700;color:#dc2626">8%</td></tr><tr class="consult-total-row"><td><strong>合计 Total</strong></td><td>1166</td><td>50</td><td>40</td><td>90</td><td>87.1%</td><td style="border-right:2px solid #c0cadf">--</td><td>3782</td><td>88.0%</td><td style="text-align:center;color:#dc2626;font-weight:700">4</td><td style="text-align:center">2</td><td>314</td><td style="font-weight:700;color:#dc2626">36%</td></tr></tbody></table>
+</div>
+
+<div class="section" id="二"><h2><span class="sect-num">二</span>个人业绩分析 <span class="en">Individual Breakdown</span></h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#1456F0;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:3px">在线 <span style="opacity:.8;font-weight:400">Live Chat</span></div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:4px 8px;overflow-x:auto"><table class="cpt"><thead><tr><th>客服<br><span class="en">Agent</span></th><th>工单<br><span class="en">Tickets</span></th><th>30s接通<br><span class="en">30s Rate</span></th><th>满意度<br><span class="en">CSAT</span></th><th>一次性解决率<br><span class="en">FCR</span></th><th>平均处理时长<br><span class="en">Avg Handle</span></th></tr></thead><tbody><tr><td>jacelynlim</td><td>48</td><td>100.0%</td><td>75.0%</td><td>95.8%</td><td>10.7m</td></tr><tr><td>terrychen</td><td>80</td><td>100.0%</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>93.8%</td><td>11.3m</td></tr><tr><td>muhamadfaisal</td><td>30</td><td>100.0%</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>9.4m</td></tr><tr><td>calventan</td><td>28</td><td>100.0%</td><td><span style="color:#dc2626;font-weight:700">50.0%</span></td><td><span style="color:#dc2626;font-weight:700">89.3%</span></td><td>10.6m</td></tr><tr><td>azamuddin</td><td>28</td><td>100.0%</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>96.4%</td><td>10.7m</td></tr><tr><td>jeanliew</td><td>20</td><td>100.0%</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>15.8m</td></tr><tr><td>whitneylee</td><td>85</td><td>100.0%</td><td>75.0%</td><td>96.5%</td><td>13.4m</td></tr><tr><td>alvinsim</td><td>74</td><td>100.0%</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>94.6%</td><td>13.0m</td></tr><tr><td>zaydentan</td><td>33</td><td>100.0%</td><td>66.7%</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>12.3m</td></tr><tr><td>wilsonwong</td><td>55</td><td>100.0%</td><td>88.9%</td><td>94.5%</td><td>9.8m</td></tr></tbody></table></div>
+    </div>
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#0ea5e9;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:3px">电话 <span style="opacity:.8;font-weight:400">Phone</span></div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:4px 8px;overflow-x:auto"><table class="cpt"><thead><tr><th>客服<br><span class="en">Agent</span></th><th>呼入<br><span class="en">Inbound</span></th><th>20s接通<br><span class="en">20s Rate</span></th><th>通话时长<br><span class="en">Call Dur.</span></th><th>满意度<br><span class="en">CSAT</span></th><th>一次性解决率<br><span class="en">FCR</span></th></tr></thead><tbody><tr><td>jacelynlim</td><td>25</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>10m 28s</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td></tr><tr><td>muhamadfaisal</td><td>34</td><td>94.1%</td><td>8m 17s</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td></tr><tr><td>calventan</td><td>53</td><td>90.6%</td><td>10m 15s</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#dc2626;font-weight:700">92.6%</span></td></tr><tr><td>azamuddin</td><td>50</td><td><span style="color:#dc2626;font-weight:700">90.0%</span></td><td>7m 46s</td><td><span style="color:#dc2626;font-weight:700">50.0%</span></td><td>96.0%</td></tr><tr><td>jeanliew</td><td>23</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>19m 16s</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td></tr><tr><td>whitneylee</td><td>25</td><td>96.0%</td><td>11m 51s</td><td><span style="color:#dc2626;font-weight:700">0.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td></tr><tr><td>zaydentan</td><td>33</td><td>97.0%</td><td>13m 9s</td><td><span style="color:#dc2626;font-weight:700">50.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td></tr><tr><td>wilsonwong</td><td>16</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>15m 34s</td><td><span style="color:#dc2626;font-weight:700">0.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td></tr></tbody></table></div>
+    </div>
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#8b5cf6;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:3px">邮件 <span style="opacity:.8;font-weight:400">Email</span></div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:4px 8px;overflow-x:auto"><table class="cpt"><thead><tr><th>客服<br><span class="en">Agent</span></th><th>工单<br><span class="en">Tickets</span></th><th>SLA达标<br><span class="en">SLA Rate</span></th><th>满意度<br><span class="en">CSAT</span></th></tr></thead><tbody><tr><td>jacelynlim</td><td>33</td><td>94.0%</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td></tr><tr><td>terrychen</td><td>31</td><td><span style="color:#dc2626;font-weight:700">10.0%</span></td><td>-</td></tr><tr><td>muhamadfaisal</td><td>53</td><td>55.0%</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td></tr><tr><td>calventan</td><td>29</td><td>34.0%</td><td><span style="color:#dc2626;font-weight:700">66.7%</span></td></tr><tr><td>azamuddin</td><td>35</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>-</td></tr><tr><td>jeanliew</td><td>17</td><td>35.0%</td><td>-</td></tr><tr><td>whitneylee</td><td>48</td><td>50.0%</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td></tr><tr><td>alvinsim</td><td>65</td><td>72.0%</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td></tr><tr><td>zaydentan</td><td>39</td><td>49.0%</td><td>-</td></tr><tr><td>wilsonwong</td><td>76</td><td>43.0%</td><td>-</td></tr></tbody></table></div>
+    </div>
+  </div>
+  <div style="margin-top:20px">
+    <div style="display:inline-flex;align-items:center;gap:6px;background:#f59e0b;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:6px">外呼 <span style="opacity:.8;font-weight:400">Outbound</span></div>
+    <p class="meta" style="margin:2px 0 8px">Calendar day: 2026-08-21 ~ 2026-08-27 BT</p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;overflow-x:auto"><table><thead><tr><th>客服<br><span class="en">Agent</span></th><th>分配Leads<br><span class="en">Leads Assigned</span></th><th>跟进量<br><span class="en">Follow-up</span></th><th>有效跟进<br><span class="en">Eff. Follow</span></th><th>周PC<br><span class="en">Weekly PC</span></th><th>分配转化率月<br><span class="en">Dist. Conv%</span></th><th>有效转化率月<br><span class="en">Eff. Conv%</span></th></tr></thead><tbody><tr><td>whitneylee</td><td>404</td><td>372</td><td class="rank-top">69</td><td>6</td><td class="rank-bot">2.2%</td><td class="rank-bot">14.4%</td></tr><tr><td>alvinsim</td><td>222</td><td>168</td><td>52</td><td>10</td><td>3.9%</td><td>19.5%</td></tr><tr><td>azamuddin</td><td>335</td><td>399</td><td>49</td><td>13</td><td>3.2%</td><td>21.7%</td></tr><tr><td>muhamadfaisal</td><td>190</td><td>170</td><td>37</td><td>14</td><td class="rank-top">4.3%</td><td>27%</td></tr><tr><td>calventan</td><td>215</td><td>205</td><td>35</td><td>16</td><td>4%</td><td>21.8%</td></tr><tr><td>wilsonwong</td><td>259</td><td>225</td><td>33</td><td>8</td><td>3.3%</td><td>22.5%</td></tr><tr><td>jeanliew</td><td>279</td><td>231</td><td>32</td><td>3</td><td>2.5%</td><td>25.9%</td></tr><tr><td>jacelynlim</td><td>196</td><td>154</td><td>28</td><td>9</td><td>3.6%</td><td>24.2%</td></tr><tr><td>terrychen</td><td>194</td><td>148</td><td>22</td><td>8</td><td>2.7%</td><td>21.9%</td></tr><tr><td>zaydentan</td><td>74</td><td>24</td><td class="rank-bot">5</td><td>3</td><td>3.7%</td><td class="rank-top">32.3%</td></tr></tbody></table></div>
+  </div>
+  <div style="margin-top:20px">
+    <div class="subsect-title">业绩分析 <span class="en">Performance Analysis</span></div>
+    <div style="margin-top:8px"><div style="background:#f0fdf4;border-left:3px solid #22c55e;border-radius:6px;padding:8px 14px;margin-bottom:10px;font-size:12.5px;color:#15803d"><strong>亮点</strong>　在线 30s接通率 LC 30s Rate <strong>100.0%</strong>，达成目标 ≥90%　·　在线 FCR LC FCR <strong>95.6%</strong>，达成目标 ≥95%　·　电话 FCR Phone FCR <strong>97.7%</strong>，达成目标 ≥95%　·　周 PC Top 3：calventan(<strong>16</strong>)、muhamadfaisal(<strong>14</strong>)、azamuddin(<strong>13</strong>)</div><div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;font-weight:700;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:3px">待提升</span><span style="font-size:13px;font-weight:600;color:#1a1a2e">月度有效转化率差距 Monthly Eff. Conv. Rate Gap <span style="color:#d97706;font-weight:700">zaydentan(32.3%) vs whitneylee(14.4%)</span></span></div><div style="margin-left:4px"><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">复盘低转化率成员的有效跟进质量，对比高效成员跟进节点与话术</span></div><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">推动低转化率成员参与 1-on-1 coaching，聚焦 objection handling</span></div></div></div><div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;font-weight:700;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:3px">待提升</span><span style="font-size:13px;font-weight:600;color:#1a1a2e">电话 20s接通率 Phone 20s Rate <span style="color:#d97706;font-weight:700">94.6%</span> <span style="font-size:11px;color:#9ca3af">目标≥95%</span></span></div><div style="margin-left:4px"><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">8/21 因 backup 咨询组电话咨询，calventan、muhamadfaisal、azamuddin 当日 20s 接通率均低于 95%</span></div></div></div></div>
+  </div>
+</div>
+
+<div class="section" id="三"><h2><span class="sect-num">三</span>满意度分析 <span class="en">Satisfaction Analysis</span></h2>
+    <div class="subsect-title" style="margin-bottom:8px">满意度小结 <span class="en">CSAT Summary</span></div>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px 14px;margin-bottom:14px">
+      <p style="margin:0 0 8px;font-size:12.5px;color:#334155;line-height:1.8">本周综合满意度 <strong>87.1%</strong>，环比上周（88.8%）<span style="color:#dc2626;font-weight:600">−1.7pp</span>，仍达成目标（≥84%）。渠道层面，在线 CSAT <strong>89.4%</strong> 较上周改善明显；<strong>电话（72.7%）</strong>和<strong>邮件（75.0%）</strong>均大幅下滑，低于目标，是本周拉低整体满意度的主要渠道，需重点关注。</p><p style="margin:0 0 8px;font-size:12.5px;color:#334155;line-height:1.8">个人层面，本周负评共 <strong>12</strong> 条（9 糟糕 + 3 不满意），分布在在线（7）、邮件（3）、电话（2）。负评集中在 <span style="color:#dc2626;font-weight:600">whitneylee（3条糟糕）</span>、<span style="color:#dc2626;font-weight:600">wilsonwong（3条：2糟糕+1不满意）</span>、calventan（2条糟糕）、zaydentan（2条：1糟糕+1不满意）、jacelynlim 和 azamuddin 各 1 条。主要分类集中在邀请活动相关（2条）、出/入金纠纷（WIRE入金/ACH出金/出金其他各1条）。</p>
+    </div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-bottom:20px">
+  <div style="flex:2.2;min-width:280px">
+    <div class="subsect-title" style="margin-bottom:8px">近6周综合满意度趋势 <span class="en">6-Week CSAT Trend</span></div>
+    <div id="csat-trend-placeholder" style="margin-bottom:14px;max-width:100%"></div>
+    <script>
+    (function(){
+      var chart=document.getElementById('csat-trend-chart');
+      var target=document.getElementById('csat-trend-placeholder');
+      if(chart&&target){chart.style.maxWidth='100%';chart.style.marginTop='0';target.appendChild(chart);}
+    })();
+    </script>
+  </div>
+  <div>
+  <div style="font-size:11px;color:#64748b;margin-bottom:6px;font-weight:600">渠道分布</div>
+  <table style="border-collapse:collapse;font-size:12px;min-width:180px">
+    <thead><tr style="background:#f0f4ff">
+      <th style="padding:6px 10px;font-size:11px;text-align:left">渠道</th>
+      <th style="padding:6px 10px;font-size:11px">合计</th>
+      <th style="padding:6px 10px;font-size:11px">不满意</th>
+      <th style="padding:6px 10px;font-size:11px">糟糕</th>
+    </tr></thead>
+    <tbody><tr><td style="padding:5px 10px;font-weight:600">在线 LC</td><td style="padding:5px 10px;text-align:center">7</td><td style="padding:5px 10px;text-align:center">0</td><td style="padding:5px 10px;text-align:center"><span style="color:#dc2626;font-weight:600">7</span></td></tr>
+<tr><td style="padding:5px 10px;font-weight:600">邮件 Email</td><td style="padding:5px 10px;text-align:center">3</td><td style="padding:5px 10px;text-align:center"><span style="color:#d97706;font-weight:600">1</span></td><td style="padding:5px 10px;text-align:center"><span style="color:#dc2626;font-weight:600">2</span></td></tr>
+<tr><td style="padding:5px 10px;font-weight:600">电话 Phone</td><td style="padding:5px 10px;text-align:center">2</td><td style="padding:5px 10px;text-align:center"><span style="color:#d97706;font-weight:600">2</span></td><td style="padding:5px 10px;text-align:center">0</td></tr>
+<tr style="background:#f8fafc;font-weight:700"><td style="padding:5px 10px">合计</td><td style="padding:5px 10px;text-align:center">12</td><td style="padding:5px 10px;text-align:center;color:#d97706">3</td><td style="padding:5px 10px;text-align:center;color:#dc2626">9</td></tr></tbody>
+  </table>
+</div>
+  <div>
+  <div style="font-size:11px;color:#64748b;margin-bottom:6px;font-weight:600">二级分类集中情况</div>
+  <table style="border-collapse:collapse;font-size:12px;min-width:280px">
+    <thead><tr style="background:#f0f4ff">
+      <th style="padding:6px 10px;font-size:11px;text-align:left">二级分类</th>
+      <th style="padding:6px 10px;font-size:11px">合计</th>
+      <th style="padding:6px 10px;font-size:11px">不满意</th>
+      <th style="padding:6px 10px;font-size:11px">糟糕</th>
+    </tr></thead>
+    <tbody><tr><td style="padding:5px 10px;color:#64748b;font-size:11px">邀请活动</td><td style="padding:5px 10px;text-align:center">2</td><td style="padding:5px 10px;text-align:center">0</td><td style="padding:5px 10px;text-align:center"><span style="color:#dc2626;font-weight:600">2</span></td></tr>
+<tr><td style="padding:5px 10px;color:#64748b;font-size:11px">绑卡相关</td><td style="padding:5px 10px;text-align:center">1</td><td style="padding:5px 10px;text-align:center">0</td><td style="padding:5px 10px;text-align:center"><span style="color:#dc2626;font-weight:600">1</span></td></tr>
+<tr><td style="padding:5px 10px;color:#64748b;font-size:11px">修改资料</td><td style="padding:5px 10px;text-align:center">1</td><td style="padding:5px 10px;text-align:center"><span style="color:#d97706;font-weight:600">1</span></td><td style="padding:5px 10px;text-align:center">0</td></tr>
+<tr><td style="padding:5px 10px;color:#64748b;font-size:11px">ACH出金进度/催出金</td><td style="padding:5px 10px;text-align:center">1</td><td style="padding:5px 10px;text-align:center">0</td><td style="padding:5px 10px;text-align:center"><span style="color:#dc2626;font-weight:600">1</span></td></tr>
+<tr><td style="padding:5px 10px;color:#64748b;font-size:11px">WIRE入金异常</td><td style="padding:5px 10px;text-align:center">1</td><td style="padding:5px 10px;text-align:center">0</td><td style="padding:5px 10px;text-align:center"><span style="color:#dc2626;font-weight:600">1</span></td></tr>
+<tr><td style="padding:5px 10px;color:#64748b;font-size:11px">注销证券账户（已开户）</td><td style="padding:5px 10px;text-align:center">1</td><td style="padding:5px 10px;text-align:center">0</td><td style="padding:5px 10px;text-align:center"><span style="color:#dc2626;font-weight:600">1</span></td></tr>
+<tr><td style="padding:5px 10px;color:#64748b;font-size:11px">期权</td><td style="padding:5px 10px;text-align:center">1</td><td style="padding:5px 10px;text-align:center">0</td><td style="padding:5px 10px;text-align:center"><span style="color:#dc2626;font-weight:600">1</span></td></tr>
+<tr><td style="padding:5px 10px;color:#64748b;font-size:11px">其他身份开户咨询</td><td style="padding:5px 10px;text-align:center">1</td><td style="padding:5px 10px;text-align:center">0</td><td style="padding:5px 10px;text-align:center"><span style="color:#dc2626;font-weight:600">1</span></td></tr>
+<tr><td style="padding:5px 10px;color:#64748b;font-size:11px">出金其他问题</td><td style="padding:5px 10px;text-align:center">1</td><td style="padding:5px 10px;text-align:center">0</td><td style="padding:5px 10px;text-align:center"><span style="color:#dc2626;font-weight:600">1</span></td></tr>
+<tr><td style="padding:5px 10px;color:#64748b;font-size:11px">放弃开户/注销moomooID（未开户）</td><td style="padding:5px 10px;text-align:center">1</td><td style="padding:5px 10px;text-align:center"><span style="color:#d97706;font-weight:600">1</span></td><td style="padding:5px 10px;text-align:center">0</td></tr>
+<tr><td style="padding:5px 10px;color:#64748b;font-size:11px">充值/提取</td><td style="padding:5px 10px;text-align:center">1</td><td style="padding:5px 10px;text-align:center"><span style="color:#d97706;font-weight:600">1</span></td><td style="padding:5px 10px;text-align:center">0</td></tr></tbody>
+  </table>
+</div>
+</div>
+
+<div style="margin-top:22px">
+  <div class="subsect-title" style="margin-bottom:10px;cursor:pointer;user-select:none" onclick="(function(){var b=document.getElementById('neg-detail-body');var a=document.getElementById('neg-toggle');var open=b.style.display!=='none';b.style.display=open?'none':'';a.textContent=open?'▶':' ▼';})()">不满意工单明细 <span class="en">Dissatisfied Ticket Details</span> <span id="neg-toggle" style="font-size:11px;color:#94a3b8;margin-left:4px">▶</span></div>
+  <div id="neg-detail-body" style="display:none">
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+  <select id="filter-agent" onchange="filterNeg()" style="font-size:11.5px;padding:4px 8px;border:1px solid #c7d6f7;border-radius:4px;background:#f8faff;color:#374151">
+    <option value="">全部客服</option>
+    <option>azamuddin</option><option>calventan</option><option>jacelynlim</option><option>whitneylee</option><option>wilsonwong</option><option>zaydentan</option>
+  </select>
+  <select id="filter-rating" onchange="filterNeg()" style="font-size:11.5px;padding:4px 8px;border:1px solid #c7d6f7;border-radius:4px;background:#f8faff;color:#374151">
+    <option value="">全部评价</option>
+    <option>不满意</option><option>糟糕</option>
+  </select>
+  <select id="filter-cat" onchange="filterNeg()" style="font-size:11.5px;padding:4px 8px;border:1px solid #c7d6f7;border-radius:4px;background:#f8faff;color:#374151">
+    <option value="">全部分类</option>
+    <option>绑卡相关</option><option>ACH出金进度/催出金</option><option>WIRE入金异常</option><option>修改资料</option><option>充值/提取</option><option>其他身份开户咨询</option><option>出金其他问题</option><option>放弃开户/注销moomooID（未开户）</option><option>期权</option><option>注销证券账户（已开户）</option><option>邀请活动</option>
+  </select>
+  <button onclick="resetNeg()" style="font-size:11px;padding:4px 10px;border:1px solid #c7d6f7;border-radius:4px;background:#fff;color:#1456F0;cursor:pointer">重置</button>
+  <span id="neg-count" style="font-size:11px;color:#94a3b8">共 12 条</span>
+</div><table id="neg-table" style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:11.5px">
+  <thead><tr>
+    <th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:8%">客服</th><th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:10%">工单号</th><th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:6%">MMID</th>
+    <th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:7%">渠道</th><th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:5%">评价</th>
+    <th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:11%">二级分类</th><th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:13%">三级分类</th>
+    <th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:40%">不满意原因</th>
+  </tr></thead>
+  <tbody id="neg-body"><tr data-agent="azamuddin" data-rating="不满意" data-cat="修改资料">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">azamuddin</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">20260825035650900352</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">70965038</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Phone</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#d97706;color:#fff;padding:2px 6px;border-radius:10px">不满意</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">修改资料</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">更改电话号码/记得密码</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">Poor User Experience</td>
+</tr><tr data-agent="calventan" data-rating="糟糕" data-cat="ACH出金进度/催出金">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">calventan</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">50260825212905843165</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76707393</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Email</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">ACH出金进度/催出金</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal"><span style="color:#cbd5e1">-</span></td>
+</tr><tr data-agent="calventan" data-rating="糟糕" data-cat="WIRE入金异常">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">calventan</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260824233640381475</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76705492</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">WIRE入金异常</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">I just want to fund my account, how is this so difficult</td>
+</tr><tr data-agent="jacelynlim" data-rating="糟糕" data-cat="绑卡相关">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">jacelynlim</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260822052526103049</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">77056340</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">绑卡相关</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal"><span style="color:#cbd5e1">-</span></td>
+</tr><tr data-agent="whitneylee" data-rating="糟糕" data-cat="注销证券账户（已开户）">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">whitneylee</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260827234704424646</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76971483</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">注销证券账户（已开户）</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">不使用（薅完羊毛等）</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal"><span style="color:#cbd5e1">-</span></td>
+</tr><tr data-agent="whitneylee" data-rating="糟糕" data-cat="期权">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">whitneylee</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260823043336456602</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">77156445</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">期权</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal"><span style="color:#cbd5e1">-</span></td>
+</tr><tr data-agent="whitneylee" data-rating="糟糕" data-cat="邀请活动">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">whitneylee</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260821222427668750</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">77174021</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">邀请活动</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">补发奖励</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal"><span style="color:#cbd5e1">-</span></td>
+</tr><tr data-agent="wilsonwong" data-rating="糟糕" data-cat="其他身份开户咨询">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">wilsonwong</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">50260824184329713417</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">77056803</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Email</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">其他身份开户咨询</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">开户前问题</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">they just repeat same information with out any given solution</td>
+</tr><tr data-agent="wilsonwong" data-rating="糟糕" data-cat="出金其他问题">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">wilsonwong</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260821194713914108</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76791317</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">出金其他问题</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal"><span style="color:#cbd5e1">-</span></td>
+</tr><tr data-agent="wilsonwong" data-rating="不满意" data-cat="放弃开户/注销moomooID（未开户）">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">wilsonwong</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">50260827175306336789</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">152373943</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Email</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#d97706;color:#fff;padding:2px 6px;border-radius:10px">不满意</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">放弃开户/注销moomooID（未开户）</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">不使用（薅完羊毛等）</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">Please help me cancel and erase A/C 76836443 and ALL ASSOCIATED PHONE NUMBERS.
+
+I CANNOT DO THIS ON MY OWN.
+
+THANKS </td>
+</tr><tr data-agent="zaydentan" data-rating="糟糕" data-cat="邀请活动">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">zaydentan</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260827044433770059</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76861571</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">邀请活动</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">其他</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">I'm just going to close my account. this is really annoyingP</td>
+</tr><tr data-agent="zaydentan" data-rating="不满意" data-cat="充值/提取">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">zaydentan</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">20260824213325155919</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">71250688</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Phone</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#d97706;color:#fff;padding:2px 6px;border-radius:10px">不满意</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">充值/提取</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">It was obvious that the agent did not know what he was talking about. He was sending me to do things to verify a number that you provided. I wasn’t happy with his performance. Hopefully, my situation will be resolved in my money will appear, and I won’t h</td>
+</tr></tbody>
+</table>
+  </div>
+  <script>
+function filterNeg(){
+  var agent=document.getElementById('filter-agent').value;
+  var rating=document.getElementById('filter-rating').value;
+  var cat=document.getElementById('filter-cat').value;
+  var rows=document.querySelectorAll('#neg-body tr');
+  var count=0;
+  rows.forEach(function(r){
+    var show=(!agent||r.dataset.agent===agent)&&(!rating||r.dataset.rating===rating)&&(!cat||r.dataset.cat===cat);
+    r.style.display=show?'':'none';
+    if(show)count++;
+  });
+  document.getElementById('neg-count').textContent='共 '+count+' 条';
+}
+function resetNeg(){
+  ['filter-agent','filter-rating','filter-cat'].forEach(function(id){document.getElementById(id).value='';});
+  filterNeg();
+}
+</script>
+</div>
+</div>
+
+<div class="section" id="四"><h2><span class="sect-num">四</span>本周重点工作 <span class="en">Key Work This Week</span></h2>
+  <ol style="margin:6px 0 0 20px;padding:0;font-size:12.5px;color:#334155;line-height:1.8">
+    <li>与市场前端确认合作 leads 渠道（邀请/KOL/B 端），明确额外加码激励方案，重点覆盖新注册活跃用户，9.1 起启动外呼跟进</li>
+    <li>梳理问题工单并组织全员培训，同步沉淀为新人培训标准案例素材库</li>
+    <li>持续推进咨询工单营销转化，开展听 call 与案例 review，落地 1v1 话术优化</li>
+  </ol>
+</div>
+
+<div class="section" id="五"><h2><span class="sect-num">五</span>下周计划 <span class="en">Next Week Plans</span></h2>
+  <ol style="margin:6px 0 0 20px;padding:0;font-size:12.5px;color:#334155;line-height:1.8">
+    <li>启动加码冲刺 PC 活动，完成话术与业务培训，按周追踪转化效果</li>
+    <li>完成 8 月绩效核算与业绩 review，评估并推进尾部员工 PIP</li>
+    <li>完成人力盘点，输出 8 月月报初版</li>
+    <li>优化外呼 SOP，更新竞品对比话术</li>
+    <li>天平卡点数据重新梳理优先级，优化节点设计方案</li>
+  </ol>
+</div>
+
+<p class="meta">Generated: 2026-08-28T18:24:51.012Z &nbsp;|&nbsp; Week: 2026-08-21 ~ 2026-08-27</p>
+<script>
+function togGroup(id,btn){
+  var g=document.getElementById(id);if(!g)return;
+  var hide=g.style.display!=='none';
+  g.style.display=hide?'none':'';
+  btn.style.opacity=hide?'0.3':'1';
+}
+function togFill(chartId,color,btn){
+  var chart=document.getElementById(chartId);if(!chart)return;
+  var els=Array.from(chart.querySelectorAll('[fill="'+color+'"]')).filter(function(el){
+    return el.closest('[id^="leg-"]')===null;
+  });
+  var hide=els.length>0&&els[0].style.display!=='none';
+  els.forEach(function(el){el.style.display=hide?'none':'';});
+  btn.style.opacity=hide?'0.3':'1';
+}
+function togClass(cls,btn){
+  var els=document.querySelectorAll('.'+cls);
+  var hide=els.length>0&&els[0].style.display!=='none';
+  els.forEach(function(el){el.style.display=hide?'none':'';});
+  btn.style.opacity=hide?'0.3':'1';
+}
+function togVol(ch,btn){
+  var hidden=btn.style.opacity==='0.3';
+  btn.style.opacity=hidden?'1':'0.3';
+  var chs=['lc','ph','em'];
+  var vis=chs.filter(function(c){var lb=document.getElementById('leg-vol-'+c);return !lb||lb.style.opacity!=='0.3';});
+  var visSet=new Set(vis);
+  chs.forEach(function(c){
+    document.querySelectorAll('.vol-seg-'+c).forEach(function(rect){
+      if(!rect.hasAttribute('data-oh'))rect.setAttribute('data-oh',rect.getAttribute('height')||'0');
+    });
+  });
+  var groups={};
+  document.querySelectorAll('.vol-seg-lc,.vol-seg-ph,.vol-seg-em').forEach(function(rect){
+    var x=rect.getAttribute('x');
+    if(!groups[x])groups[x]=[];
+    groups[x].push(rect);
+  });
+  Object.keys(groups).forEach(function(x){
+    var cum=0;
+    chs.forEach(function(c){
+      var rect=groups[x].find(function(r){return r.classList.contains('vol-seg-'+c);});
+      if(!rect)return;
+      if(visSet.has(c)){
+        var bh=parseFloat(rect.getAttribute('data-oh'))||0;
+        rect.setAttribute('y',(204-cum-bh).toFixed(1));
+        rect.setAttribute('height',bh.toFixed(1));
+        rect.style.display='';
+        cum+=bh;
+      }else{
+        rect.style.display='none';
+      }
+    });
+  });
+  var allVis=visSet.size===3;
+  document.querySelectorAll('.vol-total').forEach(function(t){t.style.display=allVis?'':'none';});
+}
+</script>
+<script>
+(function(){
+  var s2=document.getElementById('二');
+  var s3=document.getElementById('三');
+  if(s2&&s3){
+    s2.parentNode.insertBefore(s3,s2);
+    s3.querySelector('.sect-num').textContent='二';
+    s3.id='二';
+    s2.querySelector('.sect-num').textContent='三';
+    s2.id='三';
+  }
+})();
+</script>
+</body>
+</html>

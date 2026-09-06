@@ -6,7 +6,11 @@
 const https   = require('https');
 const path    = require('path');
 const fs      = require('fs');
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
+
+const LARK_CLI_JS = path.join(
+  process.env.APPDATA, 'npm', 'node_modules', '@futu', 'ft-lark-cli', 'scripts', 'run.js'
+);
 
 const ENV_FILE = path.join(__dirname, '.env');
 
@@ -59,6 +63,8 @@ function extractCookie(setCookieArr, name) {
   return null;
 }
 
+const USER_OPEN_ID = 'ou_423989c914515582660dfef99848b0e7';
+
 // ── 飞书通知 ─────────────────────────────────────────────────────────────────
 function sendFeishuAlert(title, body, template = 'red') {
   const content = JSON.stringify({
@@ -67,12 +73,12 @@ function sendFeishuAlert(title, body, template = 'red') {
     elements: [{ tag: 'div', text: { tag: 'lark_md', content: body } }],
   });
   try {
-    execSync(
-      `lark-cli --profile us-ccs im +messages-send ` +
-      `--user-id ou_423989c914515582660dfef99848b0e7 ` +
-      `--as bot --msg-type interactive --content '${content}'`,
-      { stdio: 'pipe' }
-    );
+    const r = spawnSync(process.execPath, [
+      LARK_CLI_JS, '--profile', 'us-ccs', 'im', '+messages-send',
+      '--user-id', USER_OPEN_ID, '--as', 'bot',
+      '--msg-type', 'interactive', '--content', content,
+    ], { encoding: 'utf8' });
+    if (r.status !== 0) throw new Error(r.stderr || r.stdout);
   } catch (e) {
     console.error('[WARN] 飞书通知发送失败:', e.message);
   }
@@ -166,8 +172,8 @@ async function refreshSession() {
   // Step 2: uscm callback → EGG_SESS + csrfToken
   const r2 = await httpGet(location, '');
 
-  const eggSess   = extractCookie(r2.headers['set-cookie'], 'EGG_SESS');
-  const csrfToken = extractCookie(r2.headers['set-cookie'], 'csrfToken');
+  const eggSess    = extractCookie(r2.headers['set-cookie'], 'EGG_SESS');
+  const csrfToken  = extractCookie(r2.headers['set-cookie'], 'csrfToken');
   const staffIdSig = extractCookie(r2.headers['set-cookie'], 'staff_id.sig');
 
   if (!eggSess || !csrfToken) {
@@ -175,12 +181,53 @@ async function refreshSession() {
     process.exit(1);
   }
 
-  // 写回 .env
   const updates = {
     USCM_COOKIE: `EGG_SESS=${eggSess}; csrfToken=${csrfToken}; staff_id=7328; staff_id.sig=${staffIdSig}`,
     USCM_CSRF:   csrfToken,
   };
   if (newSuperSig) updates.PASSPORT_SUPERSIG = newSuperSig;
+
+  // Step 3: us-workspace SSO → cs-workspace-production
+  try {
+    const wsReturnUrl = encodeURIComponent(
+      'https://us-workspace.futuoa.com/login/oa-callback?ref=' +
+      encodeURIComponent('https://us-workspace.futuoa.com/')
+    );
+    const wr1 = await httpGet(
+      `https://passport.futuoa.com/site/login?returnUrl=${wsReturnUrl}`,
+      passportCookies
+    );
+    if (wr1.status === 302 && wr1.headers['location']) {
+      const wr2 = await httpGet(wr1.headers['location'], '');
+      const wsSession  = extractCookie(wr2.headers['set-cookie'], 'cs-workspace-production');
+      const wsCsrf     = extractCookie(wr2.headers['set-cookie'], 'csrfToken');
+      const wsStaffSig = extractCookie(wr2.headers['set-cookie'], 'staff_id.sig');
+      const wsFutuSig  = extractCookie(wr2.headers['set-cookie'], 'futu.sig');
+
+      if (wsSession) {
+        const currentEnv = readEnv();
+        let wsCookie = currentEnv.WS_COOKIE || '';
+        const patch = { 'cs-workspace-production': wsSession };
+        if (wsCsrf)     patch['csrfToken']    = wsCsrf;
+        if (wsStaffSig) patch['staff_id.sig'] = wsStaffSig;
+        if (wsFutuSig)  patch['futu.sig']     = wsFutuSig;
+        for (const [k, v] of Object.entries(patch)) {
+          const re = new RegExp(`(^|; )${k}=[^;]*`);
+          wsCookie = re.test(wsCookie)
+            ? wsCookie.replace(re, `$1${k}=${v}`)
+            : wsCookie + `; ${k}=${v}`;
+        }
+        updates.WS_COOKIE = wsCookie;
+        console.log('[OK] WS_COOKIE 已自动刷新');
+      } else {
+        console.warn('[WARN] WS SSO 成功但未返回 cs-workspace-production，跳过');
+      }
+    } else {
+      console.warn(`[WARN] WS SSO 返回非302 (${wr1.status})，跳过 WS_COOKIE 刷新`);
+    }
+  } catch (e) {
+    console.warn('[WARN] WS_COOKIE 刷新失败（不影响主流程）:', e.message);
+  }
 
   writeEnv(updates);
 

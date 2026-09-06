@@ -28,12 +28,34 @@ const http  = require('http');
 const fs    = require('fs');
 const path  = require('path');
 
+// Auto-load .env from skill directory
+try {
+  fs.readFileSync(path.join(__dirname, '.env'), 'utf-8').split('\n').forEach(line => {
+    const eq = line.indexOf('=');
+    if (eq > 0 && !line.startsWith('#')) {
+      const k = line.slice(0, eq).trim();
+      const v = line.slice(eq + 1).trim();
+      if (k && !process.env[k]) process.env[k] = v;
+    }
+  });
+} catch {}
+
+// Fallback: load cookies from run_weekly_config.json (same source as us-css-sat)
+try {
+  const cfgPath = path.join(process.env.USERPROFILE || process.env.HOME || '', 'run_weekly_config.json');
+  const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf-8'));
+  ['DATA_COOKIE', 'USCM_COOKIE', 'USCM_CSRF', 'WS_COOKIE'].forEach(k => {
+    if (cfg[k] && !process.env[k]) process.env[k] = cfg[k];
+  });
+} catch {}
+
 // ─────────────────────────────────────────────────────────────────
 // CLI ARGS
 // ─────────────────────────────────────────────────────────────────
-const args        = process.argv.slice(2);
-const DISCOVER    = args.includes('--discover');
-const getArg      = f => { const i = args.indexOf(f); return i !== -1 ? args[i + 1] : null; };
+const args           = process.argv.slice(2);
+const DISCOVER       = args.includes('--discover');
+const DISCOVER_PAGE  = args.includes('--discover-page') ? args[args.indexOf('--discover-page') + 1] : null;
+const getArg         = f => { const i = args.indexOf(f); return i !== -1 ? args[i + 1] : null; };
 const weekStartArg = getArg('--week-start');
 const weekEndArg   = getArg('--week-end');
 const obStartArg   = getArg('--ob-start');
@@ -71,6 +93,7 @@ if (agentAttendanceArg) {
   }
 }
 const NO_HIGHLIGHTS = args.includes('--no-highlights');
+const IS_MONTHLY    = args.includes('--monthly');
 const prevLcTickets   = getArg('--prev-lc-tickets');
 const prevLcCsat      = getArg('--prev-lc-csat');
 const prevPhoneTickets= getArg('--prev-phone-tickets');
@@ -79,6 +102,7 @@ const prevEmailTickets= getArg('--prev-email-tickets');
 const prevEmailCsat   = getArg('--prev-email-csat');
 const prevObPc        = getArg('--prev-ob-pc');
 const prevWeeklyPc    = getArg('--prev-weekly-pc');
+const monthlyPCKpi    = parseInt(getArg('--monthly-pc-kpi') || '80') || 80;
 
 // ─────────────────────────────────────────────────────────────────
 // ENV / AUTH
@@ -88,10 +112,46 @@ const USCM_COOKIE = process.env.USCM_COOKIE || '';
 const USCM_CSRF   = process.env.USCM_CSRF   || '';
 const WS_COOKIE   = process.env.WS_COOKIE   || '';  // us-workspace.futuoa.com session (optional)
 
-if (!DATA_COOKIE) { console.error('Missing DATA_COOKIE (uIdToken)'); process.exit(1); }
-if (!DISCOVER) {
-  if (!USCM_COOKIE) { console.error('Missing USCM_COOKIE'); process.exit(1); }
-  if (!USCM_CSRF)   { console.error('Missing USCM_CSRF');   process.exit(1); }
+// ─────────────────────────────────────────────────────────────────
+// AUTO-REFRESH COOKIES  (launches setup_cookies.py when creds are missing)
+// ─────────────────────────────────────────────────────────────────
+async function autoRefreshAndRestart() {
+  const { spawn, spawnSync } = require('child_process');
+  const cfgFile  = path.join(process.env.USERPROFILE || process.env.HOME || '', 'run_weekly_config.json');
+  const setupPy  = path.join(process.env.USERPROFILE || process.env.HOME || '', 'setup_cookies.py');
+  if (!fs.existsSync(setupPy)) {
+    console.error(`[AUTH] setup_cookies.py not found at ${setupPy}`);
+    process.exit(1);
+  }
+  const oldMtime = fs.existsSync(cfgFile) ? fs.statSync(cfgFile).mtimeMs : 0;
+  console.log('[AUTH] Cookie 缺失或过期，正在弹出 IOA 登录窗口...');
+  spawn('cmd.exe', ['/c', 'start', '', 'py', setupPy], { detached: true, stdio: 'ignore' }).unref();
+  console.log('[AUTH] 请在浏览器中完成三个站点的 IOA 登录，完成后脚本自动继续（最多 5 分钟）...');
+  await new Promise((resolve, reject) => {
+    const deadline = Date.now() + 300_000;
+    const timer = setInterval(() => {
+      if (fs.existsSync(cfgFile) && fs.statSync(cfgFile).mtimeMs > oldMtime) {
+        clearInterval(timer);
+        const cfg = JSON.parse(fs.readFileSync(cfgFile, 'utf-8'));
+        if (cfg.DATA_COOKIE)  process.env.DATA_COOKIE  = cfg.DATA_COOKIE;
+        if (cfg.USCM_COOKIE)  process.env.USCM_COOKIE  = cfg.USCM_COOKIE;
+        if (cfg.USCM_CSRF)    process.env.USCM_CSRF    = cfg.USCM_CSRF;
+        if (cfg.WS_COOKIE)    process.env.WS_COOKIE    = cfg.WS_COOKIE;
+        console.log('[AUTH] Cookies 已更新，正在重启...');
+        resolve();
+      } else if (Date.now() > deadline) {
+        clearInterval(timer);
+        reject(new Error('[AUTH] 等待超时（5分钟），请手动重跑脚本'));
+      }
+    }, 2000);
+  });
+  // Re-spawn with updated env so const bindings pick up new values
+  const result = spawnSync(process.execPath, process.argv.slice(1), { stdio: 'inherit', env: process.env });
+  process.exit(result.status ?? 0);
+}
+
+if (!DATA_COOKIE || (!DISCOVER && (!USCM_COOKIE || !USCM_CSRF))) {
+  autoRefreshAndRestart().catch(e => { console.error(e.message); process.exit(1); });
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -101,8 +161,7 @@ const DATA_FLOOR = '2026-07-01';  // Business launch date — no data before thi
 
 const TEAM_ORDER = [
   'jacelynlim', 'terrychen', 'muhamadfaisal', 'calventan', 'azamuddin',
-  'jeanliew', 'whitneylee', 'alvinsim', 'zaydentan', 'vincentyew',
-  'wilsonwong',
+  'jeanliew', 'whitneylee', 'alvinsim', 'zaydentan', 'wilsonwong',
 ];
 const CONVERSION_TEAM = new Set(TEAM_ORDER);
 
@@ -111,7 +170,7 @@ const WS_TEAM_MAP = {
   jacelynlim:    16510, terrychen:     14581, muhamadfaisal: 14810,
   calventan:     16136, azamuddin:     15515, jeanliew:      17203,
   whitneylee:    17204, alvinsim:      16424, zaydentan:     14675,
-  vincentyew:    14243, wilsonwong:    14727,
+  wilsonwong:    14727,
 };
 const WS_TEAM_SIDS = new Set(Object.values(WS_TEAM_MAP));
 const LC_SKILL_VALUES = ['inc conversion (en)', 'inc conversion (cn)', 'inc英文（转化）', 'inc中文（转化）'];
@@ -123,19 +182,14 @@ const CARDS = {
   LC_QUEUE:  'n897ad21677424c66af5aad8',
   LC_UTIL:   'u6b720a2a07f246b8ba5ed1c',
   PHONE:     'p387a9f31ddc842f89a058eb',
-  EMAIL:     'fa9508e7b7ef0432bb2f68ea',
+  EMAIL:     'j4e69d8b9111b4f0a86bfb93',
   EMAIL_SAT: 'db4225f75c16b49a0b6ef227',
   SLA:       'i962341c6f44c422f8eb998e',
 };
 const PHONE_UTIL_CARD = 'g2f6209e865c343cc9015a26';
 
 const CARD_VPARAMS = {
-  [CARDS.LC_QUEUE]: 'TFUsDZAqXcxCwqCzQlvZIQRT',
-  [CARDS.LC_UTIL]:  'SYRdxWeqRlzviTWngneskcEk',
-  [CARDS.PHONE]:    'LoZeFSbcPCYrMOEKfCEenGqH',
-  // EMAIL: auto-resolved via GET /api/card/{id}
-  [CARDS.SLA]:      'ZedMDVjfQRBbjcfVycpPIPMU',
-  // PHONE_UTIL_CARD: auto-resolved via GET /api/card/{id}
+  // All v params resolved dynamically via GET /api/card/{id}
 };
 
 const F = {
@@ -185,19 +239,17 @@ const F = {
   PU_UTIL:         'wc5a3079cbe6d43b5ad0d6c8',  // 工时利用率
   PU_TEAM:         'w56b8a86990244f84b00a677',  // 客服组名称
 
-  // ── Email (fa9508e7b7ef0432bb2f68ea) 北京时区邮件工单 ──────────
-  EM_DS_ID:        'b2c3bbdd011c8413c9efea28',
-  EM_DATE:         'd9cd5c72c8fab4ba080a791a',  // 工单创建时间-日
-  EM_DATE_SRC:     'd444e38cd461147bd8942d7e',  // 日期选择器
-  EM_MAIL_FDID:    'xbca60b4a398b499f9c78141',  // account_mail
-  EM_MAIL_SRC:     'cc383edc9498f42db9eb7668',  // 客服邮箱选择器
-  EM_AGENT:        'j27936392a84a4e3eab12845',  // 归档人
-  EM_AGENT_SRC:    'cfd950c1cb4ac4df1b95e4ad',  // 归档人选择器
-  EM_TICKETS:      'fffd3c45db0fb4d859ec7c57',  // 工单数 COUNT DISTINCT
-  EM_USER_EMAILS:  'j75d1e72a7c7e4714a7eaa59',  // 用户邮件咨询总量
-  EM_REPLIED:      'a077066530c3c411ba022ec3',  // 已回复邮件总量
-  EM_SLA_30MIN:    'ib9578e14b4b54d7dac5f114',  // 30min回复率
-  EM_AVG_REPLY:    'd0e7e70fb294248989c6cc45',  // 工单平均处理时长(分钟)
+  // ── Email (j4e69d8b9111b4f0a86bfb93) ─────────────────────────
+  EM_DS_ID:        'j4dbefb8670a149afbd8a960',
+  EM_DATE:         'ibf197b7482b3471a9d30074',
+  EM_DATE_KEY:     'kLBKZbzGDhkvhCPMHpkaRSOH',
+  EM_MAIL_FDID:    'g678165f34aa0418b89dbb92',
+  EM_MAIL_SRC:     'o9e26b4da81cf441cac822d2',
+  EM_AGENT:        'sd76cc38f77ca4c1eb7bcf76',
+  EM_USER_EMAILS:  'xa5915843201d46f88ae30c1',
+  EM_REPLIED:      'kb139048426f1492ea0c428f',
+  EM_SLA_30MIN:    'qe5c68f1d93d54660a277994',
+  EM_AVG_REPLY:    'v801bc3c2e3304ae297fd0c6',
 
   // ── Email Reception / Satisfaction (db4225f75c16b49a0b6ef227) ─
   ESA_DS_ID:       'w605094686a92446b9da361b',
@@ -381,19 +433,39 @@ function findVParam(obj, depth) {
   return null;
 }
 
-// Proxy request to setup_cookies.py localhost:8765 — uses browser session to bypass 1018
+// ── Direct HTTPS request (uses saved DATA_COOKIE; works while cf_clearance is valid) ──
 const DATA_PROXY_PORT = 8765;
+let _directDisabled = false;
 
-function proxyRequest(urlPath, method, extraHeaders, body) {
+async function guandataDirectReq(urlPath, method, extraHeaders, body) {
+  if (_directDisabled) throw new Error('direct disabled');
+  const bodyBuf = body ? Buffer.from(body) : null;
+  const hdrs = {
+    'raw-backend-response': 'TRUE',
+    'user-id': 'aXJpc2Rpbmc=', 'x-dom-id': 'Z3VhbmJp',
+    'Cookie': DATA_COOKIE,
+    ...extraHeaders,
+  };
+  if (bodyBuf) hdrs['Content-Length'] = String(bodyBuf.length);
+  const res = await httpRequest({ hostname: 'us.data.futuoa.com', path: urlPath, method, headers: hdrs }, bodyBuf);
+  if (res.status === 401 || res.status === 403 || res.status === 503 || (typeof res.body === 'string' && res.body.includes('challenge')) || res.body?.error?.status === 1017) {
+    _directDisabled = true;
+    throw new Error(`Direct blocked: HTTP ${res.status} — proxy required`);
+  }
+  return res;
+}
+
+// Proxy request to setup_cookies.py localhost:8765 — uses browser session to bypass 1018
+function proxyRequest(urlPath, method, extraHeaders, body, retries = 4) {
   const headers = {
     'raw-backend-response': 'TRUE',
     'user-id': 'aXJpc2Rpbmc=', 'x-dom-id': 'Z3VhbmJp',
     ...extraHeaders,
   };
   if (body) headers['Content-Length'] = String(Buffer.byteLength(body));
-  return new Promise((resolve, reject) => {
+  const attempt = (n) => new Promise((resolve, reject) => {
     const req = http.request(
-      { hostname: 'localhost', port: DATA_PROXY_PORT, path: urlPath, method, headers },
+      { hostname: '127.0.0.1', port: DATA_PROXY_PORT, path: urlPath, method, headers },
       res => {
         const chunks = [];
         res.on('data', c => chunks.push(c));
@@ -404,14 +476,30 @@ function proxyRequest(urlPath, method, extraHeaders, body) {
         });
       }
     );
-    req.on('error', reject);
+    req.on('error', e => {
+      if (n > 0) setTimeout(() => attempt(n - 1).then(resolve, reject), 300 * (retries - n + 1));
+      else reject(e);
+    });
     if (body) req.write(body);
     req.end();
   });
+  return attempt(retries);
+}
+
+async function guandataReq(urlPath, method, extraHeaders, body) {
+  try {
+    return await guandataDirectReq(urlPath, method, extraHeaders, body);
+  } catch (e) {
+    if (!e.message.includes('direct disabled') && !e.message.includes('Direct blocked')) {
+      _directDisabled = true;
+      console.warn(`[WARN] Direct request failed (${e.message.slice(0,60)}), falling back to proxy`);
+    }
+    return proxyRequest(urlPath, method, extraHeaders, body);
+  }
 }
 
 async function guandataGet(urlPath) {
-  const res = await proxyRequest(urlPath, 'GET', {});
+  const res = await guandataReq(urlPath, 'GET', {}, null);
   if (res.status !== 200) throw new Error(`GET ${urlPath}: HTTP ${res.status}`);
   return res.body;
 }
@@ -430,12 +518,14 @@ async function resolveVParam(cardId) {
 async function guandataPost(cardId, bodyObj) {
   const v = await resolveVParam(cardId);
   const bodyStr = JSON.stringify(bodyObj);
-  const res = await proxyRequest(
+  const res = await guandataReq(
     `/api/card/${cardId}/data?v=${v}`, 'POST',
     { 'Content-Type': 'application/json' },
     bodyStr
   );
   if (res.status !== 200) throw new Error(`Card ${cardId}: HTTP ${res.status} — ${res.raw.slice(0,200)}`);
+  const rows = res.body?.response?.chartMain?.data || [];
+  if (!rows.length) console.warn(`[WARN] Card ${cardId} v=${v} returned empty data`);
   return res.body;
 }
 
@@ -647,17 +737,17 @@ const PH_AGENT_DIM = {
 // ── Email ─────────────────────────────────────────────────────────
 const EM_COL = [{ name: '度量名', metaType: 'MPH', key: 'VmZwSehqdXATpitHKQGYKjBW', nameTranslated: '度量名', alias: '度量名' }];
 const EM_METRICS = [
-  { fdId: F.EM_TICKETS,   name: '工单数',          fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation', level: 'dataset', formula: 'COUNT(DISTINCT([工单号]))', key: F.EM_TICKETS },
-  { fdId: F.EM_REPLIED,   name: '已回复邮件总量',   fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation', level: 'dataset', formula: 'SUM([工单已回复邮件量])',    key: F.EM_REPLIED },
-  { fdId: F.EM_SLA_30MIN, name: '30min回复率',      fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation',                                                          key: F.EM_SLA_30MIN },
-  { fdId: F.EM_AVG_REPLY, name: '工单平均处理时长',  fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation',                                                          key: F.EM_AVG_REPLY },
+  { fdId: F.EM_USER_EMAILS, name: '用户邮件咨询量', fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation', level: 'dataset', formula: 'COUNT([mail_id])', key: 'dKUBPzQoBJFWYRXZczXIpTKc' },
+  { fdId: F.EM_REPLIED,     name: '已回复邮件量',   fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation', level: 'dataset', formula: 'SUM([是否已回复])',  key: 'KCqWmysCPfcXOvuQPIssAdjh' },
+  { fdId: F.EM_SLA_30MIN,   name: '30min回复率',   fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation',                                               key: 'OEiGvisdqsIwaKkFwiMUIDEk' },
+  { fdId: F.EM_AVG_REPLY,   name: '邮件平均回复时长', fdType: 'DOUBLE', metaType: 'METRIC', isAggregated: true, calculationType: 'aggregation',                                             key: 'v801bc3c2e3304ae297fd0c6' },
 ];
-// indices: 0=tickets, 1=replied, 2=sla30min, 3=avgReply
+// indices: 0=userEmails, 1=replied, 2=sla30min
 
 const EM_AGENT_DIM = {
-  fdId: F.EM_AGENT, name: '归档人', fdType: 'STRING', metaType: 'DIM',
+  fdId: F.EM_AGENT, name: 'reply_sid_nick', fdType: 'STRING', metaType: 'DIM',
   isAggregated: false, calculationType: 'normal',
-  key: F.EM_AGENT, nameTranslated: '归档人', alias: '归档人',
+  key: 'YfzfXuShhSiMJXDQASvgDOSB', nameTranslated: 'reply_sid_nick', alias: 'reply_sid_nick',
 };
 
 // ── Email Satisfaction (db4225f75c16b49a0b6ef227) ────────────────
@@ -887,14 +977,14 @@ async function fetchEmail(start, end) {
       dsId: F.EM_DS_ID, cdId: CARDS.EMAIL, sourceCdId: F.EM_MAIL_SRC,
     },
     {
-      name: '工单创建时间-日', fdId: F.EM_DATE, key: F.EM_DATE, fdType: 'STRING',
+      name: 'consult_time_date', fdId: F.EM_DATE, key: F.EM_DATE_KEY, fdType: 'STRING',
       filterType: 'BT', filterValue: [start, end], displayValue: [start, end],
-      dsId: F.EM_DS_ID, cdId: CARDS.EMAIL, sourceCdId: F.EM_DATE_SRC,
+      dsId: F.EM_DS_ID, cdId: CARDS.EMAIL,
     },
     {
-      name: '归档人', fdId: F.EM_AGENT, key: F.EM_AGENT, fdType: 'STRING',
+      name: 'reply_sid_nick', fdId: F.EM_AGENT, key: F.EM_AGENT, fdType: 'STRING',
       filterType: 'IN', filterValue: [...CONVERSION_TEAM],
-      dsId: F.EM_DS_ID, cdId: CARDS.EMAIL, sourceCdId: F.EM_AGENT_SRC,
+      dsId: F.EM_DS_ID, cdId: CARDS.EMAIL,
     },
   ];
 
@@ -904,13 +994,13 @@ async function fetchEmail(start, end) {
   ]);
 
   const tv = teamValues(teamResp);
-  // 0=tickets, 1=replied, 2=sla30min, 3=avgReply
+  // 0=userEmails, 1=replied, 2=sla30min, 3=avgRespTime
 
   return {
-    team: { replied: num(tv[0]), userEmails: num(tv[1]), sla30min: pct(tv[2]), avgRespTime: mins(tv[3]) },
+    team: { userEmails: num(tv[0]), replied: num(tv[1]), sla30min: pct(tv[2]), avgRespTime: mins(tv[3]) },
     agents: agentRows(agentResp)
       .filter(({ name }) => CONVERSION_TEAM.has(name))
-      .map(({ name, vals }) => ({ name, tickets: num(vals[0]), slaRate: pct(vals[2]), avgRespTime: mins(vals[3]) })),
+      .map(({ name, vals }) => ({ name, tickets: num(vals[1]), slaRate: pct(vals[2]), avgRespTime: mins(vals[3]) })),
   };
 }
 
@@ -980,7 +1070,7 @@ async function fetchOutbound(start, end) {
   const pcStart = toYYYYMMDD(effectivePcStart);
   const mStart  = obStartArg ? toYYYYMMDD(obStartArg) : toYYYYMMDD(monthStart(end));
 
-  const [leadsResp, weekTeamResp, weekStaffResp, monthTeamResp, monthStaffResp] = await Promise.all([
+  const [leadsResp, weekTeamResp, weekStaffResp, monthTeamResp, monthStaffResp, monthLeadsResp] = await Promise.all([
     // marketing-work: Calendar Day Follow-up and Conversion — call_num=TOCC, effective_follow_user_count=TEFV
     uscmGet('/api/visitor/overseas-statistics/marketing-work', { start_date: obStartD0, end_date: obEndD0 }),
     uscmGet('/api/am/us/overseas-performance/total-stats', { start_date: pcStart, end_date: endD0, area: 'US' }),
@@ -990,6 +1080,10 @@ async function fetchOutbound(start, end) {
       : null,
     mStart !== pcStart
       ? uscmGet('/api/am/us/overseas-performance/staff-stats',  { start_date: mStart, end_date: endD0, area: 'US', role: '1' })
+      : null,
+    // Monthly effective follow-up count (for 月度有效転化率)
+    mStart !== obStartD0
+      ? uscmGet('/api/visitor/overseas-statistics/marketing-work', { start_date: mStart, end_date: obEndD0 })
       : null,
   ]);
 
@@ -1052,21 +1146,46 @@ async function fetchOutbound(start, end) {
                         +  (row.email_pc  || row.mail_pc  || 0);
   }
 
+  // Monthly effective follow-up — from monthly marketing-work call (for 月度有効転化率)
+  const monthlyEffFollowMap = new Map();
+  const mwMonthList = monthLeadsResp?.data?.list || leadsResp?.data?.list || [];
+  const mwMonthByStaff = new Map();
+  for (const row of mwMonthList) {
+    if (!CONVERSION_TEAM.has(row.staff_name)) continue;
+    if (!mwMonthByStaff.has(row.staff_name) || row.call_num > mwMonthByStaff.get(row.staff_name).call_num) {
+      mwMonthByStaff.set(row.staff_name, row);
+    }
+  }
+  const monthlyLeadsMap = new Map();
+  for (const [name, row] of mwMonthByStaff) {
+    monthlyEffFollowMap.set(name, row.effective_follow_user_count || 0);
+    monthlyLeadsMap.set(name, row.distribute_num || 0);
+  }
+
   const agents = TEAM_ORDER
     .filter(n => byStaff.has(n))
     .map(n => {
       const s = byStaff.get(n);
+      const mEffFol = monthlyEffFollowMap.get(n) || 0;
+      const mLeads  = monthlyLeadsMap.get(n) || 0;
+      const mPC = s.monthlyPC || 0;
+      const monthlyEffConvRate  = mEffFol > 0 ? +(mPC / mEffFol  * 100).toFixed(1) : null;
+      const monthlyDistConvRate = mLeads  > 0 ? +(mPC / mLeads   * 100).toFixed(1) : null;
       return {
-        name:             n,
-        leadsAssigned:    num(s.leadsAssigned),
-        followCount:      num(s.followCount),
-        effectiveFollow:  num(s.effectiveFollow),
-        weeklyPC:         num(s.weeklyPC),
-        monthlyPC:        num(s.monthlyPC),
-        monthlyConsultPC: s.monthlyConsultPC || 0,
-        lcPC:             s.lcPC,
-        phonePC:          s.phonePC,
-        emailPC:          s.emailPC,
+        name:              n,
+        leadsAssigned:     num(s.leadsAssigned),
+        followCount:       num(s.followCount),
+        effectiveFollow:   num(s.effectiveFollow),
+        weeklyPC:          num(s.weeklyPC),
+        monthlyPC:         num(s.monthlyPC),
+        monthlyConsultPC:  s.monthlyConsultPC || 0,
+        monthlyLeads:      mLeads,
+        monthlyEffFollow:  mEffFol,
+        monthlyEffConvRate,
+        monthlyDistConvRate,
+        lcPC:              s.lcPC,
+        phonePC:           s.phonePC,
+        emailPC:           s.emailPC,
       };
     });
 
@@ -1082,6 +1201,105 @@ async function fetchOutbound(start, end) {
     team: { weeklyPC: num(weeklyPC), monthlyPC: num(monthlyPC), lcPC, phonePC, emailPC, consultPC },
     agents,
   };
+}
+
+// ── Channel PC (PC detail table: page pbb45c349b2854bad9223591) ───
+async function fetchChannelPCDetail(start, end) {
+  const CD_ID      = 'oa724299e80dd4e4daaa9301';
+  const DS_ID      = 'm79e24ac5abd4430c877951f';
+  const FD_DATE    = 'o5e36173392fd43d6aca7093';
+  const FD_TEAM    = 's7c6806ceb8bd49dcbef01cd';
+  const FD_METHOD  = 'iff133cf998bb479b8072be5';
+  const FD_AGENT   = 'f3c5178b2a7e04aa1b6f34e7';
+  const FD_UID     = 'h3c24e5d780bb42c5ae75835';
+  const FD_REGION  = 'ud94da47e746c4b5e9a9f8f6';
+  const FD_FLWTIME = 's84c14b87bfbb47e5b005627';
+  const SRC_DATE   = 'v2baa810cccf044059933f95';
+  const SRC_TEAM   = 's1f1f3f494f0c44e78b2e30e';
+
+  // Use "end 23:59:59" (inclusive) — "start of next day" over-counts by including midnight records
+  const startDT = `${start} 00:00:00`;
+  const endDT   = `${end} 23:59:59`;
+
+  // 6 row dims (地区/UID/转化时间/处理人/有效跟进方式/最近跟进时间) so each row = 1 unique PC record
+  const body = {
+    offset: 0, limit: 500,
+    filters: [
+      { name: '转化时间，北京时间，精确到秒', fdId: FD_DATE, dsId: DS_ID, cdId: CD_ID,
+        fdType: 'TIMESTAMP', filterType: 'BT', originFilterType: 'BT', sourceCdId: SRC_DATE,
+        filterValue: [startDT, endDT], displayValue: [startDT, endDT] },
+      { name: '员工最小组织', fdId: FD_TEAM, dsId: DS_ID, cdId: CD_ID,
+        fdType: 'STRING', filterType: 'IN', originFilterType: 'IN', sourceCdId: SRC_TEAM,
+        filterValue: ['美国转化客服组'], displayValue: [] },
+    ],
+    treeFilters: [], dynamicParams: [], dynamicFieldFilters: [],
+    combinationFilters: [], layerTreeFilters: [],
+    headerSortings: null, rowExpand: null, sorting: [],
+    name: '报表',
+    zoneFilter: {
+      zoneData: {
+        row: [
+          { fdId: FD_REGION,  name: '地区',                       alias: '地区',         fdType: 'STRING',    metaType: 'DIM', isAggregated: false, calculationType: 'normal', baseFdType: 'STRING',    key: 'TfjUzBaVqoOqNRmPnisQVjSd', level: 'dataset', dsId: DS_ID },
+          { fdId: FD_UID,     name: '牛牛号，确定性密文 UID',       alias: 'UID',          fdType: 'STRING',    metaType: 'DIM', isAggregated: false, calculationType: 'normal', baseFdType: 'STRING',    key: 'rEwTHKxCsuJWxItJRyiHUZos', level: 'dataset', dsId: DS_ID },
+          { fdId: FD_DATE,    name: '转化时间，北京时间，精确到秒', alias: '转化时间',      fdType: 'TIMESTAMP', metaType: 'DIM', isAggregated: false, calculationType: 'normal', baseFdType: 'TIMESTAMP', key: 'sNsDeOIDBWcUIbizMULuciGY', level: 'dataset', dsId: DS_ID },
+          { fdId: FD_AGENT,   name: '处理人显示名：英文名（中文）', alias: '处理人',        fdType: 'STRING',    metaType: 'DIM', isAggregated: false, calculationType: 'normal', baseFdType: 'STRING',    key: 'lUFwQwbfvkGVfBaOMSXDhFIC', level: 'dataset', dsId: DS_ID },
+          { fdId: FD_METHOD,  name: '最终有效跟进方式',             alias: '有效跟进方式',  fdType: 'STRING',    metaType: 'DIM', isAggregated: false, calculationType: 'normal', baseFdType: 'STRING',    key: 'RRFQkjdopRPRadAspydnPbPf', level: 'dataset', dsId: DS_ID },
+          { fdId: FD_FLWTIME, name: '最近一次有效跟进时间，北京时间，精确到秒', alias: '最近一次有效跟进时间', fdType: 'TIMESTAMP', metaType: 'DIM', isAggregated: false, calculationType: 'normal', baseFdType: 'TIMESTAMP', key: 'kEQcJBVUhpxIdKSrFfksmaFw', level: 'dataset', dsId: DS_ID },
+        ],
+        column: [], metric: [],
+        sorting: [{ fdId: FD_DATE, name: '转化时间，北京时间，精确到秒', alias: '转化时间，北京时间，精确到秒',
+          fdType: 'TIMESTAMP', metaType: 'DIM', aggrType: 'NUL', calculationType: 'normal',
+          baseFdType: 'TIMESTAMP', key: 'LZtjYtHVKNVBiWTWdxiJEegb', ordering: 'desc',
+          nameTranslated: '转化时间，北京时间，精确到秒' }],
+      }
+    },
+    taskRequestId: randId(),
+  };
+
+  try {
+    const v   = await resolveVParam(CD_ID);
+    const res = await guandataReq(`/api/card/${CD_ID}/data?v=${v}`, 'POST',
+      { 'Content-Type': 'application/json' }, JSON.stringify(body));
+    if (res.status !== 200) throw new Error(`HTTP ${res.status}`);
+    const resp = res.body;
+
+    // Each row = 1 PC record; method is at index 4, agent at index 3
+    const rowVals = resp?.response?.chartMain?.row?.values || [];
+
+    if (!rowVals.length) {
+      console.warn('[WARN] channelPCDetail: empty — response keys:', Object.keys(resp?.response || {}).join(', '));
+      return { lc: '-', phone: '-', email: '-', byAgent: {} };
+    }
+
+    const methodCounts = {};
+    const agentCounts  = {};
+    for (const labels of rowVals) {
+      const method   = (labels[4]?.title ?? labels[4]?.v ?? '').trim();
+      const agentRaw = (labels[3]?.title ?? labels[3]?.v ?? '').trim();
+      const agentM   = agentRaw.match(/^([^(（]+)/);
+      const agent    = agentM ? agentM[1].trim().toLowerCase() : agentRaw.toLowerCase();
+      if (method) methodCounts[method] = (methodCounts[method] || 0) + 1;
+      if (agent && method) {
+        if (!agentCounts[agent]) agentCounts[agent] = {};
+        agentCounts[agent][method] = (agentCounts[agent][method] || 0) + 1;
+      }
+    }
+    console.log('[OK] channelPCDetail methods:', JSON.stringify(methodCounts));
+
+    const norm = s => (s || '').toLowerCase();
+    let lc = 0, phone = 0, email = 0, ob = 0;
+    for (const [method, cnt] of Object.entries(methodCounts)) {
+      const m = norm(method);
+      if      (m.includes('在线') || m.includes('chat'))  lc    += cnt;
+      else if (m.includes('电话') || m.includes('phone')) phone += cnt;
+      else if (m.includes('邮件') || m.includes('mail'))  email += cnt;
+      else if (m === '外呼' || m === 'sms')               ob    += cnt;
+    }
+    return { lc, phone, email, ob, byAgent: agentCounts, raw: methodCounts };
+  } catch (e) {
+    console.warn('[WARN] fetchChannelPCDetail:', e.message);
+    return { lc: '-', phone: '-', email: '-', ob: 0, byAgent: {} };
+  }
 }
 
 // ── TOP 10 Business Categories ────────────────────────────────────
@@ -1319,10 +1537,11 @@ async function fetchConsultPC(weekStart, weekEnd, mFloor) {
     filterType: 'BT', originFilterType: 'BT', sourceCdId: C.DATE_SRC,
     filterValue: [weekStart, weekEnd], displayValue: [weekStart, weekEnd],
   }];
+  const mStartDate = monthStart(weekEnd);
   const monthFilters = [...BASE_FILTERS, {
-    name: '统计月', fdId: C.DATE_FDID + '_month', dsId: C.DS_ID, cdId: POST_CDID, fdType: 'SUB_DATE',
-    filterType: 'IN', originFilterType: 'IN', sourceCdId: C.DATE_SRC,
-    filterValue: [monthLabel], displayValue: [monthLabel],
+    name: '日期', fdId: C.DATE_FDID, dsId: C.DS_ID, cdId: POST_CDID, fdType: 'STRING',
+    filterType: 'BT', originFilterType: 'BT', sourceCdId: C.DATE_SRC,
+    filterValue: [mStartDate, weekEnd], displayValue: [mStartDate, weekEnd],
   }];
 
   const [weekResp, monthResp] = await Promise.all([
@@ -1374,9 +1593,10 @@ async function fetchWsSat(dataStart, dataEnd) {
   const CAT_NAME = {
     1605:'平台基础体验',1607:'出金',1608:'入金',1609:'开户前咨询',1622:'其他',3189:'销户',3880:'开户后咨询',
     1606:'税务',1619:'社区',1621:'行情',
-    1625:'通用设置',1627:'登录相关',1628:'短信验证码',1635:'其他',1639:'WIRE出金操作',1640:'ACH出金进度/催出金',
-    1648:'ACH入金异常',1649:'ACH入金操作',1650:'美国身份开户咨询',1651:'台湾身份开户咨询',1652:'其他身份开户咨询',
-    1657:'其他问题',1745:'问题不明确',1732:'禁言申诉/举报',1742:'证券分析功能',1744:'非我司业务',
+    1625:'通用设置',1627:'登录相关',1628:'短信验证码',1635:'其他',1636:'出金其他问题',1639:'WIRE出金操作',1640:'ACH出金进度/催出金',
+    1645:'WIRE入金异常',1648:'ACH入金异常',1649:'ACH入金操作',1650:'美国身份开户咨询',1651:'台湾身份开户咨询',1652:'其他身份开户咨询',
+    1657:'其他问题',1709:'期权',1727:'邀请活动',1745:'问题不明确',1732:'禁言申诉/举报',1742:'证券分析功能',1744:'非我可业务',
+    4868:'充值/提取',
     3209:'注销证券账户（已开户）',3213:'放弃开户/注销moomooID（未开户）',3752:'绑卡相关',3881:'修改资料',
     3884:'w8/w9表格相关',4025:'重置审核',4829:'重复开户',4838:'旧设备验证',4842:'注销现金/融资账户',4848:'借记卡',
     3210:'不使用（薅完羊毛等）',3214:'不使用（薅完羊毛等）',4854:'修改电话号码/忘记密码',4856:'其他',
@@ -1449,8 +1669,8 @@ async function fetchTeamVolSummary(start, end) {
   ];
   const emFilters = [
     { name:'account_mail', fdId:F.EM_MAIL_FDID, key:F.EM_MAIL_FDID, fdType:'STRING', filterType:'IN', filterValue:['ca@us.moomoo.com','cs@us.moomoo.com','pcs@us.moomoo.com','support@moomoocrypto.com'], dsId:F.EM_DS_ID, cdId:CARDS.EMAIL, sourceCdId:F.EM_MAIL_SRC },
-    { name:'工单创建时间-日', fdId:F.EM_DATE, key:F.EM_DATE, fdType:'STRING', filterType:'BT', filterValue:[start,end], displayValue:[start,end], dsId:F.EM_DS_ID, cdId:CARDS.EMAIL, sourceCdId:F.EM_DATE_SRC },
-    { name:'归档人', fdId:F.EM_AGENT, key:F.EM_AGENT, fdType:'STRING', filterType:'IN', filterValue:[...CONVERSION_TEAM], dsId:F.EM_DS_ID, cdId:CARDS.EMAIL, sourceCdId:F.EM_AGENT_SRC },
+    { name:'consult_time_date', fdId:F.EM_DATE, key:F.EM_DATE_KEY, fdType:'STRING', filterType:'BT', filterValue:[start,end], displayValue:[start,end], dsId:F.EM_DS_ID, cdId:CARDS.EMAIL },
+    { name:'reply_sid_nick', fdId:F.EM_AGENT, key:F.EM_AGENT, fdType:'STRING', filterType:'IN', filterValue:[...CONVERSION_TEAM], dsId:F.EM_DS_ID, cdId:CARDS.EMAIL },
   ];
   const [lcR, phR, emR] = await Promise.allSettled([
     guandataPost(CARDS.LC_QUEUE, buildBody([], LC_METRICS, lcFilters, [], 1, '工单量')),
@@ -1459,7 +1679,7 @@ async function fetchTeamVolSummary(start, end) {
   ]);
   const lcTix = lcR.status === 'fulfilled' ? toInt(teamValues(lcR.value)[0]) : 0;
   const phTix = phR.status === 'fulfilled' ? toInt(teamValues(phR.value)[0]) : 0;
-  const emTix = emR.status === 'fulfilled' ? toInt(teamValues(emR.value)[0]) : 0;
+  const emTix = emR.status === 'fulfilled' ? toInt(teamValues(emR.value)[1]) : 0;
   return { vol: lcTix + phTix + emTix };
 }
 
@@ -1530,9 +1750,45 @@ function withDot(val, dotHtml) {
 function kpiCell(val, threshold) {
   if (!val || val === '-') return val || '-';
   const v = parseFloat(val);
-  if (isNaN(v) || v === 0) return val;   // 0% skip judgment
-  if (v >= threshold) return val;         // pass: no indicator
-  return { html: `${esc(String(val))}<span class="dot dot-red"></span>` };
+  if (isNaN(v) || v === 0) return val;
+  if (v >= threshold) return val;
+  return { html: `<span style="color:#dc2626;font-weight:700">${esc(String(val))}</span>` };
+}
+function kpiCellMin(val, colMin, colMax) {
+  if (!val || val === '-') return val || '-';
+  const v = parseFloat(val);
+  if (isNaN(v) || colMin === null) return val;
+  if (v <= colMin && colMax != null && colMin < colMax)
+    return { html: `<span style="color:#dc2626;font-weight:700">${esc(String(val))}</span>` };
+  return val;
+}
+function kpiCellCsat(val, colMin, colMax, threshold = 84) {
+  if (!val || val === '-') return val || '-';
+  const v = parseFloat(val);
+  if (isNaN(v)) return val;
+  const isBottom = colMin !== null && colMax != null && colMin < colMax && v <= colMin;
+  if (isBottom || v < threshold)
+    return { html: `<span style="color:#dc2626;font-weight:700">${esc(String(val))}</span>` };
+  return val;
+}
+function colBounds(items, getter) {
+  const vals = items.map(getter).map(v => parseFloat(v)).filter(v => !isNaN(v) && v > 0);
+  if (vals.length < 2) return null;
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  if (mn === mx) return null;
+  return { min: mn, max: mx };
+}
+function rankTd(val, bounds) {
+  if (!bounds || !val || val === '-') return val || '-';
+  const v = parseFloat(val);
+  if (isNaN(v)) return val;
+  if (v <= bounds.min) return { html: `<span style="color:#dc2626;font-weight:700">${esc(String(val))}</span>` };
+  if (v >= bounds.max) return { html: `<span style="color:#15803d;font-weight:700">${esc(String(val))}</span>` };
+  return val;
+}
+function dotRedMin(pctStr, isMin) {
+  if (!isMin || !pctStr || pctStr === '-') return '';
+  return '<span class="dot dot-red" style="position:absolute;right:-12px;top:50%;transform:translateY(-50%)"></span>';
 }
 function b(zh, en) { return `${zh}<br><span class="en">${en}</span>`; }
 function bCsat() { return `满意度<br><span class="en">CSAT <span style="font-size:10px;color:#bbb;font-weight:400">≥84%</span></span>`; }
@@ -1571,14 +1827,7 @@ function buildCsatSection(wsSat, lcSat, phoneSat, emailSat, histTrend) {
   }
 
   const csatColor = v => v >= 84 ? '#16a34a' : v >= 70 ? '#d97706' : '#dc2626';
-  const trendHtml = (histTrend && histTrend.length > 0)
-    ? `<div class="subsect-title" style="margin-bottom:8px">近4周趋势 <span class="en">4-Week Trend</span></div>`
-      + `<div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:20px;padding:12px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px">`
-      + trendBarChart('工单量', 'Ticket Volume', histTrend.map(h => ({ label: h.label, v: h.vol || 0 })), null)
-      + trendBarChart('满意度', 'CSAT', histTrend.map(h => ({ label: h.label, v: parseFloat(h.csat) || 0 })), csatColor)
-      + trendBarChart('外呼跟进量', 'Outbound Contacts', histTrend.map(h => ({ label: h.label, v: h.followCount || 0 })), null)
-      + `</div>`
-    : '';
+  const trendHtml = '';
 
   if (!team.total) {
     return trendHtml + '<p class="meta" style="color:#94a3b8">无满意度数据（WS_COOKIE 未配置或本周无评价）</p>';
@@ -1608,7 +1857,7 @@ function buildCsatSection(wsSat, lcSat, phoneSat, emailSat, histTrend) {
     if (satStr === '-') return '-';
     const v = parseFloat(satStr);
     return v < 84
-      ? `<span style="position:relative;display:inline-block">${satStr}<span class="dot dot-red" style="position:absolute;right:-12px;top:50%;transform:translateY(-50%)"></span></span>`
+      ? `<span style="color:#dc2626;font-weight:700">${satStr}</span>`
       : satStr;
   }
 
@@ -1623,7 +1872,9 @@ function buildCsatSection(wsSat, lcSat, phoneSat, emailSat, histTrend) {
   );
 
   const teamSatV = parseFloat(team.satisfaction);
-  const teamSatCell = `<span class="val-wrap"><strong>${team.satisfaction}</strong><span class="dot dot-${teamSatV >= 84 ? 'green' : 'red'}"></span><span class="tgt" style="margin-left:5px">≥84%</span></span>`;
+  const teamSatCell = teamSatV >= 84
+    ? `<strong>${team.satisfaction}</strong> <span class="tgt" style="margin-left:5px">≥84%</span>`
+    : `<strong><span style="color:#dc2626;font-weight:700">${team.satisfaction}</span></strong> <span class="tgt" style="margin-left:5px">≥84%</span>`;
   const totalRow = `<tr class="consult-total-row">`
     + `<td><strong>合计 Total</strong></td><td><strong>${team.total}</strong></td>`
     + `<td><strong>${team.lc || 0}</strong></td><td><strong>${team.phone || 0}</strong></td><td><strong>${team.email || 0}</strong></td>`
@@ -1733,7 +1984,12 @@ function buildCsatSection(wsSat, lcSat, phoneSat, emailSat, histTrend) {
 }
 
 function generateHTML(data, weekStart, weekEnd) {
-  const { lc, util, phone, phoneUtil, email, emailSat, sla, outbound, qcSat, wsSat, monthlyLc, monthlyPhone, monthlyEmail, monthlyEmailSat, monthlyQcFaults, prev, lcTopCats, phoneTopCats, emailTopCats, autoConsultPC, monthlyWsSat, histWsSat, histTrend } = data;
+  const { lc, util, phone, phoneUtil, email, emailSat, sla, outbound, qcSat, wsSat, monthlyLc, monthlyPhone, monthlyEmail, monthlyEmailSat, monthlyQcFaults, prev, lcTopCats, phoneTopCats, emailTopCats, autoConsultPC, channelPC, monthlyWsSat, histWsSat, histTrend } = data;
+
+  // 外呼転化PC = 客経侧已転化PC from a367/ndfe card (authoritative source)
+  // Sum of weeklySales per agent; fall back to pbb45c count only if ndfe returns nothing
+  const _ndfeObTotal = Object.values(autoConsultPC?.weeklySales || {}).reduce((s, v) => s + v, 0);
+  const obPcTeam = _ndfeObTotal > 0 ? _ndfeObTotal : (typeof channelPC.ob === 'number' ? channelPC.ob : 0);
 
   // WoW delta: green = better (higher), red = worse; neutral for tickets (gray)
   function wowDelta(curr, prevVal, higherIsBetter = true, isInt = false) {
@@ -1785,10 +2041,10 @@ function generateHTML(data, weekStart, weekEnd) {
   const consultPhone = toInt(phone.team.inbound);
   const consultEmail = toInt(email.team.replied);
 
-  // Per-channel PC: CLI override wins, then USCM data, else '-'
-  const lcPC    = lcPCArg    != null ? parseInt(lcPCArg)    : (typeof outbound.team.lcPC    === 'number' ? outbound.team.lcPC    : '-');
-  const phonePC = phonePCArg != null ? parseInt(phonePCArg) : (typeof outbound.team.phonePC === 'number' ? outbound.team.phonePC : '-');
-  const emailPC = emailPCArg != null ? parseInt(emailPCArg) : (typeof outbound.team.emailPC === 'number' ? outbound.team.emailPC : '-');
+  // Per-channel PC: CLI override > Guandata pbb45... table > USCM data > '-'
+  const lcPC    = lcPCArg    != null ? parseInt(lcPCArg)    : (typeof channelPC.lc    === 'number' ? channelPC.lc    : (typeof outbound.team.lcPC    === 'number' ? outbound.team.lcPC    : '-'));
+  const phonePC = phonePCArg != null ? parseInt(phonePCArg) : (typeof channelPC.phone === 'number' ? channelPC.phone : (typeof outbound.team.phonePC === 'number' ? outbound.team.phonePC : '-'));
+  const emailPC = emailPCArg != null ? parseInt(emailPCArg) : (typeof channelPC.email === 'number' ? channelPC.email : (typeof outbound.team.emailPC === 'number' ? outbound.team.emailPC : '-'));
   const consultPC = (typeof lcPC === 'number' && typeof phonePC === 'number' && typeof emailPC === 'number')
     ? lcPC + phonePC + emailPC
     : agentConsultPCArg != null
@@ -1819,21 +2075,21 @@ function generateHTML(data, weekStart, weekEnd) {
       trB('在线 Live Chat',
         consultLC + wowDelta(consultLC, prev?.lc?.tickets, true, true),
         lcPC,
-        cvCell(lc.team.satisfaction, dot(lc.team.satisfaction, 84)) + wowDelta(lc.team.satisfaction, prev?.lc?.satisfaction),
+        cvCell(lc.team.satisfaction, dot(lc.team.satisfaction, 84)),
         ansCell('30s接通', lc.team.thirtySecRate, dot(lc.team.thirtySecRate, 90), '90%'),
         cvCell(lc.team.fcr, dot(lc.team.fcr, 95)),
         lc.team.avgHandle),
       trB('电话 Phone',
         consultPhone + wowDelta(consultPhone, prev?.phone?.tickets, true, true),
         phonePC,
-        cvCell(phone.team.satisfaction, dot(phone.team.satisfaction, 84)) + wowDelta(phone.team.satisfaction, prev?.phone?.satisfaction),
+        cvCell(phone.team.satisfaction, dot(phone.team.satisfaction, 84)),
         ansCell('20s接通', phone.team.ans20s, dot(phone.team.ans20s, 95), '95%'),
         cvCell(phone.team.fcr, dot(phone.team.fcr, 95)),
         phone.team.avgDuration),
       trB('邮件 Email',
         consultEmail + wowDelta(consultEmail, prev?.email?.tickets, true, true),
         emailPC,
-        cvCell(emailSat.team.satisfaction, dot(emailSat.team.satisfaction, 84)) + wowDelta(emailSat.team.satisfaction, prev?.email?.satisfaction),
+        cvCell(emailSat.team.satisfaction, dot(emailSat.team.satisfaction, 84)),
         ansCell('Overall SLA', sla.overallSLA, dot(sla.overallSLA, 90), '90%'),
         '-',
         '-'),
@@ -1851,10 +2107,11 @@ function generateHTML(data, weekStart, weekEnd) {
     + '<col style="width:22%">'   // Weekly PC
     + '<col style="width:22%">'   // Monthly PC
     + '</colgroup>';
+  const obTeamWeeklyPC = obPcTeam > 0 ? obPcTeam : (outbound.team?.weeklyPC || '-');
   const salesTable = tbl(
-    th(b('外呼跟进量','Outbound Contacts'), b('有效跟进量','Effective (≥40s)'), b('有效跟进率','Effective Rate'), b('周转化PC','Weekly Conv. PC'), b('月总PC','Monthly Total PC')),
+    th(b('外呼跟进量','Outbound Contacts'), b('有效跟进量','Effective (≥40s)'), b('有效跟进率','Effective Rate'), b('周外呼转化PC','Weekly OB Conv. PC'), b('月总PC','Monthly Total PC')),
     [
-      `<tr class="team-row"><td><strong>${obTotalFollow || '-'}</strong></td><td><strong>${obTotalEffective || '-'}</strong></td><td><strong>${obEffectiveRate}</strong></td><td><strong>${outbound.team.weeklyPC}</strong></td><td><strong>${outbound.team.monthlyPC}</strong></td></tr>`,
+      `<tr class="team-row"><td><strong>${obTotalFollow || '-'}</strong></td><td><strong>${obTotalEffective || '-'}</strong></td><td><strong>${obEffectiveRate}</strong></td><td><strong>${obTeamWeeklyPC}</strong></td><td><strong>${outbound.team.monthlyPC}</strong></td></tr>`,
     ],
     '暂无数据',
     salesColgroup,
@@ -1921,6 +2178,7 @@ function generateHTML(data, weekStart, weekEnd) {
     const nums = arr.map((d, i) => ({ i, v: d[key] })).filter(x => x.v != null && typeof x.v === 'number' && !isNaN(x.v));
     if (nums.length < 2) return { tops: new Set(), bots: new Set() };
     const max = Math.max(...nums.map(x => x.v)), min = Math.min(...nums.map(x => x.v));
+    if (min === max) return { tops: new Set(), bots: new Set() };
     return {
       tops: new Set(nums.filter(x => x.v === max).map(x => x.i)),
       bots: new Set(nums.filter(x => x.v === min).map(x => x.i)),
@@ -1946,7 +2204,11 @@ function generateHTML(data, weekStart, weekEnd) {
   const hasAttendance = agentAttendanceArg != null;
 
   const agentSummaryRows = agentSummaryData.map((d, i) => {
-    const omniHtml = d.omniRaw && d.omniRaw !== '-' ? withDot(d.omniRaw, dotRed(d.omniRaw, 90)) : '-';
+    const omniHtml = d.omniRaw && d.omniRaw !== '-'
+      ? (rk.omni.bots.has(i) ? `<span style="color:#dc2626;font-weight:700">${esc(d.omniRaw)}</span>`
+         : rk.omni.tops.has(i) ? `<span style="color:#15803d;font-weight:700">${esc(d.omniRaw)}</span>`
+         : esc(d.omniRaw))
+      : '-';
     return '<tr>'
       + `<td>${esc(d.name)}</td>`
       + (hasAttendance ? `<td style="text-align:center">${d.attendance != null ? d.attendance : '-'}</td>` : '')
@@ -1954,14 +2216,14 @@ function generateHTML(data, weekStart, weekEnd) {
       + `<td data-col="consultpc"${rc(i,'consultPC')}>${esc(String(d.consultPC))}</td>`
       + `<td data-col="salespc"${rc(i,'salesPC')}>${esc(String(d.salesPC))}</td>`
       + `<td${rc(i,'weeklyTotal')}>${esc(String(d.weeklyTotal))}</td>`
-      + `<td>${withDot(d.csatRaw, dotRed(d.csatRaw, 84))}</td>`
+      + `<td>${d.csatNum !== null && !isNaN(d.csatNum) && d.csatNum < 84 ? `<span style="color:#dc2626;font-weight:700">${esc(d.csatRaw)}</span>` : esc(d.csatRaw || '-')}</td>`
       + `<td${rc(i,'omni','zone-end')}>${omniHtml}</td>`
       + `<td${rc(i,'monthlyTickets')}>${esc(String(d.monthlyTickets || '-'))}</td>`
-      + `<td${rc(i,'monthlyCsat')}>${withDot(d.monthlyCsatRaw, d.monthlyCsatNum !== null ? dotRed(d.monthlyCsatRaw, 84) : '')}</td>`
+      + `<td${rc(i,'monthlyCsat')}>${d.monthlyCsatNum !== null && !isNaN(d.monthlyCsatNum) && d.monthlyCsatNum < 84 ? `<span style="color:#dc2626;font-weight:700">${esc(d.monthlyCsatRaw)}</span>` : esc(d.monthlyCsatRaw || '-')}</td>`
       + `<td style="text-align:center;color:${d.monthlyFatal > 0 ? '#dc2626' : 'inherit'};font-weight:${d.monthlyFatal > 0 ? '700' : '400'}">${d.monthlyFatal}</td>`
       + `<td style="text-align:center">${d.monthlyNonfatal}</td>`
       + `<td${rc(i,'monthlyPC')}>${esc(String(d.monthlyPC))}</td>`
-      + (() => { const pct = d.monthlyPC > 0 ? Math.round(d.monthlyPC / 100 * 100) : null; return pct != null ? `<td style="font-weight:700;color:${pct >= 100 ? '#15803d' : '#dc2626'}">${pct}%</td>` : '<td>-</td>'; })()
+      + (() => { const pct = d.monthlyPC > 0 ? Math.round(d.monthlyPC / monthlyPCKpi * 100) : null; return pct != null ? `<td style="font-weight:700;color:${pct >= 100 ? '#15803d' : '#dc2626'}">${pct}%</td>` : '<td>-</td>'; })()
       + '</tr>';
   });
 
@@ -1996,9 +2258,15 @@ function generateHTML(data, weekStart, weekEnd) {
   const indTotalConsultPC  = agentSummaryData.reduce((s, d) => s + (parseInt(d.consultPC)    || 0), 0);
   const indTotalSalesPC    = agentSummaryData.reduce((s, d) => s + (parseInt(d.salesPC)      || 0), 0);
   const indTotalWeeklyPC   = agentSummaryData.reduce((s, d) => s + (parseInt(d.weeklyTotal)  || 0), 0);
+  const indTotalMonthlyLc  = agentSummaryData.reduce((s, d) => s + (d.monthlyLcTix || 0), 0);
+  const indTotalMonthlyPh  = agentSummaryData.reduce((s, d) => s + (d.monthlyPhTix || 0), 0);
+  const indTotalMonthlyEm  = agentSummaryData.reduce((s, d) => s + (d.monthlyEmTix || 0), 0);
   const indTotalMonthlyTix = agentSummaryData.reduce((s, d) => s + (parseInt(d.monthlyTickets)|| 0), 0);
   const indTotalMonthlyPC  = agentSummaryData.reduce((s, d) => s + (parseInt(d.monthlyPC)    || 0), 0);
-  const teamCsatHtml = withDot(teamSatDisplay, teamSatDisplay !== '-' ? dotRed(teamSatDisplay, 84) : '');
+  const teamCsatV2 = parseFloat(teamSatDisplay);
+  const teamCsatHtml = teamSatDisplay !== '-' && !isNaN(teamCsatV2) && teamCsatV2 < 84
+    ? `<span style="color:#dc2626;font-weight:700">${teamSatDisplay}</span>`
+    : teamSatDisplay;
   const indTotalAttendance = hasAttendance
     ? agentSummaryData.reduce((s, d) => s + (d.attendance != null ? d.attendance : 0), 0)
     : null;
@@ -2016,33 +2284,25 @@ function generateHTML(data, weekStart, weekEnd) {
     + (() => { const t = agentSummaryData.reduce((s, d) => s + d.monthlyFatal, 0); return `<td style="text-align:center;color:${t > 0 ? '#dc2626' : 'inherit'};font-weight:${t > 0 ? '700' : '400'}">${t}</td>`; })()
     + `<td style="text-align:center">${agentSummaryData.reduce((s, d) => s + d.monthlyNonfatal, 0)}</td>`
     + `<td>${indTotalMonthlyPC || '-'}</td>`
-    + (() => { const pct = indTotalMonthlyPC > 0 ? Math.round(indTotalMonthlyPC / (TEAM_ORDER.length * 100) * 100) : null; return pct != null ? `<td style="font-weight:700;color:${pct >= 100 ? '#15803d' : '#dc2626'}">${pct}%</td>` : '<td>-</td>'; })()
+    + (() => { const pct = indTotalMonthlyPC > 0 ? Math.round(indTotalMonthlyPC / (TEAM_ORDER.length * monthlyPCKpi) * 100) : null; return pct != null ? `<td style="font-weight:700;color:${pct >= 100 ? '#15803d' : '#dc2626'}">${pct}%</td>` : '<td>-</td>'; })()
     + '</tr>';
   const individualSummaryTable = tbl(indGroupHeader + indColHeader, [...agentSummaryRows, indTotalRow], '暂无数据', '', 'ind-summary');
 
-  const csatSorted = agentSummaryData.filter(d => d.csatNum != null).sort((a, b) => b.csatNum - a.csatNum);
-  const csatRankSection = csatSorted.length >= 2 ? (() => {
-    const n = Math.min(3, csatSorted.length);
-    const top = csatSorted.slice(0, n);
-    const bot = csatSorted.slice(-n).reverse();
-    const mkRow = (d, color) => `<tr><td style="color:${color};font-weight:700">${esc(d.name)}</td><td style="color:${color};font-weight:700">${d.csatRaw}%</td></tr>`;
-    return `<div style="margin-top:16px;display:flex;gap:24px;align-items:start">
-  <div><div class="subsect-title" style="color:#15803d;margin-bottom:6px">CSAT Top ${n}</div>
-  <table style="min-width:180px"><thead><tr><th style="text-align:left">客服 Agent</th><th>满意度 CSAT</th></tr></thead><tbody>${top.map(d => mkRow(d,'#15803d')).join('')}</tbody></table></div>
-  <div><div class="subsect-title" style="color:#dc2626;margin-bottom:6px">CSAT Bottom ${n}</div>
-  <table style="min-width:180px"><thead><tr><th style="text-align:left">客服 Agent</th><th>满意度 CSAT</th></tr></thead><tbody>${bot.map(d => mkRow(d,'#dc2626')).join('')}</tbody></table></div>
-</div>`;
-  })() : '';
+  const csatRankSection = '';
 
   // ── Section II.A: Live Chat Individual ─────────────────────────
-  const lcIndRows = TEAM_ORDER
-    .filter(name => lcMap[name])
+  const _lcAgents = TEAM_ORDER.filter(name => lcMap[name]);
+  const _lcAgentsData = _lcAgents.map(n => lcMap[n]);
+  const _lc30sB = colBounds(_lcAgentsData, a => a.thirtySecRate);
+  const _lcSatB  = colBounds(_lcAgentsData, a => a.satisfaction);
+  const _lcFcrB  = colBounds(_lcAgentsData, a => a.fcr);
+  const lcIndRows = _lcAgents
     .map(name => {
       const lca = lcMap[name] || {};
       return tr(name, lca.tickets || '-',
-        kpiCell(lca.thirtySecRate, 90),
-        kpiCell(lca.satisfaction, 84),
-        kpiCell(lca.fcr, 95),
+        rankTd(lca.thirtySecRate, _lc30sB),
+        rankTd(lca.satisfaction, _lcSatB),
+        rankTd(lca.fcr, _lcFcrB),
         lca.avgHandle || '-');
     });
   const lcIndTable = tbl(
@@ -2069,15 +2329,19 @@ function generateHTML(data, weekStart, weekEnd) {
     : '';
 
   // ── Section II.B: Phone Individual ─────────────────────────────
-  const phIndRows = TEAM_ORDER
-    .filter(name => phoneMap[name] && toInt(phoneMap[name].inbound) > 0)
+  const _phAgents = TEAM_ORDER.filter(name => phoneMap[name] && toInt(phoneMap[name].inbound) > 0);
+  const _phAgentsData = _phAgents.map(n => phoneMap[n]);
+  const _ph20sB = colBounds(_phAgentsData, a => a.ans20s);
+  const _phSatB  = colBounds(_phAgentsData, a => a.satisfaction);
+  const _phFcrB  = colBounds(_phAgentsData, a => a.fcr);
+  const phIndRows = _phAgents
     .map(name => {
       const ph = phoneMap[name] || {};
       return tr(name, ph.inbound || '-',
-        kpiCell(ph.ans20s, 95),
+        rankTd(ph.ans20s, _ph20sB),
         ph.avgDuration || '-',
-        kpiCell(ph.satisfaction, 84),
-        kpiCell(ph.fcr, 95));
+        rankTd(ph.satisfaction, _phSatB),
+        rankTd(ph.fcr, _phFcrB));
     });
   const phIndTable = tbl(
     th(b('客服','Agent'), b('呼入','Inbound'), b('20s接通','20s Rate'), b('通话时长','Call Dur.'), b('满意度','CSAT'), b('一次性解决率','FCR')),
@@ -2085,14 +2349,18 @@ function generateHTML(data, weekStart, weekEnd) {
   );
 
   // ── Section II.C: Email Individual ─────────────────────────────
-  const emIndRows = TEAM_ORDER
-    .filter(name => emailMap[name])
+  const _emAgents = TEAM_ORDER.filter(name => emailMap[name]);
+  const _emAgentsData = _emAgents.map(n => emailMap[n]);
+  const _emSatAgentsData = _emAgents.map(n => emailSatMap[n] || {});
+  const _emSlaB = colBounds(_emAgentsData, a => a.slaRate);
+  const _emSatB  = colBounds(_emSatAgentsData, a => a.satisfaction);
+  const emIndRows = _emAgents
     .map(name => {
       const em  = emailMap[name]    || {};
       const esa = emailSatMap[name] || {};
       return tr(name, em.tickets || '-',
-        kpiCell(em.slaRate, 90),
-        kpiCell(esa.satisfaction, 84));
+        rankTd(em.slaRate, _emSlaB),
+        rankTd(esa.satisfaction, _emSatB));
     });
   const emIndTable = tbl(
     th(b('客服','Agent'), b('工单','Tickets'), b('SLA达标','SLA Rate'), b('满意度','CSAT')),
@@ -2101,16 +2369,21 @@ function generateHTML(data, weekStart, weekEnd) {
 
   // ── Section II.D: Outbound Individual ──────────────────────────
   const obIndRows = TEAM_ORDER
-    .filter(name => obMap[name])
+    .filter(name => obMap[name] && name !== 'vincentyew')
     .map(name => {
       const ob = obMap[name] || {};
+      const distR = ob.monthlyDistConvRate != null ? ob.monthlyDistConvRate + '%' : '-';
+      const effR  = ob.monthlyEffConvRate  != null ? ob.monthlyEffConvRate  + '%' : '-';
+      const salesPcBi = autoConsultPC?.weeklySales?.[name] ?? null;
+      const salesPc   = salesPcBi !== null ? salesPcBi : ((ob.weeklyPC != null && ob.weeklyPC !== '-') ? ob.weeklyPC : 0);
       return { eff: toInt(ob.effectiveFollow), row: tr(name, ob.leadsAssigned || '-', ob.followCount || '-', ob.effectiveFollow || '-',
-        (ob.weeklyPC != null && ob.weeklyPC !== '-') ? ob.weeklyPC : 0) };
+        salesPc,
+        distR, effR) };
     })
     .sort((a, b) => b.eff - a.eff)
     .map(x => x.row);
   const obIndTable = tbl(
-    th(b('客服','Agent'), b('分配Leads','Leads Assigned'), b('跟进量','Follow-up'), b('有效跟进','Eff. Follow'), b('周PC','Weekly PC')),
+    th(b('客服','Agent'), b('分配Leads','Leads Assigned'), b('跟进量','Follow-up'), b('有效跟进','Eff. Follow'), b('周PC','Weekly PC'), b('分配转化率月','Dist. Conv%'), b('有效转化率月','Eff. Conv%')),
     obIndRows
   );
 
@@ -2141,12 +2414,7 @@ function generateHTML(data, weekStart, weekEnd) {
       analysisItems.push({ id, label, val, target, type: n < target * 0.9 ? '异常' : '待提升' });
     }
   }
-  // Per-agent low email SLA
-  const lowEmailSla = TEAM_ORDER
-    .filter(name => toInt((emailMap[name]||{}).tickets) > 0 && parseFloat((emailMap[name]||{}).slaRate) < 90)
-    .map(name => `${name}(${(emailMap[name]||{}).slaRate||'-'})`);
-  if (lowEmailSla.length > 0)
-    analysisItems.push({ id: 'emailSla', label: '邮件个人 SLA 未达标 Email SLA below 90%', val: lowEmailSla.join('、'), target: 90, type: '待提升' });
+  // SLA 待提升卡片已永久移除（业绩分析不再提 SLA 异常）
   // Low omni utilization agents (< 70%)
   const lowUtilAgents = TEAM_ORDER.filter(name => {
     const d = agentSummaryData.find(x => x.name === name);
@@ -2212,7 +2480,25 @@ function generateHTML(data, weekStart, weekEnd) {
       `<div style="margin-left:4px">${bullets}</div></div>`;
   }
 
+  // 月度有效転化率 card — computed from outbound.agents.monthlyEffConvRate
+  // Source: USCM marketing-work (monthly effective_follow_user_count) ÷ monthly total_pc
+  const obRatesAll = (outbound.agents || [])
+    .filter(a => a.name !== 'vincentyew' && a.monthlyEffConvRate !== null && a.monthlyEffConvRate !== undefined);
+  if (obRatesAll.length >= 2) {
+    const topA = obRatesAll.reduce((b, a) => a.monthlyEffConvRate > b.monthlyEffConvRate ? a : b);
+    const botA = obRatesAll.reduce((b, a) => a.monthlyEffConvRate < b.monthlyEffConvRate ? a : b);
+    if (topA.name !== botA.name) {
+      const titleHtml = `月度有效转化率差距 Monthly Eff. Conv. Rate Gap ` +
+        `<span style="color:#d97706;font-weight:700">${topA.name}(${topA.monthlyEffConvRate}%) vs ${botA.name}(${botA.monthlyEffConvRate}%)</span>`;
+      issueCards_pre = issueCard('medium', titleHtml, [
+        '复盘低转化率成员的有效跟进质量，对比高效成员跟进节点与话术',
+        '推动低转化率成员参与 1-on-1 coaching，聚焦 objection handling',
+      ]);
+    }
+  }
+
   // Build issue cards
+  const issueCards_pre_html = typeof issueCards_pre !== 'undefined' ? issueCards_pre : '';
   const issueCards = [];
   for (const item of analysisItems) {
     const v = item.val, tgt = item.target;
@@ -2231,9 +2517,9 @@ function generateHTML(data, weekStart, weekEnd) {
       `<strong>亮点</strong>　${highlightItems.join('　·　')}</div>`
     : '';
 
-  const analysisHtml = (highlightItems.length === 0 && issueCards.length === 0)
+  const analysisHtml = (highlightItems.length === 0 && issueCards.length === 0 && !issueCards_pre_html)
     ? '<p style="color:#22c55e;font-size:13px;font-weight:500">本周各项指标均达标，团队表现良好。</p>'
-    : highlightLine + issueCards.join('');
+    : highlightLine + issueCards_pre_html + issueCards.join('');
 
   // ── One-liner summary ─────────────────────────────────────────
   const _sat = (v) => { const n = parseFloat(v); return isNaN(n) ? null : n; };
@@ -2243,9 +2529,9 @@ function generateHTML(data, weekStart, weekEnd) {
   if (_sat(phone.team.satisfaction)    != null) (_sat(phone.team.satisfaction)    >= 84 ? csatOk : csatBad).push(_fmt('电话', phone.team.satisfaction));
   if (_sat(emailSat.team.satisfaction) != null) (_sat(emailSat.team.satisfaction) >= 84 ? csatOk : csatBad).push(_fmt('邮件', emailSat.team.satisfaction));
   const wsSatVal = _sat(wsSat?.team?.satisfaction);
-  const obWeeklyPC = outbound.agents.reduce((s, a) => s + (parseInt(a.convPC) || 0), 0)
-                   + (outbound.team ? parseInt(outbound.team.weeklyPC) || 0 : 0);
-  const obPCTotal = parseInt(outbound.team?.weeklyPC) || outbound.agents.reduce((s,a) => s+(parseInt(a.convPC)||0),0);
+  const weeklyObPC = obPcTeam;
+  const weeklyConsultPC = [lcPC, phonePC, emailPC].reduce((s, v) => s + (typeof v === 'number' ? v : 0), 0);
+  const weeklyTotalPC = weeklyObPC + weeklyConsultPC;
 
   // Summary bar chips
   function chip(label, val, ok) {
@@ -2255,8 +2541,8 @@ function generateHTML(data, weekStart, weekEnd) {
     return `<span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid ${bd};background:${bg};color:${c};white-space:nowrap"><strong>${label}</strong> ${val}</span>`;
   }
   const chips = [];
-  chips.push(chip('周咨询PC', `${indTotalConsultPC} 单`, null));
-  if (obPCTotal > 0) chips.push(chip('外呼转化PC', `${obPCTotal} 单`, null));
+  chips.push(chip('周咨询PC', `${weeklyConsultPC} 单`, null));
+  if (weeklyTotalPC > 0) chips.push(chip('周总PC', `${weeklyTotalPC} 单`, null));
   chips.push(chip('月度PC', `${indTotalMonthlyPC} 单`, null));
   if (wsSatVal != null) chips.push(chip('综合满意度', wsSat.team.satisfaction, wsSatVal >= 84));
   for (const x of csatOk)  chips.push(chip(x.split('（')[0] + ' CSAT', x.match(/（(.+)）/)?.[1] || x, true));
@@ -2324,6 +2610,9 @@ td.empty { color: #aaa; text-align: center; }
 td.zone-end   { border-right:2px solid #c0cadf; }
 td.rank-top   { color:#15803d !important; font-weight:700; }
 td.rank-bot   { color:#dc2626 !important; font-weight:700; }
+.breakdown-grid table { font-size: 11px; }
+.breakdown-grid th { padding: 6px 6px; font-size: 10.5px; }
+.breakdown-grid td { padding: 5px 6px; }
 @media (max-width: 800px) { .cols2, .cols-wide { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -2340,23 +2629,29 @@ ${sect('一', '业绩情况', 'Performance Overview', `
 `)}
 
 ${sect('二', '个人业绩分析', 'Individual Breakdown', `
-  <div class="cols-wide">
+  <div class="breakdown-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
     <div>
-      <h3>在线 Live Chat</h3>
-      ${lcIndTable}
-      <h3 style="margin-top:16px">电话 Phone</h3>
-      ${phIndTable}
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#1456F0;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:10px">在线 <span style="opacity:.8;font-weight:400">Live Chat</span></div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 8px">${lcIndTable}</div>
     </div>
     <div>
-      <h3>邮件 Email</h3>
-      ${emIndTable}
-      <h3 style="margin-top:16px">外呼 Outbound</h3>
-      <p class="meta">Calendar day: ${obStartArg || weekStart} ~ ${obEndArg || weekEnd} BT</p>
-      ${obIndTable}
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#0ea5e9;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:10px">电话 <span style="opacity:.8;font-weight:400">Phone</span></div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 8px">${phIndTable}</div>
+    </div>
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#8b5cf6;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:10px">邮件 <span style="opacity:.8;font-weight:400">Email</span></div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 8px">${emIndTable}</div>
     </div>
   </div>
-  <h3 style="margin-top:18px">业绩分析 Performance Analysis</h3>
-  <div style="margin-top:8px">${analysisHtml}</div>
+  <div style="margin-top:20px">
+    <div style="display:inline-flex;align-items:center;gap:6px;background:#f59e0b;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:6px">外呼 <span style="opacity:.8;font-weight:400">Outbound</span></div>
+    <p class="meta" style="margin:2px 0 8px">Calendar day: ${obStartArg || weekStart} ~ ${obEndArg || weekEnd} BT</p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;overflow-x:auto">${obIndTable}</div>
+  </div>
+  <div style="margin-top:20px">
+    <div class="subsect-title">业绩分析 <span class="en">Performance Analysis</span></div>
+    <div style="margin-top:8px">${analysisHtml}</div>
+  </div>
 `)}
 
 ${sect('三', '满意度分析', 'Satisfaction Analysis', `
@@ -2404,9 +2699,408 @@ function togClass(cls,btn){
 }
 
 // ─────────────────────────────────────────────────────────────────
+// MONTHLY HTML TEMPLATE
+// ─────────────────────────────────────────────────────────────────
+function generateMonthlyHTML(data, start, end) {
+  const { lc, phone, email, emailSat, sla, outbound, wsSat, qcSat,
+          monthlyQcFaults, lcTopCats, phoneTopCats, emailTopCats, prev } = data;
+
+  const monthLabel = start.slice(0, 7);
+
+  const lcMap      = {}; (lc.agents      || []).forEach(a => { lcMap[a.name]      = a; });
+  const phoneMap   = {}; (phone.agents   || []).forEach(a => { phoneMap[a.name]   = a; });
+  const emailMap   = {}; (email.agents   || []).forEach(a => { emailMap[a.name]   = a; });
+  const emailSatMap= {}; (emailSat.agents|| []).forEach(a => { emailSatMap[a.name]= a; });
+  const obMap      = {}; (outbound.agents|| []).forEach(a => { obMap[a.name]      = a; });
+  const wsSatMap   = {}; (wsSat?.agents  || []).forEach(a => { wsSatMap[a.name]   = a; });
+  const qcFaultsMap= {}; (monthlyQcFaults?.agents || []).forEach(a => { qcFaultsMap[a.name] = a; });
+
+  const obTotalFollow    = outbound.agents.reduce((s,a) => s + (parseInt(a.followCount)    || 0), 0);
+  const obTotalEffective = outbound.agents.reduce((s,a) => s + (parseInt(a.effectiveFollow) || 0), 0);
+  const obEffectiveRate  = obTotalFollow > 0 ? (obTotalEffective / obTotalFollow * 100).toFixed(1) + '%' : '-';
+  const totalFatal       = (monthlyQcFaults?.agents || []).reduce((s,a) => s + (a.fatal    || 0), 0);
+  const totalNonfatal    = (monthlyQcFaults?.agents || []).reduce((s,a) => s + (a.nonfatal || 0), 0);
+
+  function momDelta(curr, prevVal, higherBetter = true, isInt = false) {
+    const c = parseFloat(curr), p = parseFloat(prevVal);
+    if (isNaN(c) || isNaN(p)) return '';
+    const d = c - p;
+    if (Math.abs(d) < (isInt ? 0.5 : 0.05)) return '';
+    const better = higherBetter ? d > 0 : d < 0;
+    const color = better ? '#16a34a' : '#dc2626';
+    const arrow = d > 0 ? '↑' : '↓';
+    const fmt = isInt ? String(Math.abs(Math.round(d))) : Math.abs(d).toFixed(1).replace(/\.0$/, '') + '%';
+    return `<span class="mom-delta" style="color:${color}">${arrow}${fmt} <span style="color:#9ca3af">vs上月</span></span>`;
+  }
+
+  function kpiCard(label, en, val, opts = {}) {
+    const { target, higherBetter = true, prevVal, isInt = false } = opts;
+    const v = parseFloat(val);
+    const ok = (!isNaN(v) && val !== '-' && target != null) ? (higherBetter ? v >= target : v <= target) : null;
+    const vColor = ok === true ? '#16a34a' : ok === false ? '#dc2626' : '#1a1a2e';
+    const topBorder = ok === true ? '#16a34a' : ok === false ? '#dc2626' : '#1456F0';
+    const bgColor   = ok === true ? '#f0fdf4' : ok === false ? '#fef2f2' : '#fff';
+    const changeHtml = prevVal != null ? momDelta(val, prevVal, higherBetter, isInt) : '';
+    const targetHtml = target != null ? `<div class="kpi-tgt">目标 ${higherBetter?'≥':'≤'}${target}%</div>` : '';
+    return `<div class="kpi-card" style="border-top:3px solid ${topBorder};background:${bgColor}">` +
+      `<div class="kpi-lbl">${label}<span class="kpi-en-lbl">${en}</span></div>` +
+      `<div class="kpi-val" style="color:${vColor}">${val||'-'} ${changeHtml}</div>` +
+      targetHtml + `</div>`;
+  }
+
+  function kpiRow(cards) { return `<div class="kpi-row">${cards.join('')}</div>`; }
+
+  function sectHdr(icon, zh, en) {
+    return `<div class="sect-hdr"><span class="sect-icon">${icon}</span>` +
+      `<span class="sect-zh">${zh}</span><span class="sect-en">${en}</span></div>`;
+  }
+
+  function subTitle(zh, en = '') {
+    return `<div class="subsect-title">${zh}${en ? ` <span class="en">${en}</span>` : ''}</div>`;
+  }
+
+  function topCatTbl(cats) {
+    if (!cats || cats.length === 0) return '<p style="color:#aaa;font-size:12px;margin:8px 0">暂无数据</p>';
+    const total = cats.reduce((s,c) => s + c.count, 0);
+    return `<table style="font-size:12px"><thead><tr>` +
+      `<th style="width:22px;text-align:center">#</th><th style="text-align:left">分类</th><th>工单数</th><th>占比</th>` +
+      `</tr></thead><tbody>` +
+      cats.map((c,i) =>
+        `<tr><td style="color:#9ca3af;font-size:11px;text-align:center">${i+1}</td>` +
+        `<td style="text-align:left">${esc(c.name)}</td><td>${c.count}</td>` +
+        `<td>${total>0?(c.count/total*100).toFixed(1)+'%':'-'}</td></tr>`
+      ).join('') + `</tbody></table>`;
+  }
+
+  // ── Section 1: Live Chat ─────────────────────────────────────
+  const lcAgents = TEAM_ORDER.filter(n => lcMap[n]).map(n => lcMap[n]);
+  const lc30sB = colBounds(lcAgents, a => a.thirtySecRate);
+  const lcSatB = colBounds(lcAgents, a => a.satisfaction);
+  const lcFcrB = colBounds(lcAgents, a => a.fcr);
+  const lcRows = lcAgents.map(a => tr(a.name, a.tickets||'-', rankTd(a.thirtySecRate, lc30sB), rankTd(a.satisfaction, lcSatB), rankTd(a.fcr, lcFcrB), a.avgHandle||'-'));
+  const lcTable = tbl(
+    th(b('客服','Agent'), b('工单量','Tickets'), b('30s接通率','30s Rate'), b('满意度','CSAT'), b('FCR','FCR'), b('平均处理时长','Avg Handle')),
+    lcRows
+  );
+  const lcSection = sectHdr('💬','在线客服','Live Chat') +
+    kpiRow([
+      kpiCard('工单量','Tickets', String(lc.team.tickets||'-'), {prevVal:prev?.lc?.tickets, isInt:true}),
+      kpiCard('30s接通率','30s Answer Rate', lc.team.thirtySecRate||'-', {target:90}),
+      kpiCard('满意度','CSAT', lc.team.satisfaction||'-', {target:84, prevVal:prev?.lc?.satisfaction}),
+      kpiCard('FCR','First Contact Res.', lc.team.fcr||'-', {target:95}),
+      kpiCard('平均处理时长','Avg Handle Time', lc.team.avgHandle||'-'),
+    ]) +
+    subTitle('个人明细','Agent Breakdown') + lcTable +
+    (lcTopCats?.length ? subTitle('业务分类 TOP 10') + topCatTbl(lcTopCats) : '');
+
+  // ── Section 2: Phone ─────────────────────────────────────────
+  const phAgents = TEAM_ORDER.filter(n => phoneMap[n] && toInt(phoneMap[n].inbound) > 0).map(n => phoneMap[n]);
+  const ph20sB = colBounds(phAgents, a => a.ans20s);
+  const phSatB = colBounds(phAgents, a => a.satisfaction);
+  const phFcrB = colBounds(phAgents, a => a.fcr);
+  const phRows = phAgents.map(a => tr(a.name, a.inbound||'-', rankTd(a.ans20s, ph20sB), a.avgDuration||'-', rankTd(a.satisfaction, phSatB), rankTd(a.fcr, phFcrB)));
+  const phTable = tbl(
+    th(b('客服','Agent'), b('呼入量','Inbound'), b('20s接通率','20s Rate'), b('通话时长','Call Dur.'), b('满意度','CSAT'), b('FCR','FCR')),
+    phRows
+  );
+  const phoneSection = sectHdr('📞','电话','Phone') +
+    kpiRow([
+      kpiCard('呼入量','Inbound Calls', String(phone.team.inbound||'-'), {prevVal:prev?.phone?.tickets, isInt:true}),
+      kpiCard('20s接通率','20s Answer Rate', phone.team.ans20s||'-', {target:95}),
+      kpiCard('满意度','CSAT', phone.team.satisfaction||'-', {target:84, prevVal:prev?.phone?.satisfaction}),
+      kpiCard('FCR','First Contact Res.', phone.team.fcr||'-', {target:95}),
+      kpiCard('平均通话时长','Avg Call Duration', phone.team.avgDuration||'-'),
+    ]) +
+    subTitle('个人明细','Agent Breakdown') + phTable +
+    (phoneTopCats?.length ? subTitle('业务分类 TOP 10') + topCatTbl(phoneTopCats) : '');
+
+  // ── Section 3: Email ─────────────────────────────────────────
+  const emAgentNames = TEAM_ORDER.filter(n => emailMap[n]);
+  const emSlaB = colBounds(emAgentNames.map(n => emailMap[n]), a => a.slaRate);
+  const emSatB = colBounds(emAgentNames.map(n => emailSatMap[n]||{}), a => a.satisfaction);
+  const emRows = emAgentNames.map(n => {
+    const em = emailMap[n], esa = emailSatMap[n]||{};
+    return tr(n, em.tickets||'-', rankTd(em.slaRate, emSlaB), rankTd(esa.satisfaction, emSatB), em.avgRespTime||'-');
+  });
+  const emTable = tbl(
+    th(b('客服','Agent'), b('工单量','Tickets'), b('SLA达标率','SLA Rate'), b('满意度','CSAT'), b('平均回复时长','Avg Reply')),
+    emRows
+  );
+  const emailSection = sectHdr('📧','邮件','Email') +
+    kpiRow([
+      kpiCard('工单量','Tickets', String(email.team.replied||'-'), {prevVal:prev?.email?.tickets, isInt:true}),
+      kpiCard('整体SLA','Overall SLA', sla.overallSLA||'-', {target:90}),
+      kpiCard('满意度','CSAT', emailSat.team.satisfaction||'-', {target:84, prevVal:prev?.email?.satisfaction}),
+      kpiCard('平均回复时长','Avg Reply Time', email.team.avgRespTime||'-'),
+    ]) +
+    subTitle('个人明细','Agent Breakdown') + emTable +
+    (emailTopCats?.length ? subTitle('业务分类 TOP 10') + topCatTbl(emailTopCats) : '');
+
+  // ── Section 4: Outbound ──────────────────────────────────────
+  const obRows = TEAM_ORDER.filter(n => obMap[n]).map(n => {
+    const ob = obMap[n];
+    const mpc = (ob.monthlyPC != null && ob.monthlyPC !== '-') ? ob.monthlyPC : (ob.weeklyPC ?? '-');
+    return tr(n, ob.leadsAssigned||'-', ob.followCount||'-', ob.effectiveFollow||'-', mpc);
+  });
+  const obTable = tbl(
+    th(b('客服','Agent'), b('分配Leads','Leads'), b('外呼跟进量','Follow-up'), b('有效跟进','Eff. Follow'), b('月度转化PC','Monthly PC')),
+    obRows
+  );
+  const outboundSection = sectHdr('📤','外呼','Outbound') +
+    kpiRow([
+      kpiCard('外呼跟进量','Outbound Contacts', String(obTotalFollow||'-'), {isInt:true}),
+      kpiCard('有效跟进量','Effective (≥40s)', String(obTotalEffective||'-'), {isInt:true}),
+      kpiCard('有效跟进率','Effective Rate', obEffectiveRate),
+      kpiCard('月度转化PC','Monthly Conv. PC', String(outbound.team?.monthlyPC||'-'), {isInt:true}),
+    ]) +
+    subTitle('个人明细','Agent Breakdown') + obTable;
+
+  // ── Section 5: Satisfaction ───────────────────────────────────
+  const wsTeam = wsSat?.team || {};
+  const wsAgents = (wsSat?.agents || []).filter(a => a.total > 0);
+  const wsTeamSatV = parseFloat(wsTeam.satisfaction);
+
+  const csatColgroup = '<colgroup>'
+    + '<col style="width:11%"><col style="width:7%"><col style="width:7%"><col style="width:6%"><col style="width:7%">'
+    + '<col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:8%">'
+    + '<col style="width:10%"></colgroup>';
+  const csatHdr = '<tr class="group-header">'
+    + '<th rowspan="2" style="vertical-align:middle">客服<br><span class="en">Agent</span></th>'
+    + '<th rowspan="2" style="vertical-align:middle;text-align:center">总评价<br><span class="en">Total</span></th>'
+    + '<th colspan="3" class="zone-weekly" style="text-align:center">渠道评价数</th>'
+    + '<th colspan="5" class="zone-csat" style="text-align:center">评价分布</th>'
+    + '<th rowspan="2" style="vertical-align:middle">满意度<br><span class="en">CSAT</span></th></tr>'
+    + '<tr>'
+    + '<th class="zone-weekly" style="text-align:center">在线</th>'
+    + '<th class="zone-weekly" style="text-align:center">电话</th>'
+    + '<th class="zone-weekly" style="border-right:2px solid #bfdbfe;text-align:center">邮件</th>'
+    + '<th class="zone-csat">超赞</th><th class="zone-csat">满意</th><th class="zone-csat">一般</th>'
+    + '<th class="zone-csat">不满意</th><th class="zone-csat" style="border-right:2px solid #a5f3fc">糟糕</th>'
+    + '</tr>';
+
+  function csatValCell(s) {
+    if (!s || s === '-') return '-';
+    const v = parseFloat(s);
+    return v < 84 ? `<span style="color:#dc2626;font-weight:700">${s}</span>` : s;
+  }
+  function zo(n) { return (n && n > 0) ? n : '-'; }
+
+  const csatAgentRows = wsAgents.map(a =>
+    `<tr><td>${esc(a.name)}</td><td>${a.total}</td>` +
+    `<td>${zo(a.lc)}</td><td>${zo(a.phone)}</td><td>${zo(a.email)}</td>` +
+    `<td>${zo(a.superb)}</td><td>${zo(a.good)}</td><td>${zo(a.avg)}</td>` +
+    `<td>${zo(a.dissatisfied)}</td><td>${zo(a.bad)}</td>` +
+    `<td>${csatValCell(a.satisfaction)}</td></tr>`
+  );
+  const csatTeamCell = wsTeam.total
+    ? (wsTeamSatV >= 84
+        ? `<strong>${wsTeam.satisfaction||'-'}</strong> <span class="tgt">≥84%</span>`
+        : `<strong><span style="color:#dc2626;font-weight:700">${wsTeam.satisfaction||'-'}</span></strong> <span class="tgt">≥84%</span>`)
+    : '-';
+  const csatTotalRow = `<tr class="consult-total-row">` +
+    `<td><strong>合计 Total</strong></td><td><strong>${wsTeam.total||0}</strong></td>` +
+    `<td><strong>${wsTeam.lc||0}</strong></td><td><strong>${wsTeam.phone||0}</strong></td><td><strong>${wsTeam.email||0}</strong></td>` +
+    `<td><strong>${wsTeam.superb||0}</strong></td><td><strong>${wsTeam.good||0}</strong></td><td><strong>${wsTeam.avg||0}</strong></td>` +
+    `<td><strong>${wsTeam.dissatisfied||0}</strong></td><td><strong>${wsTeam.bad||0}</strong></td>` +
+    `<td>${csatTeamCell}</td></tr>`;
+  const csatAgentTable = `<table>${csatColgroup}<thead>${csatHdr}</thead><tbody>${csatAgentRows.join('')}${csatTotalRow}</tbody></table>`;
+
+  const lowChans = [
+    { name: '在线 Live Chat', sat: lc.team.satisfaction },
+    { name: '电话 Phone',     sat: phone.team.satisfaction },
+    { name: '邮件 Email',     sat: emailSat.team.satisfaction },
+  ].filter(c => c.sat && c.sat !== '-' && parseFloat(c.sat) < 84)
+   .sort((a,b) => parseFloat(a.sat) - parseFloat(b.sat));
+
+  const csatImprovHtml = lowChans.length > 0
+    ? `<div style="background:#eff6ff;border-left:4px solid #1456F0;border-radius:6px;padding:12px 16px;margin-top:14px">` +
+      `<div style="font-size:11px;font-weight:700;color:#1456F0;letter-spacing:1px;margin-bottom:8px">改善方向</div>` +
+      lowChans.map(c =>
+        `<div style="font-size:12.5px;color:#374151;margin-bottom:6px">› <strong>${c.name}</strong> CSAT ` +
+        `<span style="color:#dc2626;font-weight:700">${c.sat}</span>，目标 ≥84%</div>`
+      ).join('') + `</div>`
+    : `<div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:6px;padding:10px 14px;margin-top:14px;font-size:13px;color:#15803d">本月各渠道满意度均达标</div>`;
+
+  const negCats = (wsSat?.negCategories || []).filter(c => c.count > 0);
+  const negCatHtml = negCats.length > 0
+    ? subTitle('不满意工单分类分布','Dissatisfied Ticket Categories') +
+      `<table style="width:auto;min-width:320px;font-size:12.5px"><thead><tr>` +
+      `<th style="text-align:left">分类</th><th style="text-align:center">工单数</th><th style="text-align:center">占比</th>` +
+      `</tr></thead><tbody>` +
+      (() => {
+        const t = negCats.reduce((s,x)=>s+x.count,0);
+        return negCats.map(c =>
+          `<tr><td>${esc(c.name)}</td><td style="text-align:center">${c.count}</td>` +
+          `<td style="text-align:center">${t>0?(c.count/t*100).toFixed(1)+'%':'-'}</td></tr>`
+        ).join('');
+      })() + `</tbody></table>`
+    : '';
+
+  const csatSection = sectHdr('⭐','满意度分析','Satisfaction Analysis') +
+    kpiRow([
+      kpiCard('综合满意度','Overall CSAT',  wsTeam.satisfaction||'-',       {target:84}),
+      kpiCard('在线 CSAT', 'Live Chat CSAT', lc.team.satisfaction||'-',     {target:84}),
+      kpiCard('电话 CSAT', 'Phone CSAT',    phone.team.satisfaction||'-',   {target:84}),
+      kpiCard('邮件 CSAT', 'Email CSAT',    emailSat.team.satisfaction||'-', {target:84}),
+    ]) +
+    (wsTeam.total > 0
+      ? subTitle('个人满意度明细','Agent CSAT Detail') + csatAgentTable + csatImprovHtml + negCatHtml
+      : '<p style="color:#94a3b8;font-size:13px;margin-top:16px">无满意度数据（WS_COOKIE 未配置或本月无评价）</p>');
+
+  // ── Section 6: QA ────────────────────────────────────────────
+  const qaRows = TEAM_ORDER.map(n => {
+    const d = qcFaultsMap[n] || { fatal: 0, nonfatal: 0 };
+    return `<tr><td>${esc(n)}</td>` +
+      `<td style="text-align:center;color:${d.fatal>0?'#dc2626':'#6b7280'};font-weight:${d.fatal>0?'700':'400'}">${d.fatal}</td>` +
+      `<td style="text-align:center">${d.nonfatal}</td>` +
+      `<td style="text-align:center;font-weight:${(d.fatal+d.nonfatal)>0?'600':'400'}">${d.fatal+d.nonfatal}</td></tr>`;
+  });
+  const qaTotalRow = `<tr class="consult-total-row">` +
+    `<td><strong>合计 Total</strong></td>` +
+    `<td style="text-align:center;color:${totalFatal>0?'#dc2626':'inherit'};font-weight:700">${totalFatal}</td>` +
+    `<td style="text-align:center;font-weight:700">${totalNonfatal}</td>` +
+    `<td style="text-align:center;font-weight:700">${totalFatal+totalNonfatal}</td></tr>`;
+  const qaTable = `<table><thead><tr>` +
+    `<th style="text-align:left">客服 Agent</th>` +
+    `<th style="text-align:center">致命差错<br><span class="en">Fatal</span></th>` +
+    `<th style="text-align:center">非致命差错<br><span class="en">Non-Fatal</span></th>` +
+    `<th style="text-align:center">合计<br><span class="en">Total</span></th>` +
+    `</tr></thead><tbody>${qaRows.join('')}${qaTotalRow}</tbody></table>`;
+  const qaQcSat = qcSat?.team?.satisfaction || '-';
+  const qaSection = sectHdr('🔍','质检差错','QA / Quality') +
+    kpiRow([
+      kpiCard('致命差错','Fatal Errors',   String(totalFatal),   {higherBetter:false}),
+      kpiCard('非致命差错','Non-Fatal',    String(totalNonfatal),{higherBetter:false}),
+      kpiCard('差错合计','Total Errors',   String(totalFatal+totalNonfatal), {higherBetter:false}),
+      ...(qaQcSat!=='-' ? [kpiCard('质检满意度','QC Satisfaction', qaQcSat, {target:84})] : []),
+    ]) +
+    subTitle('个人差错明细','Agent Error Detail') + qaTable;
+
+  // ── Section 7: Monthly Summary ────────────────────────────────
+  const consultTotal = toInt(lc.team.tickets) + toInt(phone.team.inbound) + toInt(email.team.replied);
+  const obMonthlyPC  = parseInt(outbound.team?.monthlyPC) || 0;
+  const wsTeamSat2   = wsTeam.satisfaction || '-';
+
+  function chip(label, val, ok) {
+    const c  = ok===true?'#16a34a':ok===false?'#dc2626':'#1456F0';
+    const bg = ok===true?'#f0fdf4':ok===false?'#fef2f2':'#f0f4ff';
+    const bd = ok===true?'#bbf7d0':ok===false?'#fecaca':'#c7d6f7';
+    return `<span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid ${bd};background:${bg};color:${c};white-space:nowrap"><strong>${label}</strong> ${val}</span>`;
+  }
+  const chips2 = [];
+  chips2.push(chip('总工单量', `${consultTotal||'-'} 条`, null));
+  if (obTotalFollow > 0) chips2.push(chip('外呼跟进量', `${obTotalFollow} 条`, null));
+  if (obMonthlyPC  > 0) chips2.push(chip('月度转化PC', `${obMonthlyPC} 单`, null));
+  if (wsTeamSat2 !== '-') { const sv=parseFloat(wsTeamSat2); chips2.push(chip('综合满意度', wsTeamSat2, !isNaN(sv)?sv>=84:null)); }
+  if (totalFatal  > 0) chips2.push(chip('致命差错', `${totalFatal} 条`, false));
+
+  const summarySection = sectHdr('📋','月度总结','Monthly Summary') +
+    (chips2.length ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;padding:10px 14px;background:#f8faff;border:1.5px solid #c7d6f7;border-radius:6px">` +
+      `<span style="font-size:11px;font-weight:700;color:#6b7280;margin-right:4px;align-self:center">月度概览</span>` +
+      chips2.join('') + `</div>` : '') +
+    subTitle('月度重点工作','Key Work This Month') +
+    `<div class="editable-hint">点击编辑 / Click to edit</div>` +
+    `<div class="editable-area" contenteditable="true">请填写本月重点工作...</div>` +
+    `<div style="margin-top:20px">` + subTitle('下月计划','Next Month Plans') + `</div>` +
+    `<div class="editable-hint">点击编辑 / Click to edit</div>` +
+    `<div class="editable-area" contenteditable="true">请填写下月安排...</div>`;
+
+  // ── Full HTML ─────────────────────────────────────────────────
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>US CSS Monthly Report — ${monthLabel}</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; background: #f0f4fa; color: #1a1a2e; padding: 0; }
+.page-header { background: linear-gradient(135deg, #1456F0, #3d7ff5); color: #fff; padding: 24px 36px 20px; text-align: center; }
+h1 { font-size: 22px; font-weight: 700; letter-spacing: .3px; margin-bottom: 4px; }
+.subtitle { font-size: 12px; color: rgba(255,255,255,.8); }
+.tab-nav { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 2px solid #e2e8f0; display: flex; gap: 0; overflow-x: auto; padding: 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.tab-btn { padding: 12px 18px; font-size: 13px; font-weight: 500; color: #6b7280; border: none; background: none; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: color .15s, border-color .15s; }
+.tab-btn:hover { color: #1456F0; }
+.tab-btn.active { color: #1456F0; font-weight: 700; border-bottom-color: #1456F0; }
+.tab-pane { display: none; padding: 28px 32px; max-width: 1480px; margin: 0 auto; }
+.tab-pane.active { display: block; }
+.sect-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #e2e8f0; }
+.sect-icon { font-size: 20px; }
+.sect-zh { font-size: 16px; font-weight: 700; color: #1456F0; }
+.sect-en { font-size: 12px; color: #9ca3af; margin-left: 4px; }
+.kpi-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; }
+.kpi-card { flex: 1; min-width: 140px; background: #fff; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+.kpi-lbl { font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 6px; }
+.kpi-en-lbl { display: block; font-size: 10px; color: #9ca3af; font-weight: 400; margin-top: 1px; }
+.kpi-val { font-size: 20px; font-weight: 700; line-height: 1.2; }
+.kpi-tgt { font-size: 10px; color: #9ca3af; margin-top: 4px; }
+.mom-delta { font-size: 10px; font-weight: 500; margin-left: 4px; }
+h2 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 16px; padding: 10px 18px;
+     background: linear-gradient(135deg, #1456F0, #3d7ff5); border-radius: 8px; display: flex; align-items: center; gap: 8px; }
+h3 { font-size: 11.5px; font-weight: 700; color: #1456F0; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: .8px; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+th { background: #eef2ff; color: #1456F0; text-align: center; padding: 10px 10px; border-bottom: 2px solid #c0d0f0; white-space: nowrap; }
+th:first-child { text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #eef0f5; white-space: nowrap; text-align: center; vertical-align: middle; }
+td:first-child { text-align: left; }
+.bold-row td { font-weight: 700; background: #eef2ff; }
+.consult-total-row td { font-weight: 700; background: #dce6ff; border-top: 2px solid #1456F0; border-bottom: 2px solid #1456F0; }
+tr:hover td { background: #f8f9ff; }
+td.empty { color: #aaa; text-align: center; }
+.en { font-size: 11px; color: #999; font-weight: 400; }
+.editable-area { min-height: 130px; border: 1px solid #e0e4f0; border-radius: 8px; padding: 14px 18px;
+                 font-size: 13px; color: #333; line-height: 1.8; outline: none; background: #fafbff; }
+.editable-area:focus { border-color: #1456F0; box-shadow: 0 0 0 2px rgba(20,86,240,.1); }
+.editable-hint { font-size: 11px; color: #aaa; margin-bottom: 8px; }
+.dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-left:4px; vertical-align:middle; }
+.val-wrap { position:relative; display:inline-block; }
+.val-wrap .dot { position:absolute; left:calc(100% + 3px); top:50%; transform:translateY(-50%); margin:0; }
+.dot-green { background:#22c55e; }
+.dot-red { background:#ef4444; }
+.tgt { font-size:10px; color:#bbb; font-weight:400; margin-left:4px; }
+.subsect-title { font-size: 13.5px; font-weight: 700; color: #1456F0; margin: 0 0 10px 0; padding: 5px 0 7px; border-bottom: 1px solid #d0daf8; letter-spacing: .2px; }
+.zone-weekly { background:#dbeafe; color:#1456F0; border-right:2px solid #bfdbfe; }
+.zone-csat   { background:#cffafe; color:#0e7490; border-right:2px solid #a5f3fc; }
+.group-header th { padding:6px 10px; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="page-header">
+  <h1>US CSS Monthly Report</h1>
+  <p class="subtitle">${start} ~ ${end} &nbsp;|&nbsp; Conversion CS Team &nbsp;(${TEAM_ORDER.length} agents)</p>
+</div>
+<nav class="tab-nav" id="tabNav">
+  <button class="tab-btn active" onclick="switchTab('lc',this)">💬 在线客服</button>
+  <button class="tab-btn" onclick="switchTab('phone',this)">📞 电话</button>
+  <button class="tab-btn" onclick="switchTab('email',this)">📧 邮件</button>
+  <button class="tab-btn" onclick="switchTab('outbound',this)">📤 外呼</button>
+  <button class="tab-btn" onclick="switchTab('csat',this)">⭐ 满意度</button>
+  <button class="tab-btn" onclick="switchTab('qa',this)">🔍 质检</button>
+  <button class="tab-btn" onclick="switchTab('summary',this)">📋 月度总结</button>
+</nav>
+<div id="tab-lc"       class="tab-pane active">${lcSection}</div>
+<div id="tab-phone"    class="tab-pane">${phoneSection}</div>
+<div id="tab-email"    class="tab-pane">${emailSection}</div>
+<div id="tab-outbound" class="tab-pane">${outboundSection}</div>
+<div id="tab-csat"     class="tab-pane">${csatSection}</div>
+<div id="tab-qa"       class="tab-pane">${qaSection}</div>
+<div id="tab-summary"  class="tab-pane">${summarySection}</div>
+<p style="font-size:11px;color:#aaa;text-align:center;padding:16px">Generated: ${new Date().toISOString()}</p>
+<script>
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(function(el){el.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(el){el.classList.remove('active');});
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>`;
+}
+
+// ─────────────────────────────────────────────────────────────────
 // MAIN
 // ─────────────────────────────────────────────────────────────────
-const GITHUB_REPORT_BASE = 'https://irisding001.github.io/US-CSS-weekly-report';
+const GITHUB_REPORT_BASE = 'https://irisding001.github.io/us-css-weeklyreport';
 
 function parsePrevReport(html) {
   const stripHtml = s => s.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
@@ -2470,7 +3164,32 @@ async function fetchPrevWeekReport(weekStart) {
   }
 }
 
+async function discoverPage(pageId) {
+  console.log(`\nDiscovering page: ${pageId}`);
+  let cfg;
+  try { cfg = await guandataGet(`/api/page/${pageId}`); }
+  catch (e) { console.error(`GET /api/page failed: ${e.message}`); cfg = null; }
+  if (cfg) {
+    const ids = new Set();
+    const walk = (o) => {
+      if (!o || typeof o !== 'object') return;
+      for (const [k, v] of Object.entries(o)) {
+        if ((k === 'cdId' || k === 'cardId') && typeof v === 'string' && /^[a-z0-9]{24}$/.test(v)) ids.add(v);
+        walk(v);
+      }
+    };
+    walk(cfg);
+    console.log(`\nFound ${ids.size} card IDs:`);
+    for (const id of ids) {
+      try { await discoverCard(id, id); } catch (e) { console.error(`  ${id}: ${e.message}`); }
+    }
+  }
+  // Also print raw truncated response for inspection
+  if (cfg) console.log('\nRaw (truncated):', JSON.stringify(cfg).slice(0, 2000));
+}
+
 async function main() {
+  if (DISCOVER_PAGE) { await discoverPage(DISCOVER_PAGE); return; }
   if (DISCOVER) { await runDiscover(); return; }
 
   const { start, end } = getWeekRange();
@@ -2481,7 +3200,7 @@ async function main() {
   const h1Start = addDays(start, -21); const h1End = addDays(start, -15);
   const h2Start = addDays(start, -14); const h2End = addDays(start, -8);
   const h3Start = addDays(start, -7);  const h3End = addDays(start, -1);
-  const [lcR, utilR, phoneR, puR, emailR, emailSatR, slaR, obR, qcSatR, wsSatR, mLcR, mPhoneR, mEmailR, mEmailSatR, mQcFaultsR, lcTopR, phoneTopR, emailTopR, consultPCR, mWsSatR, h1SatR, h2SatR, h3SatR, h1VolR, h2VolR, h3VolR, h1ObR, h2ObR, h3ObR] = await Promise.allSettled([
+  const [lcR, utilR, phoneR, puR, emailR, emailSatR, slaR, obR, qcSatR, wsSatR, mLcR, mPhoneR, mEmailR, mEmailSatR, mQcFaultsR, lcTopR, phoneTopR, emailTopR, consultPCR, mWsSatR, h1SatR, h2SatR, h3SatR, h1VolR, h2VolR, h3VolR, h1ObR, h2ObR, h3ObR, chPCR] = await Promise.allSettled([
     fetchLiveChatQueue(dataStart, end),
     fetchLiveChatUtil(dataStart, end),
     fetchPhone(dataStart, end),
@@ -2511,6 +3230,7 @@ async function main() {
     fetchOutboundFollowSummary(h1Start, h1End),
     fetchOutboundFollowSummary(h2Start, h2End),
     fetchOutboundFollowSummary(h3Start, h3End),
+    fetchChannelPCDetail(start, end),
   ]);
 
   function unwrap(r, label, fallback) {
@@ -2539,6 +3259,7 @@ async function main() {
     phoneTopCats: unwrap(phoneTopR, 'Phone Top Cat', []),
     emailTopCats: unwrap(emailTopR, 'Email Top Cat', []),
     autoConsultPC: unwrap(consultPCR, '咨询PC(BI)', { weekly: {}, monthly: {} }),
+    channelPC:     unwrap(chPCR,      '渠道PC',     { lc: '-', phone: '-', email: '-', byAgent: {} }),
     monthlyWsSat:  unwrap(mWsSatR,    '月度WS满意度', { team: { satisfaction: '-' }, agents: [] }),
     histWsSat: [
       { start: h1Start, end: h1End, data: unwrap(h1SatR, 'CSAT W-3', { team: {}, agents: [] }) },
@@ -2582,10 +3303,12 @@ async function main() {
     if (prevWeeklyPc)  { data.prev.total = data.prev.total || {}; data.prev.total.weeklyPC = prevWeeklyPc; }
   }
 
-  const html = generateHTML(data, start, end);
+  const html = IS_MONTHLY ? generateMonthlyHTML(data, start, end) : generateHTML(data, start, end);
   const outFile = outArg || path.join(
     process.env.USERPROFILE || process.env.HOME || '.',
-    `weekly_report_${start}_${end.slice(5).replace('-', '')}.html`
+    IS_MONTHLY
+      ? `monthly_report_${start.slice(0,7)}.html`
+      : `weekly_report_${start}_${end.slice(5).replace('-', '')}.html`
   );
   fs.writeFileSync(outFile, html, 'utf8');
   console.log(`Report saved: ${outFile}`);
