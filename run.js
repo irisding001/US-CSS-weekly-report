@@ -186,7 +186,8 @@ const CARDS = {
   EMAIL_SAT: 'db4225f75c16b49a0b6ef227',
   SLA:       'i962341c6f44c422f8eb998e',
 };
-const PHONE_UTIL_CARD = 'g2f6209e865c343cc9015a26';
+const PHONE_UTIL_CARD   = 'g2f6209e865c343cc9015a26';
+const CONV_RATE_CARD    = 'ra25fdcdd1f5643d49983698'; // 客经维度-新leads cohort (page w1b3b7d2e763b45f6a814194)
 
 const CARD_VPARAMS = {
   // All v params resolved dynamically via GET /api/card/{id}
@@ -1056,6 +1057,54 @@ async function fetchSLA(start, end) {
   };
 }
 
+// ── BI Outbound conversion rates (月度, from 客经维度-新leads cohort) ──────────
+async function fetchBiObRates(mStart) {
+  // row dims: [0]=地区 [1]=粒度 [2]=日期 [3]=渠道 [4]=客经名
+  // data cols: [2]=有效跟进转化率  [4]=分配转化率  [5]=分配数  [7]=有效跟进数
+  const mMonth = mStart.slice(0, 7);
+  const map = new Map();
+  let offset = 0;
+  while (true) {
+    let resp;
+    try {
+      resp = await guandataPost(CONV_RATE_CARD, {
+        offset, limit: 500,
+        treeFilters: [], dynamicParams: [], dynamicFieldFilters: [],
+        combinationFilters: [], layerTreeFilters: [],
+      });
+    } catch (e) {
+      console.warn(`[WARN] fetchBiObRates: ${e.message}`);
+      break;
+    }
+    const cm = resp?.response?.chartMain || {};
+    const rv = cm?.row?.values || [];
+    const d  = cm?.data || [];
+    if (!d.length) break;
+    for (let i = 0; i < d.length; i++) {
+      if ((rv[i]?.[0]?.title || '') !== 'US') continue;
+      if ((rv[i]?.[1]?.title || '') !== '月') continue;
+      const date = rv[i]?.[2]?.title || rv[i]?.[2]?.dvt || '';
+      if (!date.startsWith(mMonth)) continue;
+      if ((rv[i]?.[3]?.title || rv[i]?.[3]?.dvt || '') !== '总体') continue;
+      const agentRaw = rv[i]?.[4]?.title || rv[i]?.[4]?.dvt || '';
+      const m = agentRaw.match(/^([^(（]+)/);
+      const agent = (m ? m[1].trim() : agentRaw).toLowerCase();
+      if (!CONVERSION_TEAM.has(agent)) continue;
+      map.set(agent, {
+        distConvRate: d[i]?.[4]?.v ?? null,
+        effConvRate:  d[i]?.[2]?.v ?? null,
+        distLeads:    d[i]?.[5]?.v ?? 0,
+        effFollow:    d[i]?.[7]?.v ?? 0,
+      });
+    }
+    if (d.length < 500) break;
+    offset += 500;
+    if (offset > 5000) break;
+  }
+  console.log(`[OK] BI ob rates (${mMonth}): ${map.size} agents`);
+  return map;
+}
+
 // ── Outbound ──────────────────────────────────────────────────────
 async function fetchOutbound(start, end) {
   // Calendar day window for follow/eff data: ob-start ~ ob-end (default: week start ~ week end)
@@ -1070,21 +1119,21 @@ async function fetchOutbound(start, end) {
   const pcStart = toYYYYMMDD(effectivePcStart);
   const mStart  = obStartArg ? toYYYYMMDD(obStartArg) : toYYYYMMDD(monthStart(end));
 
-  const [leadsResp, weekTeamResp, weekStaffResp, monthTeamResp, monthStaffResp, monthLeadsResp] = await Promise.all([
-    // marketing-work: Calendar Day Follow-up and Conversion — call_num=TOCC, effective_follow_user_count=TEFV
-    uscmGet('/api/visitor/overseas-statistics/marketing-work', { start_date: obStartD0, end_date: obEndD0 }),
-    uscmGet('/api/am/us/overseas-performance/total-stats', { start_date: pcStart, end_date: endD0, area: 'US' }),
-    uscmGet('/api/am/us/overseas-performance/staff-stats',  { start_date: pcStart, end_date: endD0, area: 'US', role: '1' }),
-    mStart !== pcStart
-      ? uscmGet('/api/am/us/overseas-performance/total-stats', { start_date: mStart, end_date: endD0, area: 'US' })
-      : null,
-    mStart !== pcStart
-      ? uscmGet('/api/am/us/overseas-performance/staff-stats',  { start_date: mStart, end_date: endD0, area: 'US', role: '1' })
-      : null,
-    // Monthly effective follow-up count (for 月度有效転化率)
-    mStart !== obStartD0
-      ? uscmGet('/api/visitor/overseas-statistics/marketing-work', { start_date: mStart, end_date: obEndD0 })
-      : null,
+  const [[leadsResp, weekTeamResp, weekStaffResp, monthTeamResp, monthStaffResp], biRatesMap] = await Promise.all([
+    Promise.all([
+      // marketing-work: Calendar Day Follow-up and Conversion — call_num=TOCC, effective_follow_user_count=TEFV
+      uscmGet('/api/visitor/overseas-statistics/marketing-work', { start_date: obStartD0, end_date: obEndD0 }),
+      uscmGet('/api/am/us/overseas-performance/total-stats', { start_date: pcStart, end_date: endD0, area: 'US' }),
+      uscmGet('/api/am/us/overseas-performance/staff-stats',  { start_date: pcStart, end_date: endD0, area: 'US', role: '1' }),
+      mStart !== pcStart
+        ? uscmGet('/api/am/us/overseas-performance/total-stats', { start_date: mStart, end_date: endD0, area: 'US' })
+        : null,
+      mStart !== pcStart
+        ? uscmGet('/api/am/us/overseas-performance/staff-stats',  { start_date: mStart, end_date: endD0, area: 'US', role: '1' })
+        : null,
+    ]),
+    // Monthly 分配转化率 / 有效跟进转化率 from BI (page w1b3b7d2e763b45f6a814194)
+    fetchBiObRates(mStart).catch(e => { console.warn('[WARN] fetchBiObRates failed:', e.message); return new Map(); }),
   ]);
 
   // Parse marketing-work — each agent has N sub-rows (by tag) + 1 aggregate row (max call_num)
@@ -1146,31 +1195,13 @@ async function fetchOutbound(start, end) {
                         +  (row.email_pc  || row.mail_pc  || 0);
   }
 
-  // Monthly effective follow-up — from monthly marketing-work call (for 月度有効転化率)
-  const monthlyEffFollowMap = new Map();
-  const mwMonthList = monthLeadsResp?.data?.list || leadsResp?.data?.list || [];
-  const mwMonthByStaff = new Map();
-  for (const row of mwMonthList) {
-    if (!CONVERSION_TEAM.has(row.staff_name)) continue;
-    if (!mwMonthByStaff.has(row.staff_name) || row.call_num > mwMonthByStaff.get(row.staff_name).call_num) {
-      mwMonthByStaff.set(row.staff_name, row);
-    }
-  }
-  const monthlyLeadsMap = new Map();
-  for (const [name, row] of mwMonthByStaff) {
-    monthlyEffFollowMap.set(name, row.effective_follow_user_count || 0);
-    monthlyLeadsMap.set(name, row.distribute_num || 0);
-  }
-
   const agents = TEAM_ORDER
     .filter(n => byStaff.has(n))
     .map(n => {
       const s = byStaff.get(n);
-      const mEffFol = monthlyEffFollowMap.get(n) || 0;
-      const mLeads  = monthlyLeadsMap.get(n) || 0;
-      const mPC = s.monthlyPC || 0;
-      const monthlyEffConvRate  = mEffFol > 0 ? +(mPC / mEffFol  * 100).toFixed(1) : null;
-      const monthlyDistConvRate = mLeads  > 0 ? +(mPC / mLeads   * 100).toFixed(1) : null;
+      const bi = biRatesMap.get(n);
+      const monthlyDistConvRate = bi?.distConvRate != null ? +(bi.distConvRate * 100).toFixed(1) : null;
+      const monthlyEffConvRate  = bi?.effConvRate  != null ? +(bi.effConvRate  * 100).toFixed(1) : null;
       return {
         name:              n,
         leadsAssigned:     num(s.leadsAssigned),
@@ -1179,8 +1210,8 @@ async function fetchOutbound(start, end) {
         weeklyPC:          num(s.weeklyPC),
         monthlyPC:         num(s.monthlyPC),
         monthlyConsultPC:  s.monthlyConsultPC || 0,
-        monthlyLeads:      mLeads,
-        monthlyEffFollow:  mEffFol,
+        monthlyLeads:      bi?.distLeads ?? 0,
+        monthlyEffFollow:  bi?.effFollow  ?? 0,
         monthlyEffConvRate,
         monthlyDistConvRate,
         lcPC:              s.lcPC,
@@ -1960,7 +1991,7 @@ function buildCsatSection(wsSat, lcSat, phoneSat, emailSat, histTrend) {
     + (topText || bot3Text ? `<br>${topText}${bot3Text}。` : '')
     + `</div>`;
 
-  const summary = `<h3 style="margin-top:18px">满意度小结</h3><div style="margin-top:10px">`
+  const summary = `<div class="subsect-title" style="margin-bottom:8px">满意度小结 <span class="en">CSAT Summary</span></div><div style="margin-top:4px">`
     + overviewHtml
     + `</div>`;
 
@@ -1980,7 +2011,7 @@ function buildCsatSection(wsSat, lcSat, phoneSat, emailSat, histTrend) {
       + `</tbody></table>`
     : '';
 
-  return trendHtml + summary;
+  return summary;
 }
 
 function generateHTML(data, weekStart, weekEnd) {
@@ -2628,7 +2659,20 @@ ${sect('一', '业绩情况', 'Performance Overview', `
   ${individualSummaryTable}
 `)}
 
-${sect('二', '个人业绩分析', 'Individual Breakdown', `
+${sect('二', '满意度分析', 'Satisfaction Analysis', `
+  ${buildCsatSection(wsSat, lc.team.satisfaction, phone.team.satisfaction, emailSat.team.satisfaction, fullHistTrend)}
+  <!-- inject-neg-analysis-start --><!-- inject-neg-analysis-end -->
+  <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:14px">
+    <div style="flex:2.2;min-width:340px">
+      <div class="subsect-title" style="margin-bottom:8px">近6周综合满意度趋势 <span class="en">6-Week CSAT Trend</span></div>
+      <!-- inject-csat-combo-start --><!-- inject-csat-combo-end -->
+    </div>
+  </div>
+  <!-- inject-dist-start --><!-- inject-dist-end -->
+  <!-- inject-neg-cards-start --><!-- inject-neg-cards-end -->
+`)}
+
+${sect('三', '个人业绩分析', 'Individual Breakdown', `
   <div class="breakdown-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
     <div>
       <div style="display:inline-flex;align-items:center;gap:6px;background:#1456F0;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:10px">在线 <span style="opacity:.8;font-weight:400">Live Chat</span></div>
@@ -2652,11 +2696,6 @@ ${sect('二', '个人业绩分析', 'Individual Breakdown', `
     <div class="subsect-title">业绩分析 <span class="en">Performance Analysis</span></div>
     <div style="margin-top:8px">${analysisHtml}</div>
   </div>
-`)}
-
-${sect('三', '满意度分析', 'Satisfaction Analysis', `
-  ${buildCsatSection(wsSat, lc.team.satisfaction, phone.team.satisfaction, emailSat.team.satisfaction, fullHistTrend)}
-  ${csatRankSection}
   ${topCatSection}
 `)}
 
@@ -3232,6 +3271,15 @@ async function main() {
     fetchOutboundFollowSummary(h3Start, h3End),
     fetchChannelPCDetail(start, end),
   ]);
+
+  // Auto-refresh if any USCM call expired mid-run
+  const authExpired = [lcR, utilR, phoneR, puR, emailR, emailSatR, slaR, obR].some(
+    r => r.status === 'rejected' && String(r.reason?.message).includes('USCM_AUTH_EXPIRED')
+  );
+  if (authExpired) {
+    console.log('[AUTH] USCM cookie expired during fetch — auto-refreshing...');
+    await autoRefreshAndRestart();
+  }
 
   function unwrap(r, label, fallback) {
     if (r.status === 'fulfilled') return r.value;

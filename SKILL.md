@@ -9,7 +9,8 @@ description: US CSS 团队周报生成器（12人 Conversion CS Team，四模块
 团队：jacelynlim / terrychen / muhamadfaisal / calventan / azamuddin / jeanliew / whitneylee / alvinsim / zaydentan / vincentyew / wilsonwong / zyonnleong
 
 > ⚠️ **仓库区分（严禁推错）**  
-> - 本 skill（`US-CCS-weekly-report`）→ 仓库 `us-css-weeklyreport`（周五~周四）  
+> - 本 skill（`US-CCS-weekly-report`）→ 仓库 `US-CSS-weekly-report`（周五~周四，`https://github.com/irisding001/US-CSS-weekly-report`）  
+> - 本地路径：`C:/Users/irisding/us-css-weeklyreport/`（remote 已更新）  
 > - `us-css-weeklyperformance` skill → 仓库 `us-css-weeklyperformance`（周一~周日）  
 > - 两个 skill/仓库完全独立，推送前必须确认目标仓库正确
 
