@@ -12,9 +12,9 @@ const path = require('path');
 const PROFILE        = 'us-ccs';
 const IRIS_OPEN_ID   = 'ou_423989c914515582660dfef99848b0e7';
 const GROUP_CHAT_ID  = 'oc_6b53fdf35d29e9203579c4fc7b70acde'; // US CSS Weekly Report 群
-const REPORT_URL     = 'https://irisding001.github.io/us-css-weeklyreport/weekly_report_2026-08-17_0823.html';
-const HISTORY_URL    = 'https://irisding001.github.io/us-css-weeklyreport/';
-const WEEK_RANGE     = '08-17 ~ 08-23';
+const REPORT_URL     = 'https://irisding001.github.io/US-CSS-weekly-report/weekly_report_2026-08-28_0903.html';
+const HISTORY_URL    = 'https://irisding001.github.io/US-CSS-weekly-report/';
+const WEEK_RANGE     = '08-28 ~ 09-03';
 
 // ── lark-cli invocation (Windows-safe) ──────────────────────────────────────
 const IS_WIN = process.platform === 'win32';
