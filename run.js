@@ -113,6 +113,34 @@ const USCM_CSRF   = process.env.USCM_CSRF   || '';
 const WS_COOKIE   = process.env.WS_COOKIE   || '';  // us-workspace.futuoa.com session (optional)
 
 // ─────────────────────────────────────────────────────────────────
+// PROXY AUTO-START  (silently starts setup_cookies.py proxy at :8765)
+// ─────────────────────────────────────────────────────────────────
+async function ensureProxy() {
+  const probe = () => new Promise(resolve => {
+    const req = http.request(
+      { hostname: '127.0.0.1', port: DATA_PROXY_PORT, path: '/health', method: 'GET' },
+      () => resolve(true)
+    );
+    req.setTimeout(600, () => { req.destroy(); resolve(false); });
+    req.on('error', () => resolve(false));
+    req.end();
+  });
+  if (await probe()) return;
+  const setupPy = path.join(process.env.USERPROFILE || process.env.HOME || '', 'setup_cookies.py');
+  if (!fs.existsSync(setupPy)) { console.warn('[PROXY] setup_cookies.py not found, BI data may fail'); return; }
+  console.log('[PROXY] Starting BI proxy (headless)...');
+  require('child_process').spawn('py', [setupPy], {
+    detached: true, stdio: ['ignore', 'ignore', 'ignore'], windowsHide: true,
+  }).unref();
+  const deadline = Date.now() + 25000;
+  while (Date.now() < deadline) {
+    await new Promise(r => setTimeout(r, 700));
+    if (await probe()) { console.log('[PROXY] BI proxy ready.'); return; }
+  }
+  console.warn('[WARN] BI proxy not ready — BI data may be missing.');
+}
+
+// ─────────────────────────────────────────────────────────────────
 // AUTO-REFRESH COOKIES  (launches setup_cookies.py when creds are missing)
 // ─────────────────────────────────────────────────────────────────
 async function autoRefreshAndRestart() {
@@ -3234,6 +3262,8 @@ async function main() {
   const { start, end } = getWeekRange();
   const dataStart = dataStartArg || (start < DATA_FLOOR ? DATA_FLOOR : start);
   console.log(`Generating weekly report: ${start} ~ ${end}${dataStart !== start ? ` (channel data from ${dataStart})` : ''}`);
+
+  await ensureProxy();
 
   const mFloor = monthStart(end) < DATA_FLOOR ? DATA_FLOOR : monthStart(end);
   const h1Start = addDays(start, -21); const h1End = addDays(start, -15);
