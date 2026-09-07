@@ -24,7 +24,17 @@ Cookie 统一存储在 `C:\Users\irisding\run_weekly_config.json`，脚本自动
 | `USCM_COOKIE` / `USCM_CSRF` | uscm.futuoa.com（USCM 工单） | ~1天 |
 | `WS_COOKIE` | us-workspace.futuoa.com（不满意工单） | 数天 |
 
-Cookie 过期时（报 401），**双击** `C:\Users\irisding\refresh_cookies.bat`，登录三个站点后回 CMD 按 ENTER，看到 `Updated` 后重跑脚本。**不要**在 Warp 终端或用 `!` 前缀运行。
+**Cookie 刷新已全自动，无需手动操作：**
+
+| 情况 | 行为 |
+|------|------|
+| Cookies 仍有效（JWT 未过期 + EGG_SESS 存在） | 静默 reload，无任何窗口 |
+| Cookies 过期，Playwright 浏览器 session 仍在 | `setup_cookies.py` headless 静默刷新（~10秒，无任何窗口） |
+| Playwright session 也过期（约2周才发生） | Chrome 自动弹出，IOA 登录后自动检测，无需按 ENTER |
+
+脚本启动时自动通过 `localhost:8765` proxy 绕过 Cloudflare 限制，不再因 1017 错误触发刷新提示。
+
+若确实需要手动强制刷新（如三个站点都失效）：`py C:\Users\irisding\setup_cookies.py --force`
 
 `.env` 文件（`C:\Users\irisding\.claude\skills\US-CCS-weekly-report\.env`）仍作为备用读取源，但以 `run_weekly_config.json` 为准（后者会覆盖 `.env` 中相同字段）。
 
