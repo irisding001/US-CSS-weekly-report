@@ -141,41 +141,72 @@ async function ensureProxy() {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// AUTO-REFRESH COOKIES  (launches setup_cookies.py when creds are missing)
+// COOKIE VALIDITY CHECK  (mirrors setup_cookies.py preflight_valid())
+// ─────────────────────────────────────────────────────────────────
+function cookiesValid() {
+  try {
+    const cfgPath = path.join(process.env.USERPROFILE || process.env.HOME || '', 'run_weekly_config.json');
+    const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf-8'));
+    const m = (cfg.DATA_COOKIE || '').match(/uIdToken=([^;]+)/);
+    if (!m) return false;
+    const parts = m[1].split('.');
+    if (parts.length < 2) return false;
+    const pad = '='.repeat((4 - parts[1].length % 4) % 4);
+    const payload = JSON.parse(Buffer.from(parts[1] + pad, 'base64').toString('utf-8'));
+    if ((payload.exp || 0) < Date.now() / 1000 + 3600) return false;
+    if (!(cfg.USCM_COOKIE || '').includes('EGG_SESS=')) return false;
+    return true;
+  } catch { return false; }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// AUTO-REFRESH COOKIES  (3-tier: valid→reload / expired→headless / session-expired→Chrome)
 // ─────────────────────────────────────────────────────────────────
 async function autoRefreshAndRestart() {
   const { spawn, spawnSync } = require('child_process');
-  const cfgFile  = path.join(process.env.USERPROFILE || process.env.HOME || '', 'run_weekly_config.json');
-  const setupPy  = path.join(process.env.USERPROFILE || process.env.HOME || '', 'setup_cookies.py');
-  if (!fs.existsSync(setupPy)) {
-    console.error(`[AUTH] setup_cookies.py not found at ${setupPy}`);
-    process.exit(1);
+  const cfgFile = path.join(process.env.USERPROFILE || process.env.HOME || '', 'run_weekly_config.json');
+  const setupPy = path.join(process.env.USERPROFILE || process.env.HOME || '', 'setup_cookies.py');
+
+  const reloadAndRestart = () => {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(cfgFile, 'utf-8'));
+      ['DATA_COOKIE', 'USCM_COOKIE', 'USCM_CSRF', 'WS_COOKIE'].forEach(k => { if (cfg[k]) process.env[k] = cfg[k]; });
+    } catch {}
+    const result = spawnSync(process.execPath, process.argv.slice(1), { stdio: 'inherit', env: process.env });
+    process.exit(result.status ?? 0);
+  };
+
+  // Tier 1: cookies still valid → transient error, reload from config and retry silently
+  if (cookiesValid()) {
+    console.log('[AUTH] Cookies still valid — transient error, reloading...');
+    reloadAndRestart();
+    return;
   }
+
+  if (!fs.existsSync(setupPy)) { console.error(`[AUTH] setup_cookies.py not found`); process.exit(1); }
+
   const oldMtime = fs.existsSync(cfgFile) ? fs.statSync(cfgFile).mtimeMs : 0;
-  console.log('[AUTH] Cookie 缺失或过期，正在弹出 IOA 登录窗口...');
-  spawn('cmd.exe', ['/c', 'start', '', 'py', setupPy], { detached: true, stdio: 'ignore' }).unref();
-  console.log('[AUTH] 请在浏览器中完成三个站点的 IOA 登录，完成后脚本自动继续（最多 5 分钟）...');
+
+  // Tier 2+3: spawn setup_cookies.py — it auto-decides headless (silent) vs Chrome (IOA needed)
+  // windowsHide hides the CMD console; if Playwright session expired, Chrome window will appear
+  console.log('[AUTH] Cookies expired — refreshing (Chrome will open if IOA login needed)...');
+  spawn('py', [setupPy], { detached: true, stdio: ['ignore', 'ignore', 'ignore'], windowsHide: true }).unref();
+
+  // Wait up to 5 min: headless completes in ~10s; manual login takes a few minutes
   await new Promise((resolve, reject) => {
     const deadline = Date.now() + 300_000;
     const timer = setInterval(() => {
       if (fs.existsSync(cfgFile) && fs.statSync(cfgFile).mtimeMs > oldMtime) {
         clearInterval(timer);
-        const cfg = JSON.parse(fs.readFileSync(cfgFile, 'utf-8'));
-        if (cfg.DATA_COOKIE)  process.env.DATA_COOKIE  = cfg.DATA_COOKIE;
-        if (cfg.USCM_COOKIE)  process.env.USCM_COOKIE  = cfg.USCM_COOKIE;
-        if (cfg.USCM_CSRF)    process.env.USCM_CSRF    = cfg.USCM_CSRF;
-        if (cfg.WS_COOKIE)    process.env.WS_COOKIE    = cfg.WS_COOKIE;
-        console.log('[AUTH] Cookies 已更新，正在重启...');
+        console.log('[AUTH] Cookies refreshed, restarting...');
+        reloadAndRestart();
         resolve();
       } else if (Date.now() > deadline) {
         clearInterval(timer);
-        reject(new Error('[AUTH] 等待超时（5分钟），请手动重跑脚本'));
+        reject(new Error('[AUTH] Cookie refresh timed out (5min). Run setup_cookies.py manually.'));
       }
     }, 2000);
   });
-  // Re-spawn with updated env so const bindings pick up new values
-  const result = spawnSync(process.execPath, process.argv.slice(1), { stdio: 'inherit', env: process.env });
-  process.exit(result.status ?? 0);
 }
 
 if (!DATA_COOKIE || (!DISCOVER && (!USCM_COOKIE || !USCM_CSRF))) {
