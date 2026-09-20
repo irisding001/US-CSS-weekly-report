@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>US CSS Weekly Report — 2026-09-11 ~ 2026-09-17</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; background: #f5f7fa; color: #1a1a2e; padding: 32px 28px; max-width: 1480px; margin: 0 auto; }
+h1 { font-size: 24px; font-weight: 700; color: #1456F0; margin-bottom: 6px; border-bottom: 3px solid #1456F0; padding-bottom: 12px; text-align: center; letter-spacing: .3px; }
+.subtitle { font-size: 13px; color: #666; margin-bottom: 28px; text-align: center; }
+h2 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 16px; padding: 10px 18px;
+     background: linear-gradient(135deg, #1456F0, #3d7ff5); border-radius: 8px; display: flex; align-items: center; gap: 8px; }
+.sect-num { background: rgba(255,255,255,.25); border-radius: 4px; padding: 2px 8px; font-size: 13px; }
+h3 { font-size: 11.5px; font-weight: 700; color: #1456F0; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: .8px; }
+.section { background: #fff; border-radius: 12px; padding: 26px 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.cols-wide { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.cols-wide > div { min-width: 0; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+th { background: #eef2ff; color: #1456F0; text-align: center; padding: 10px 10px; border-bottom: 2px solid #c0d0f0; white-space: nowrap; }
+th:first-child { text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #eef0f5; white-space: nowrap; text-align: center; vertical-align: middle; }
+td:first-child { text-align: left; }
+.team-summary { table-layout: fixed; }
+.team-summary th { text-align: center; }
+.team-summary th:first-child { text-align: left; }
+.team-summary td { white-space: normal; overflow-wrap: break-word; vertical-align: middle; padding: 8px 10px; text-align: center; }
+.team-summary td:first-child { text-align: left; }
+.subsect-title { font-size: 13.5px; font-weight: 700; color: #1456F0; margin: 0 0 10px 0; padding: 5px 0 7px; border-bottom: 1px solid #d0daf8; letter-spacing: .2px; }
+.bold-row td { font-weight: 700; background: #eef2ff; }
+.consult-total-row td { font-weight: 700; background: #dce6ff; border-top: 2px solid #1456F0; border-bottom: 2px solid #1456F0; }
+tr:hover td { background: #f8f9ff; }
+.team-row td { font-weight: 600; background: #f0f4ff; padding: 5px 8px; line-height: 1.25; }
+td.empty { color: #aaa; text-align: center; }
+.en { font-size: 11px; color: #999; font-weight: 400; }
+.lbl { font-size: 11px; color: #aaa; font-weight: 400; }
+.editable-area { min-height: 130px; border: 1px solid #e0e4f0; border-radius: 8px; padding: 14px 18px;
+                 font-size: 13px; color: #333; line-height: 1.8; outline: none;
+                 background: #fafbff; }
+.editable-area:focus { border-color: #1456F0; box-shadow: 0 0 0 2px rgba(20,86,240,.1); }
+.editable-hint { font-size: 11px; color: #aaa; margin-bottom: 8px; }
+.meta { font-size: 11px; color: #aaa; margin-top: 12px; text-align: center; }
+.dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-left:4px; vertical-align:middle; }
+.val-wrap { position:relative; display:inline-block; }
+.val-wrap .dot { position:absolute; left:calc(100% + 3px); top:50%; transform:translateY(-50%); margin:0; }
+.sub-lbl { display:block; font-size:10px; color:#bbb; font-weight:400; margin-top:2px; }
+.dot-green { background:#22c55e; }
+.dot-red { background:#ef4444; }
+.cell-fail { color:#ef4444; }
+.tgt { font-size:10px; color:#bbb; font-weight:400; margin-left:4px; }
+.zone-weekly  { background:#dbeafe; color:#1456F0; border-right:2px solid #bfdbfe; }
+.zone-monthly { background:#ede9fe; color:#6d28d9; border-right:2px solid #ddd6fe; }
+.zone-csat    { background:#cffafe; color:#0e7490; border-right:2px solid #a5f3fc; }
+.zone-util    { background:#d1fae5; color:#065f46; }
+.group-header th { padding:6px 10px; font-size:12px; letter-spacing:.2px; }
+td.zone-end   { border-right:2px solid #c0cadf; }
+td.rank-top   { color:#15803d !important; font-weight:700; }
+td.rank-bot   { color:#dc2626 !important; font-weight:700; }
+.breakdown-grid table { font-size: 11px; }
+.breakdown-grid th { padding: 6px 6px; font-size: 10.5px; }
+.breakdown-grid td { padding: 5px 6px; }
+@media (max-width: 800px) { .cols2, .cols-wide { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<h1>US CSS Weekly Report</h1>
+<p class="subtitle">2026-09-11 ~ 2026-09-17 &nbsp;|&nbsp; Conversion CS Team (10 agents)</p>
+
+<div class="section" id="一"><h2><span class="sect-num">一</span>业绩情况 <span class="en">Performance Overview</span></h2>
+  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;padding:10px 14px;background:#f8faff;border:1.5px solid #c7d6f7;border-radius:6px"><span style="font-size:11px;font-weight:700;color:#6b7280;letter-spacing:.05em;margin-right:2px">本周概览</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #c7d6f7;background:#f0f4ff;color:#1456F0;white-space:nowrap"><strong>周咨询PC</strong> 51 单</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #c7d6f7;background:#f0f4ff;color:#1456F0;white-space:nowrap"><strong>周总PC</strong> 119 单</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #c7d6f7;background:#f0f4ff;color:#1456F0;white-space:nowrap"><strong>月度PC</strong> 271 单</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;white-space:nowrap"><strong>综合满意度</strong> 83.3%</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #bbf7d0;background:#f0fdf4;color:#16a34a;white-space:nowrap"><strong>电话 CSAT</strong> 90.9%</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;white-space:nowrap"><strong>在线 CSAT</strong> 83.5%</span><span style="font-size:12px;padding:3px 9px;border-radius:4px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;white-space:nowrap"><strong>邮件 CSAT</strong> 83.3%</span></div>
+  <h3>Channel Team Summary</h3>
+  <div class="subsect-title">咨询业务 <span class="en">Consultation</span></div><table class="team-summary"><colgroup><col style="width:12%"><col style="width:9%"><col style="width:8%"><col style="width:18%"><col style="width:18%"><col style="width:15%"><col style="width:20%"></colgroup><thead><tr><th>渠道<br><span class="en">Channel</span></th><th>工单量<br><span class="en">Volume</span></th><th>咨询PC<br><span class="en">Consult PC</span></th><th>满意度<br><span class="en">CSAT <span style="font-size:10px;color:#bbb;font-weight:400">≥84%</span></span></th><th>接通率<br><span class="en">Answer Rate</span></th><th>一次性解决率<br><span class="en">FCR <span style="font-size:10px;color:#bbb;font-weight:400">≥95%</span></span></th><th>平均处理时长<br><span class="en">Avg Handle</span></th></tr></thead><tbody><tr class="consult-total-row"><td><strong>合计 Total</strong></td><td><strong>855</strong><span style="display:block;font-size:9px;color:#16a34a;line-height:1.2;margin-top:1px">▲+6</span></td><td><strong>51</strong><span style="display:block;font-size:9px;color:#dc2626;line-height:1.2;margin-top:1px">▼-6</span></td><td><span class="val-wrap"><strong>83.3%</strong><span style="display:block;font-size:9px;color:#dc2626;line-height:1.2;margin-top:1px">▼−3.4pp</span><span class="dot dot-red"></span></span></td><td>-</td><td>-</td><td>-</td></tr><tr class="team-row"><td><strong>在线 Live Chat</strong></td><td><strong>369</strong><span style="display:block;font-size:9px;color:#dc2626;line-height:1.2;margin-top:1px">▼-51</span></td><td><strong>26</strong><span style="display:block;font-size:9px;color:#dc2626;line-height:1.2;margin-top:1px">▼-5</span></td><td><strong><span class="val-wrap"><strong>83.5%</strong><span style="display:block;font-size:9px;color:#dc2626;line-height:1.2;margin-top:1px">▼−5.9pp</span><span class="dot dot-red"></span></span></strong></td><td><strong><span class="val-wrap"><strong>99.7%</strong><span class="dot dot-green"></span></span><br><span class="lbl">30s接通≥90%</span></strong></td><td><strong><span class="val-wrap"><strong>93.8%</strong><span class="dot dot-red"></span></span></strong></td><td><strong>11.2m</strong></td></tr><tr class="team-row"><td><strong>电话 Phone</strong></td><td><strong>216</strong><span style="display:block;font-size:9px;color:#16a34a;line-height:1.2;margin-top:1px">▲+28</span></td><td><strong>13</strong></td><td><strong><span class="val-wrap"><strong>90.9%</strong><span style="display:block;font-size:9px;color:#dc2626;line-height:1.2;margin-top:1px">▼−9.1pp</span><span class="dot dot-green"></span></span></strong></td><td><strong><span class="val-wrap"><strong>91.7%</strong><span class="dot dot-red"></span></span><br><span class="lbl">20s接通≥95%</span></strong></td><td><strong><span class="val-wrap"><strong>94.5%</strong><span class="dot dot-red"></span></span></strong></td><td><strong>7m 33s</strong></td></tr><tr class="team-row"><td><strong>邮件 Email</strong></td><td><strong>270</strong><span style="display:block;font-size:9px;color:#16a34a;line-height:1.2;margin-top:1px">▲+29</span></td><td><strong>12</strong><span style="display:block;font-size:9px;color:#dc2626;line-height:1.2;margin-top:1px">▼-1</span></td><td><strong><span class="val-wrap"><strong>83.3%</strong><span style="display:block;font-size:9px;color:#16a34a;line-height:1.2;margin-top:1px">▲+28.8pp</span><span class="dot dot-red"></span></span></strong></td><td><strong><span class="val-wrap"><strong>89.3%</strong><span class="dot dot-red"></span></span><br><span class="lbl">Overall SLA≥90%</span></strong></td><td><strong>-</strong></td><td><strong>-</strong></td></tr></tbody></table><div class="subsect-title" style="margin-top:18px">转化业务 <span class="en">Conversion / Outbound</span></div><table class="team-summary"><colgroup><col style="width:18%"><col style="width:20%"><col style="width:18%"><col style="width:22%"><col style="width:22%"></colgroup><thead><tr><th>外呼跟进量<br><span class="en">Outbound Contacts</span></th><th>有效跟进量<br><span class="en">Effective (≥40s)</span></th><th>有效跟进率<br><span class="en">Effective Rate</span></th><th>周外呼转化PC<br><span class="en">Weekly OB Conv. PC</span></th><th>月总PC<br><span class="en">Monthly Total PC</span></th></tr></thead><tbody><tr class="team-row"><td><strong>3430</strong></td><td><strong>641</strong></td><td><strong>18.7%</strong></td><td><strong>68</strong></td><td><strong>271</strong></td></tr></tbody></table>
+  
+<!-- inject-trend-start -->
+<div style="margin-top:20px;margin-bottom:12px">
+<div class="subsect-title">各渠道近6周趋势 <span class="en">6-Week Trends</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:10px"><div style="max-width:100%"><svg width="100%" viewBox="0 0 660 240" style="display:block;font-family:Arial,sans-serif;overflow:visible"><g id="chart-vol"><text x="56" y="16" font-size="10" font-weight="700" fill="#374151">工单量 Volume</text><g id="leg-vol-online" onclick="togVolCh('online',this)" style="cursor:pointer"><rect x="480" y="6" width="12" height="8" fill="#3b82f6" fill-opacity="0.75" rx="1.5"/><text x="495" y="14" font-size="9" fill="#374151">在线</text></g><g id="leg-vol-phone" onclick="togVolCh('phone',this)" style="cursor:pointer"><rect x="532" y="6" width="12" height="8" fill="#d97706" fill-opacity="0.75" rx="1.5"/><text x="547" y="14" font-size="9" fill="#374151">电话</text></g><g id="leg-vol-email" onclick="togVolCh('email',this)" style="cursor:pointer"><rect x="582" y="6" width="12" height="8" fill="#059669" fill-opacity="0.75" rx="1.5"/><text x="597" y="14" font-size="9" fill="#374151">邮件</text></g><line x1="56" y1="204" x2="636" y2="204" stroke="#e5e7eb" stroke-width="0.8" /><text x="51" y="207.5" text-anchor="end" font-size="8.5" fill="#94a3b8">0</text><line x1="56" y1="116" x2="636" y2="116" stroke="#e5e7eb" stroke-width="0.8" stroke-dasharray="4,3"/><text x="51" y="119.5" text-anchor="end" font-size="8.5" fill="#94a3b8">600</text><line x1="56" y1="28" x2="636" y2="28" stroke="#e5e7eb" stroke-width="0.8" /><text x="51" y="31.5" text-anchor="end" font-size="8.5" fill="#94a3b8">1200</text><line x1="56" y1="28" x2="56" y2="204" stroke="#e5e7eb" stroke-width="0.8"/><line x1="56" y1="204" x2="636" y2="204" stroke="#e5e7eb" stroke-width="0.8"/><rect x="620.0" y="28" width="32" height="178" fill="#eef2ff" opacity="0.6" rx="2"/><rect class="vol-online" data-ch="online" data-v="322" data-cum="0" x="42.0" y="156.8" width="28" height="47.2" fill="#3b82f6" fill-opacity="0.7"/><text class="vol-text vol-text-online" data-ch="online" x="56.0" y="183.9" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">322</text><rect class="vol-phone" data-ch="phone" data-v="153" data-cum="322" x="42.0" y="134.3" width="28" height="22.4" fill="#d97706" fill-opacity="0.7"/><text class="vol-text vol-text-phone" data-ch="phone" x="56.0" y="149.1" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">153</text><rect class="vol-email" data-ch="email" data-v="294" data-cum="475" x="42.0" y="91.2" width="28" height="43.1" fill="#059669" fill-opacity="0.7"/><text class="vol-text vol-text-email" data-ch="email" x="56.0" y="116.3" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">294</text><text class="vol-total" x="56.0" y="87.2" text-anchor="middle" font-size="9.5" fill="#374151" font-weight="400">769</text><text x="56.0" y="230" text-anchor="middle" font-size="9" fill="#64748b" font-weight="400">08/07~13</text><rect class="vol-online" data-ch="online" data-v="425" data-cum="0" x="158.0" y="141.7" width="28" height="62.3" fill="#3b82f6" fill-opacity="0.7"/><text class="vol-text vol-text-online" data-ch="online" x="172.0" y="176.3" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">425</text><rect class="vol-phone" data-ch="phone" data-v="256" data-cum="425" x="158.0" y="104.1" width="28" height="37.5" fill="#d97706" fill-opacity="0.7"/><text class="vol-text vol-text-phone" data-ch="phone" x="172.0" y="126.4" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">256</text><rect class="vol-email" data-ch="email" data-v="406" data-cum="681" x="158.0" y="44.6" width="28" height="59.5" fill="#059669" fill-opacity="0.7"/><text class="vol-text vol-text-email" data-ch="email" x="172.0" y="77.8" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">406</text><text class="vol-total" x="172.0" y="40.6" text-anchor="middle" font-size="9.5" fill="#374151" font-weight="400">1087</text><text x="172.0" y="230" text-anchor="middle" font-size="9" fill="#64748b" font-weight="400">08/14~20</text><rect class="vol-online" data-ch="online" data-v="481" data-cum="0" x="274.0" y="133.5" width="28" height="70.5" fill="#3b82f6" fill-opacity="0.7"/><text class="vol-text vol-text-online" data-ch="online" x="288.0" y="172.2" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">481</text><rect class="vol-phone" data-ch="phone" data-v="267" data-cum="481" x="274.0" y="94.3" width="28" height="39.2" fill="#d97706" fill-opacity="0.7"/><text class="vol-text vol-text-phone" data-ch="phone" x="288.0" y="117.4" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">267</text><rect class="vol-email" data-ch="email" data-v="449" data-cum="748" x="274.0" y="28.4" width="28" height="65.9" fill="#059669" fill-opacity="0.7"/><text class="vol-text vol-text-email" data-ch="email" x="288.0" y="64.9" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">449</text><text class="vol-total" x="288.0" y="24.4" text-anchor="middle" font-size="9.5" fill="#374151" font-weight="400">1197</text><text x="288.0" y="230" text-anchor="middle" font-size="9" fill="#64748b" font-weight="400">08/21~27</text><rect class="vol-online" data-ch="online" data-v="386" data-cum="0" x="390.0" y="147.4" width="28" height="56.6" fill="#3b82f6" fill-opacity="0.7"/><text class="vol-text vol-text-online" data-ch="online" x="404.0" y="179.2" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">386</text><rect class="vol-phone" data-ch="phone" data-v="217" data-cum="386" x="390.0" y="115.6" width="28" height="31.8" fill="#d97706" fill-opacity="0.7"/><text class="vol-text vol-text-phone" data-ch="phone" x="404.0" y="135.0" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">217</text><rect class="vol-email" data-ch="email" data-v="358" data-cum="603" x="390.0" y="63.1" width="28" height="52.5" fill="#059669" fill-opacity="0.7"/><text class="vol-text vol-text-email" data-ch="email" x="404.0" y="92.8" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">358</text><text class="vol-total" x="404.0" y="59.1" text-anchor="middle" font-size="9.5" fill="#374151" font-weight="400">961</text><text x="404.0" y="230" text-anchor="middle" font-size="9" fill="#64748b" font-weight="400">08/28~03</text><rect class="vol-online" data-ch="online" data-v="420" data-cum="0" x="506.0" y="142.4" width="28" height="61.6" fill="#3b82f6" fill-opacity="0.7"/><text class="vol-text vol-text-online" data-ch="online" x="520.0" y="176.7" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">420</text><rect class="vol-phone" data-ch="phone" data-v="188" data-cum="420" x="506.0" y="114.8" width="28" height="27.6" fill="#d97706" fill-opacity="0.7"/><text class="vol-text vol-text-phone" data-ch="phone" x="520.0" y="132.1" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">188</text><rect class="vol-email" data-ch="email" data-v="241" data-cum="608" x="506.0" y="79.5" width="28" height="35.3" fill="#059669" fill-opacity="0.7"/><text class="vol-text vol-text-email" data-ch="email" x="520.0" y="100.7" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="400">241</text><text class="vol-total" x="520.0" y="75.5" text-anchor="middle" font-size="9.5" fill="#374151" font-weight="400">849</text><text x="520.0" y="230" text-anchor="middle" font-size="9" fill="#64748b" font-weight="400">09/04~10</text><rect class="vol-online" data-ch="online" data-v="369" data-cum="0" x="622.0" y="149.9" width="28" height="54.1" fill="#3b82f6" fill-opacity="0.9"/><text class="vol-text vol-text-online" data-ch="online" x="636.0" y="180.4" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="700">369</text><rect class="vol-phone" data-ch="phone" data-v="216" data-cum="369" x="622.0" y="118.2" width="28" height="31.7" fill="#d97706" fill-opacity="0.9"/><text class="vol-text vol-text-phone" data-ch="phone" x="636.0" y="137.5" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="700">216</text><rect class="vol-email" data-ch="email" data-v="270" data-cum="585" x="622.0" y="78.6" width="28" height="39.6" fill="#059669" fill-opacity="0.9"/><text class="vol-text vol-text-email" data-ch="email" x="636.0" y="101.9" text-anchor="middle" font-size="8.5" fill="#fff" font-weight="700">270</text><text class="vol-total" x="636.0" y="74.6" text-anchor="middle" font-size="9.5" fill="#1456F0" font-weight="700">855</text><text x="636.0" y="230" text-anchor="middle" font-size="9.5" fill="#1456F0" font-weight="700">09/11~17</text></g></svg></div>
+<div style="max-width:100%"><svg width="100%" viewBox="0 0 660 240" style="display:block;font-family:Arial,sans-serif;overflow:visible"><text x="56" y="16" font-size="10" font-weight="700" fill="#374151">转化趋势 Conversion</text><g onclick="togGroup('conv-ob-pc',this)" style="cursor:pointer"><line x1="358" y1="11" x2="370" y2="11" stroke="#f59e0b" stroke-width="2"/><circle cx="364" cy="11" r="2.5" fill="#f59e0b"/><text x="374" y="15" font-size="9" fill="#374151">外呼PC</text></g><g onclick="togGroup('conv-total-pc',this)" style="cursor:pointer"><line x1="416" y1="11" x2="428" y2="11" stroke="#16a34a" stroke-width="2"/><circle cx="422" cy="11" r="2.5" fill="#16a34a"/><text x="432" y="15" font-size="9" fill="#374151">总PC</text></g><g onclick="togClass('conv-contact',this)" style="cursor:pointer"><rect x="469" y="6" width="12" height="8" fill="#94a3b8" fill-opacity="0.7" rx="1.5"/><text x="485" y="15" font-size="9" fill="#374151">跟进</text></g><g onclick="togGroup('conv-effective',this)" style="cursor:pointer"><rect x="506" y="6" width="12" height="8" fill="#1456F0" fill-opacity="0.7" rx="1.5"/><text x="522" y="15" font-size="9" fill="#374151">有效跟进</text></g><line x1="56" y1="204" x2="636" y2="204" stroke="#e5e7eb" stroke-width="0.8" /><text x="51" y="207.5" text-anchor="end" font-size="8.5" fill="#94a3b8">0</text><line x1="56" y1="116" x2="636" y2="116" stroke="#e5e7eb" stroke-width="0.8" stroke-dasharray="4,3"/><text x="51" y="119.5" text-anchor="end" font-size="8.5" fill="#94a3b8">1750</text><line x1="56" y1="28" x2="636" y2="28" stroke="#e5e7eb" stroke-width="0.8" /><text x="51" y="31.5" text-anchor="end" font-size="8.5" fill="#94a3b8">3500</text><text x="641" y="207.5" text-anchor="start" font-size="8.5" fill="#b45309">0</text><text x="641" y="118.8" text-anchor="start" font-size="8.5" fill="#b45309">63</text><text x="641" y="31.5" text-anchor="start" font-size="8.5" fill="#b45309">125</text><line x1="56" y1="28" x2="56" y2="204" stroke="#e5e7eb" stroke-width="0.8"/><line x1="56" y1="204" x2="636" y2="204" stroke="#e5e7eb" stroke-width="0.8"/><rect x="620.0" y="28" width="32" height="178" fill="#eef2ff" opacity="0.6" rx="2"/><g id="conv-effective"><rect x="51.0" y="184.6" width="10" height="19.4" fill="#1456F0" fill-opacity="0.65" rx="2"/><text x="56" y="181.6" text-anchor="middle" font-size="8" fill="#1456F0" font-weight="400">386</text><rect x="167.0" y="187.9" width="10" height="16.1" fill="#1456F0" fill-opacity="0.65" rx="2"/><text x="172" y="184.9" text-anchor="middle" font-size="8" fill="#1456F0" font-weight="400">321</text><rect x="283.0" y="185.8" width="10" height="18.2" fill="#1456F0" fill-opacity="0.65" rx="2"/><text x="288" y="182.8" text-anchor="middle" font-size="8" fill="#1456F0" font-weight="400">362</text><rect x="399.0" y="185.1" width="10" height="18.9" fill="#1456F0" fill-opacity="0.65" rx="2"/><text x="404" y="182.1" text-anchor="middle" font-size="8" fill="#1456F0" font-weight="400">376</text><rect x="515.0" y="180.8" width="10" height="23.2" fill="#1456F0" fill-opacity="0.65" rx="2"/><text x="520" y="177.8" text-anchor="middle" font-size="8" fill="#1456F0" font-weight="400">462</text><rect x="631.0" y="171.8" width="10" height="32.2" fill="#1456F0" fill-opacity="0.85" rx="2"/><text x="636" y="168.8" text-anchor="middle" font-size="9" fill="#1456F0" font-weight="700">641</text></g><g class="conv-contact"><rect x="46.0" y="88.9" width="20" height="115.1" fill="#94a3b8" fill-opacity="0.55" rx="2"/><text x="56" y="85.9" text-anchor="middle" font-size="8" fill="#64748b" font-weight="400">2288</text></g><g class="conv-contact"><rect x="162.0" y="111.9" width="20" height="92.1" fill="#94a3b8" fill-opacity="0.55" rx="2"/><text x="172" y="108.9" text-anchor="middle" font-size="8" fill="#64748b" font-weight="400">1831</text></g><g class="conv-contact"><rect x="278.0" y="98.6" width="20" height="105.4" fill="#94a3b8" fill-opacity="0.55" rx="2"/><text x="288" y="95.6" text-anchor="middle" font-size="8" fill="#64748b" font-weight="400">2096</text></g><g class="conv-contact"><rect x="394.0" y="89.1" width="20" height="114.9" fill="#94a3b8" fill-opacity="0.55" rx="2"/><text x="404" y="86.1" text-anchor="middle" font-size="8" fill="#64748b" font-weight="400">2285</text></g><g class="conv-contact"><rect x="510.0" y="58.1" width="20" height="145.9" fill="#94a3b8" fill-opacity="0.55" rx="2"/><text x="520" y="55.1" text-anchor="middle" font-size="8" fill="#64748b" font-weight="400">2902</text></g><g class="conv-contact"><rect x="626.0" y="31.5" width="20" height="172.5" fill="#94a3b8" fill-opacity="0.75" rx="2"/><text x="636" y="28.5" text-anchor="middle" font-size="9" fill="#64748b" font-weight="700">3430</text></g><g id="conv-ob-pc"><path d="M56,133.6 L172,143.5 L288,147.7 L404,142.0 L520,144.9 L636,108.3" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round" stroke-dasharray="5,3"/><circle cx="56" cy="133.6" r="3.5" fill="#f59e0b" stroke="white" stroke-width="1.5"/><text x="56" y="125.6" text-anchor="middle" font-size="8" fill="#f59e0b" font-weight="400">50</text><circle cx="172" cy="143.5" r="3.5" fill="#f59e0b" stroke="white" stroke-width="1.5"/><text x="172" y="135.5" text-anchor="middle" font-size="8" fill="#f59e0b" font-weight="400">43</text><circle cx="288" cy="147.7" r="3.5" fill="#f59e0b" stroke="white" stroke-width="1.5"/><text x="288" y="139.7" text-anchor="middle" font-size="8" fill="#f59e0b" font-weight="400">40</text><circle cx="404" cy="142.0" r="3.5" fill="#f59e0b" stroke="white" stroke-width="1.5"/><text x="404" y="134.0" text-anchor="middle" font-size="8" fill="#f59e0b" font-weight="400">44</text><circle cx="520" cy="144.9" r="3.5" fill="#f59e0b" stroke="white" stroke-width="1.5"/><text x="520" y="136.9" text-anchor="middle" font-size="8" fill="#f59e0b" font-weight="400">42</text><circle cx="636" cy="108.3" r="4.5" fill="#f59e0b" stroke="white" stroke-width="1.5"/><text x="636" y="100.3" text-anchor="middle" font-size="9" fill="#f59e0b" font-weight="700">68</text></g><g id="conv-total-pc"><path d="M56,102.6 L172,74.5 L288,75.9 L404,73.1 L520,64.6 L636,36.4" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56" cy="102.6" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><text x="56" y="94.6" text-anchor="middle" font-size="8" fill="#16a34a" font-weight="400">72</text><circle cx="172" cy="74.5" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><text x="172" y="66.5" text-anchor="middle" font-size="8" fill="#16a34a" font-weight="400">92</text><circle cx="288" cy="75.9" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><text x="288" y="67.9" text-anchor="middle" font-size="8" fill="#16a34a" font-weight="400">91</text><circle cx="404" cy="73.1" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><text x="404" y="65.1" text-anchor="middle" font-size="8" fill="#16a34a" font-weight="400">93</text><circle cx="520" cy="64.6" r="3.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><text x="520" y="56.6" text-anchor="middle" font-size="8" fill="#16a34a" font-weight="400">99</text><circle cx="636" cy="36.4" r="4.5" fill="#16a34a" stroke="white" stroke-width="1.5"/><text x="636" y="28.4" text-anchor="middle" font-size="9" fill="#16a34a" font-weight="700">119</text></g><text x="56" y="230" text-anchor="middle" font-size="9" fill="#64748b" font-weight="400">08/07~13</text><text x="172" y="230" text-anchor="middle" font-size="9" fill="#64748b" font-weight="400">08/14~20</text><text x="288" y="230" text-anchor="middle" font-size="9" fill="#64748b" font-weight="400">08/21~27</text><text x="404" y="230" text-anchor="middle" font-size="9" fill="#64748b" font-weight="400">08/28~03</text><text x="520" y="230" text-anchor="middle" font-size="9" fill="#64748b" font-weight="400">09/04~10</text><text x="636" y="230" text-anchor="middle" font-size="9.5" fill="#1456F0" font-weight="700">09/11~17</text></svg></div></div></div>
+<script>
+function togVolCh(ch,btn){
+  var hidden=btn.style.opacity==='0.3';
+  btn.style.opacity=hidden?'1':'0.3';
+  var allChs=['online','phone','email'];
+  var visSet=new Set(allChs.filter(function(c){var lb=document.getElementById('leg-vol-'+c);return!lb||lb.style.opacity!=='0.3';}));
+  var chartG=document.getElementById('chart-vol');
+  if(!chartG)return;
+  var CY1=204,CH=176;
+  var totals=[];
+  var rects=chartG.querySelectorAll('rect[data-ch]');
+  var byCol={};
+  rects.forEach(function(r){var i=r.getAttribute('x');if(!byCol[i])byCol[i]=0;byCol[i]+=(parseFloat(r.getAttribute('data-v'))||0);});
+  Object.values(byCol).forEach(function(t){totals.push(t);});
+  var maxT=Math.max.apply(null,totals.concat([1]));
+  var ceilVol=Math.ceil(maxT/100)*100;
+  var barW=28;
+  var cols={};
+  chartG.querySelectorAll('rect[data-ch],text[data-ch]').forEach(function(el){var x=parseFloat(el.getAttribute('x'))||0;var cx=(x+barW/2).toFixed(1);if(!cols[cx])cols[cx]=[];cols[cx].push(el);});
+  Object.keys(cols).forEach(function(cx){
+    var cum=0;
+    allChs.forEach(function(c){
+      var rect=chartG.querySelector('rect.vol-'+c+'[x="'+(parseFloat(cx)-barW/2).toFixed(1)+'"]');
+      var lbl=chartG.querySelector('text.vol-text-'+c+'[x="'+cx+'"]');
+      if(!rect)return;
+      var v=parseFloat(rect.getAttribute('data-v'))||0;
+      if(visSet.has(c)&&v>0){
+        rect.style.display='';
+        var bh=(v/ceilVol)*CH;
+        var segY=CY1-((cum+v)/ceilVol)*CH;
+        rect.setAttribute('y',segY.toFixed(1));
+        rect.setAttribute('height',bh.toFixed(1));
+        if(lbl){if(bh>=10){lbl.setAttribute('y',(segY+bh/2+3).toFixed(1));lbl.style.display='';}else{lbl.style.display='none';}}
+        cum+=v;
+      }else{rect.style.display='none';if(lbl)lbl.style.display='none';}
+    });
+    chartG.querySelectorAll('text.vol-total[x="'+cx+'"]').forEach(function(t){t.style.display=visSet.size===3?'':'none';});
+  });
+}
+</script>
+<script>
+if(!window.togGroup){function togGroup(id,btn){var g=document.getElementById(id);if(!g)return;var hidden=g.style.display==='none';g.style.display=hidden?'':'none';btn.style.opacity=hidden?'1':'0.35';}}
+if(!window.togClass){function togClass(cls,btn){var hidden=btn.style.opacity==='0.35';btn.style.opacity=hidden?'1':'0.35';document.querySelectorAll('.'+cls).forEach(function(e){e.style.display=hidden?'':'none';});}}
+</script>
+<!-- inject-trend-end -->
+<h3 style="margin-top:18px">Individual Summary</h3>
+  <table class="ind-summary"><thead><tr class="group-header"><th rowspan="2" style="vertical-align:middle">客服<br><span class="en">Agent</span></th><th colspan="6" class="zone-weekly">周度业绩 <span class="en">Weekly</span></th><th colspan="6" class="zone-monthly">月度业绩 <span class="en">Monthly</span></th></tr><tr><th style="text-align:center">工单量<br><span class="en">Total Tickets</span></th><th data-col="consultpc">咨询PC<br><span class="en">Consult PC</span></th><th data-col="salespc">转化PC<br><span class="en">Conv. PC</span></th><th>周度总PC<br><span class="en">Weekly Total PC</span></th><th>满意度<br><span class="en">CSAT</span></th><th style="border-right:2px solid #c0cadf">全渠道工时利用率<br><span class="en">Omni Util</span></th><th>月度总工单<br><span class="en">Monthly Tickets</span></th><th>月满意度<br><span class="en">Monthly CSAT</span></th><th style="text-align:center">月度致命差错<br><span class="en">Monthly Fatal</span></th><th style="text-align:center">月度非致命差错<br><span class="en">Monthly Non-Fatal</span></th><th>月度总PC<br><span class="en">Monthly Total PC</span></th><th>月度KPI达成<br><span class="en">Monthly KPI%</span></th></tr></thead><tbody><tr><td>terrychen</td><td class="rank-top">145</td><td data-col="consultpc" class="rank-top">11</td><td data-col="salespc">6</td><td class="rank-top">17</td><td>100.0%</td><td class="zone-end">96.8%</td><td class="rank-top">263</td><td>94.7%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>31</td><td style="font-weight:700;color:#dc2626">31%</td></tr><tr><td>calventan</td><td>109</td><td data-col="consultpc">7</td><td data-col="salespc">7</td><td>14</td><td><span style="color:#dc2626;font-weight:700">73.3%</span></td><td class="zone-end">99.9%</td><td>250</td><td><span style="color:#dc2626;font-weight:700">76.7%</span></td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>26</td><td style="font-weight:700;color:#dc2626">26%</td></tr><tr><td>whitneylee</td><td>105</td><td data-col="consultpc">5</td><td data-col="salespc">9</td><td>14</td><td>94.1%</td><td class="zone-end">99.8%</td><td>222</td><td>91.2%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td class="rank-top">38</td><td style="font-weight:700;color:#dc2626">38%</td></tr><tr><td>jacelynlim</td><td>100</td><td data-col="consultpc" class="rank-bot">1</td><td data-col="salespc">7</td><td>8</td><td><span style="color:#dc2626;font-weight:700">83.3%</span></td><td class="rank-top zone-end"><span style="color:#15803d;font-weight:700">100.0%</span></td><td>243</td><td><span style="color:#dc2626;font-weight:700">80.8%</span></td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>24</td><td style="font-weight:700;color:#dc2626">24%</td></tr><tr><td>muhamadfaisal</td><td>95</td><td data-col="consultpc">3</td><td data-col="salespc" class="rank-top">11</td><td>14</td><td>87.5%</td><td class="zone-end">97.5%</td><td>242</td><td>86.7%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>36</td><td style="font-weight:700;color:#dc2626">36%</td></tr><tr><td>azamuddin</td><td>78</td><td data-col="consultpc">6</td><td data-col="salespc">10</td><td>16</td><td>100.0%</td><td class="zone-end">99.8%</td><td>204</td><td class="rank-top">100.0%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>33</td><td style="font-weight:700;color:#dc2626">33%</td></tr><tr><td>jeanliew</td><td>75</td><td data-col="consultpc">6</td><td data-col="salespc">7</td><td>13</td><td><span style="color:#dc2626;font-weight:700">60.0%</span></td><td class="rank-bot zone-end"><span style="color:#dc2626;font-weight:700">92.6%</span></td><td>211</td><td><span style="color:#dc2626;font-weight:700">80.0%</span></td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>23</td><td style="font-weight:700;color:#dc2626">23%</td></tr><tr><td>wilsonwong</td><td>64</td><td data-col="consultpc" class="rank-bot">1</td><td data-col="salespc" class="rank-bot">2</td><td class="rank-bot">3</td><td><span style="color:#dc2626;font-weight:700">66.7%</span></td><td class="zone-end">99.8%</td><td>190</td><td class="rank-bot"><span style="color:#dc2626;font-weight:700">72.2%</span></td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td class="rank-bot">14</td><td style="font-weight:700;color:#dc2626">14%</td></tr><tr><td>alvinsim</td><td>45</td><td data-col="consultpc">3</td><td data-col="salespc">7</td><td>10</td><td>91.7%</td><td class="zone-end">99.3%</td><td class="rank-bot">170</td><td><span style="color:#dc2626;font-weight:700">77.8%</span></td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>20</td><td style="font-weight:700;color:#dc2626">20%</td></tr><tr><td>zaydentan</td><td class="rank-bot">39</td><td data-col="consultpc">8</td><td data-col="salespc" class="rank-bot">2</td><td>10</td><td><span style="color:#dc2626;font-weight:700">75.0%</span></td><td class="zone-end">95.4%</td><td>218</td><td>89.3%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>26</td><td style="font-weight:700;color:#dc2626">26%</td></tr><tr class="consult-total-row"><td><strong>合计 Total</strong></td><td>855</td><td>51</td><td>68</td><td>119</td><td><span style="color:#dc2626;font-weight:700">83.3%</span></td><td style="border-right:2px solid #c0cadf">--</td><td>2213</td><td>84.5%</td><td style="text-align:center;color:inherit;font-weight:400">0</td><td style="text-align:center">0</td><td>271</td><td style="font-weight:700;color:#dc2626">27%</td></tr></tbody></table>
+</div>
+
+<div class="section" id="二"><h2><span class="sect-num">二</span>满意度分析 <span class="en">Satisfaction Analysis</span></h2>
+  <div class="subsect-title" style="margin-bottom:8px">满意度小结 <span class="en">CSAT Summary</span></div><div style="margin-top:4px"><div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;color:#444;line-height:1.9">本周被评价工单 <strong>102</strong> 条，超赞 <strong>76</strong> 条（占比 74.5%），不满意及糟糕工单 <strong>17</strong> 条；团队满意度 <strong>83.3%</strong>，<span style="color:#dc2626;font-weight:700">未达目标 ≥84%</span>。<br>团队最高满意度：<strong>terrychen</strong>（100.0%）；最低 3 名：<strong>jeanliew</strong>（60.0%）、<strong>wilsonwong</strong>（66.7%）、<strong>calventan</strong>（73.3%）。</div></div>
+  <!-- inject-neg-analysis-start -->
+<div style="margin-bottom:14px">
+  <div class="subsect-title" style="margin-bottom:8px">负评分析 <span class="en">Negative Review Breakdown</span></div>
+  <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:10px 14px;font-size:12px;color:#444;line-height:2">
+    <div><span style="color:#92400e;font-weight:600">渠道集中：</span>在线 LC 占主要（13/17，76%），邮件 Email 3 条，电话 Phone 1 条</div>
+    <div><span style="color:#92400e;font-weight:600">分类集中：</span>其他身份开户咨询（3 条）最多；其次 ACH入金操作（2 条）；虚拟货币etf / moomoo会员 / potential fraud / 已故客户（遗产账户） / 内地身份开户咨询 / 账户被锁 / ACH出金操作 / 重复开户 / 问题不明确 / 期货 / 恶意骚扰 / 其他活动 各 1 条</div>
+    <div><span style="color:#92400e;font-weight:600">人员集中：</span>calventan（4 条）最多；jeanliew（4 条）；wilsonwong / jacelynlim / zaydentan 各 2 条；whitneylee / alvinsim / muhamadfaisal 各 1 条</div>
+  </div>
+</div>
+<!-- inject-neg-analysis-end -->
+  <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:14px">
+    <div style="flex:2.2;min-width:340px">
+      <div class="subsect-title" style="margin-bottom:8px">近6周综合满意度趋势 <span class="en">6-Week CSAT Trend</span></div>
+      <!-- inject-csat-combo-start -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:14px 20px;margin-bottom:14px;max-width:780px">
+      <svg viewBox="0 0 740 250" style="width:100%;max-width:740px;display:block">
+  <g transform="translate(50,10)">
+  <g id="leg-bars-total" onclick="togCsatCh('bars-total',this)" style="cursor:pointer;user-select:none">
+    <rect x="0" y="0" width="9" height="9" fill="#60a5fa" fill-opacity="0.75" rx="1.5"/>
+    <text x="12" y="8.5" font-size="8" fill="#374151">总评价量</text>
+  </g>
+  <g id="leg-bars-neg" onclick="togCsatCh('bars-neg',this)" style="cursor:pointer;user-select:none">
+    <rect x="62" y="0" width="9" height="9" fill="#f87171" fill-opacity="0.8" rx="1.5"/>
+    <text x="74" y="8.5" font-size="8" fill="#374151">负评量</text>
+  </g>
+  <g id="leg-csat-overall" onclick="togCsatCh('overall',this)" style="cursor:pointer;user-select:none">
+    <line x1="130" y1="4.5" x2="142" y2="4.5" stroke="#10b981" stroke-width="2.2"/>
+    <circle cx="136" cy="4.5" r="2.5" fill="#10b981"/>
+    <text x="145" y="8.5" font-size="8" fill="#374151">综合CSAT</text>
+  </g>
+  <g id="leg-csat-target" onclick="togCsatCh('target',this)" style="cursor:pointer;user-select:none">
+    <line x1="215" y1="4.5" x2="227" y2="4.5" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <text x="230" y="8.5" font-size="8" fill="#374151">目标 ≥84%</text>
+  </g>
+  <g id="leg-csat-ch-lc" onclick="togCsatCh('lc',this)" style="cursor:pointer;user-select:none"><line x1="275" y1="4.5" x2="287" y2="4.5" stroke="#3b82f6" stroke-width="1.4" stroke-dasharray="4,3" opacity="0.85"/><circle cx="281" cy="4.5" r="2" fill="#3b82f6" opacity="0.85"/><text x="290" y="8.5" font-size="8" fill="#374151">在线 LC</text></g><g id="leg-csat-ch-ph" onclick="togCsatCh('ph',this)" style="cursor:pointer;user-select:none"><line x1="340" y1="4.5" x2="352" y2="4.5" stroke="#f97316" stroke-width="1.4" stroke-dasharray="4,3" opacity="0.85"/><circle cx="346" cy="4.5" r="2" fill="#f97316" opacity="0.85"/><text x="355" y="8.5" font-size="8" fill="#374151">电话 Phone</text></g><g id="leg-csat-ch-em" onclick="togCsatCh('em',this)" style="cursor:pointer;user-select:none"><line x1="405" y1="4.5" x2="417" y2="4.5" stroke="#8b5cf6" stroke-width="1.4" stroke-dasharray="4,3" opacity="0.85"/><circle cx="411" cy="4.5" r="2" fill="#8b5cf6" opacity="0.85"/><text x="420" y="8.5" font-size="8" fill="#374151">邮件 Email</text></g>
+</g>
+  <line x1="50" y1="202" x2="715" y2="202" stroke="#e5e7eb" stroke-width="0.7" stroke-dasharray=""/><text x="47.0" y="205.0" text-anchor="end" font-size="7.5" fill="#9ca3af">0%</text><line x1="50" y1="117" x2="715" y2="117" stroke="#e5e7eb" stroke-width="0.7" stroke-dasharray="3,3"/><text x="47.0" y="120.0" text-anchor="end" font-size="7.5" fill="#9ca3af">50%</text><line x1="50" y1="32" x2="715" y2="32" stroke="#e5e7eb" stroke-width="0.7" stroke-dasharray="3,3"/><text x="47.0" y="35.0" text-anchor="end" font-size="7.5" fill="#9ca3af">100%</text>
+  <g id="csat-target"><line x1="50" y1="59.2" x2="715" y2="59.2" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="5,4"/><text x="717.0" y="62.2" font-size="7.5" fill="#f59e0b">84%</text></g>
+  <g id="csat-bars-total"><rect x="73.4" y="125.5" width="31.0" height="76.5" fill="#60a5fa" fill-opacity="0.75" rx="2"/><text x="88.9" y="122.5" text-anchor="middle" font-size="8" fill="#3b82f6" font-weight="600">54</text><rect x="184.2" y="88.7" width="31.0" height="113.3" fill="#60a5fa" fill-opacity="0.75" rx="2"/><text x="199.7" y="85.7" text-anchor="middle" font-size="8" fill="#3b82f6" font-weight="600">80</text><rect x="295.0" y="70.3" width="31.0" height="131.8" fill="#60a5fa" fill-opacity="0.75" rx="2"/><text x="310.6" y="67.3" text-anchor="middle" font-size="8" fill="#3b82f6" font-weight="600">93</text><rect x="405.9" y="90.1" width="31.0" height="111.9" fill="#60a5fa" fill-opacity="0.75" rx="2"/><text x="421.4" y="87.1" text-anchor="middle" font-size="8" fill="#3b82f6" font-weight="600">79</text><rect x="516.7" y="74.5" width="31.0" height="127.5" fill="#60a5fa" fill-opacity="0.75" rx="2"/><text x="532.2" y="71.5" text-anchor="middle" font-size="8" fill="#3b82f6" font-weight="600">90</text><rect x="627.5" y="57.5" width="31.0" height="144.5" fill="#60a5fa" fill-opacity="0.75" rx="2"/><text x="643.1" y="54.5" text-anchor="middle" font-size="8" fill="#3b82f6" font-weight="600">102</text></g>
+  <g id="csat-bars-neg"><rect x="106.4" y="193.5" width="31.0" height="8.5" fill="#f87171" fill-opacity="0.8" rx="2"/><text x="121.9" y="190.5" text-anchor="middle" font-size="8" fill="#dc2626" font-weight="600">6</text><rect x="217.2" y="189.3" width="31.0" height="12.8" fill="#f87171" fill-opacity="0.8" rx="2"/><text x="232.8" y="186.3" text-anchor="middle" font-size="8" fill="#dc2626" font-weight="600">9</text><rect x="328.1" y="185" width="31.0" height="17.0" fill="#f87171" fill-opacity="0.8" rx="2"/><text x="343.6" y="182.0" text-anchor="middle" font-size="8" fill="#dc2626" font-weight="600">12</text><rect x="438.9" y="185" width="31.0" height="17.0" fill="#f87171" fill-opacity="0.8" rx="2"/><text x="454.4" y="182.0" text-anchor="middle" font-size="8" fill="#dc2626" font-weight="600">12</text><rect x="549.8" y="185" width="31.0" height="17.0" fill="#f87171" fill-opacity="0.8" rx="2"/><text x="565.3" y="182.0" text-anchor="middle" font-size="8" fill="#dc2626" font-weight="600">12</text><rect x="660.6" y="177.9" width="31.0" height="24.1" fill="#f87171" fill-opacity="0.8" rx="2"/><text x="676.1" y="174.9" text-anchor="middle" font-size="8" fill="#dc2626" font-weight="600">17</text></g>
+  <g id="csat-ch-lc"><polyline points="105.4,55.2 216.2,57.9 327.1,49.8 437.9,61.8 548.8,50.0 659.6,60.0" fill="none" stroke="#3b82f6" stroke-width="1.4" stroke-dasharray="4,3" opacity="0.85"/><circle cx="105.4" cy="55.2" r="2.5" fill="#3b82f6" fill-opacity="0.9"/><text x="105.4" y="50.2" text-anchor="middle" font-size="7.5" fill="#3b82f6" font-weight="400" opacity="0.9">86.4%</text><circle cx="216.2" cy="57.9" r="2.5" fill="#3b82f6" fill-opacity="0.9"/><text x="216.2" y="52.9" text-anchor="middle" font-size="7.5" fill="#3b82f6" font-weight="400" opacity="0.9">84.8%</text><circle cx="327.1" cy="49.8" r="2.5" fill="#3b82f6" fill-opacity="0.9"/><text x="327.1" y="44.8" text-anchor="middle" font-size="7.5" fill="#3b82f6" font-weight="400" opacity="0.9">89.5%</text><circle cx="437.9" cy="61.8" r="2.5" fill="#3b82f6" fill-opacity="0.9"/><text x="437.9" y="56.8" text-anchor="middle" font-size="7.5" fill="#3b82f6" font-weight="400" opacity="0.9">82.5%</text><circle cx="548.8" cy="50" r="2.5" fill="#3b82f6" fill-opacity="0.9"/><text x="548.8" y="45.0" text-anchor="middle" font-size="7.5" fill="#3b82f6" font-weight="400" opacity="0.9">89.4%</text><circle cx="659.6" cy="60" r="2.5" fill="#3b82f6" fill-opacity="0.9"/><text x="659.6" y="55.0" text-anchor="middle" font-size="8.5" fill="#3b82f6" font-weight="700" opacity="0.9">83.5%</text></g><g id="csat-ch-ph"><polyline points="105.4,32.0 216.2,32.0 327.1,74.5 437.9,56.3 548.8,32.0 659.6,47.5" fill="none" stroke="#f97316" stroke-width="1.4" stroke-dasharray="4,3" opacity="0.85"/><circle cx="105.4" cy="32" r="2.5" fill="#f97316" fill-opacity="0.9"/><text x="105.4" y="27.0" text-anchor="middle" font-size="7.5" fill="#f97316" font-weight="400" opacity="0.9">100.0%</text><circle cx="216.2" cy="32" r="2.5" fill="#f97316" fill-opacity="0.9"/><text x="216.2" y="27.0" text-anchor="middle" font-size="7.5" fill="#f97316" font-weight="400" opacity="0.9">100.0%</text><circle cx="327.1" cy="74.5" r="2.5" fill="#f97316" fill-opacity="0.9"/><text x="327.1" y="69.5" text-anchor="middle" font-size="7.5" fill="#f97316" font-weight="400" opacity="0.9">75.0%</text><circle cx="437.9" cy="56.3" r="2.5" fill="#f97316" fill-opacity="0.9"/><text x="437.9" y="51.3" text-anchor="middle" font-size="7.5" fill="#f97316" font-weight="400" opacity="0.9">85.7%</text><circle cx="548.8" cy="32" r="2.5" fill="#f97316" fill-opacity="0.9"/><text x="548.8" y="27.0" text-anchor="middle" font-size="7.5" fill="#f97316" font-weight="400" opacity="0.9">100.0%</text><circle cx="659.6" cy="47.5" r="2.5" fill="#f97316" fill-opacity="0.9"/><text x="659.6" y="42.5" text-anchor="middle" font-size="8.5" fill="#f97316" font-weight="700" opacity="0.9">90.9%</text></g><g id="csat-ch-em"><polyline points="105.4,32.0 216.2,32.0 327.1,76.7 437.9,60.3 548.8,117.0 659.6,60.3" fill="none" stroke="#8b5cf6" stroke-width="1.4" stroke-dasharray="4,3" opacity="0.85"/><circle cx="105.4" cy="32" r="2.5" fill="#8b5cf6" fill-opacity="0.9"/><text x="105.4" y="27.0" text-anchor="middle" font-size="7.5" fill="#8b5cf6" font-weight="400" opacity="0.9">100.0%</text><circle cx="216.2" cy="32" r="2.5" fill="#8b5cf6" fill-opacity="0.9"/><text x="216.2" y="27.0" text-anchor="middle" font-size="7.5" fill="#8b5cf6" font-weight="400" opacity="0.9">100.0%</text><circle cx="327.1" cy="76.7" r="2.5" fill="#8b5cf6" fill-opacity="0.9"/><text x="327.1" y="71.7" text-anchor="middle" font-size="7.5" fill="#8b5cf6" font-weight="400" opacity="0.9">73.7%</text><circle cx="437.9" cy="60.3" r="2.5" fill="#8b5cf6" fill-opacity="0.9"/><text x="437.9" y="55.3" text-anchor="middle" font-size="7.5" fill="#8b5cf6" font-weight="400" opacity="0.9">83.3%</text><circle cx="548.8" cy="117" r="2.5" fill="#8b5cf6" fill-opacity="0.9"/><text x="548.8" y="112.0" text-anchor="middle" font-size="7.5" fill="#8b5cf6" font-weight="400" opacity="0.9">50.0%</text><circle cx="659.6" cy="60.3" r="2.5" fill="#8b5cf6" fill-opacity="0.9"/><text x="659.6" y="55.3" text-anchor="middle" font-size="8.5" fill="#8b5cf6" font-weight="700" opacity="0.9">83.3%</text></g>
+  <g id="csat-overall"><polyline points="105.4,50.9 216.2,51.0 327.1,53.9 437.9,57.8 548.8,54.6 659.6,60.4" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linejoin="round"/><circle cx="105.4" cy="50.9" r="3.5" fill="#10b981" stroke="white" stroke-width="1.5"/><circle cx="216.2" cy="51.0" r="3.5" fill="#10b981" stroke="white" stroke-width="1.5"/><circle cx="327.1" cy="53.9" r="3.5" fill="#10b981" stroke="white" stroke-width="1.5"/><circle cx="437.9" cy="57.8" r="3.5" fill="#10b981" stroke="white" stroke-width="1.5"/><circle cx="548.8" cy="54.6" r="3.5" fill="#10b981" stroke="white" stroke-width="1.5"/><circle cx="659.6" cy="60.4" r="4.5" fill="#f59e0b" stroke="white" stroke-width="1.5"/><text x="105.4" y="43.9" text-anchor="middle" font-size="8" fill="#10b981" font-weight="400">88.9%</text><text x="216.2" y="44.0" text-anchor="middle" font-size="8" fill="#10b981" font-weight="400">88.8%</text><text x="327.1" y="46.9" text-anchor="middle" font-size="8" fill="#10b981" font-weight="400">87.1%</text><text x="437.9" y="50.8" text-anchor="middle" font-size="8" fill="#10b981" font-weight="400">84.8%</text><text x="548.8" y="47.6" text-anchor="middle" font-size="8" fill="#10b981" font-weight="400">86.7%</text><text x="659.6" y="53.4" text-anchor="middle" font-size="9" fill="#f59e0b" font-weight="700">83.3%</text></g>
+  <line x1="50" y1="32" x2="50" y2="202" stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="50" y1="202" x2="715" y2="202" stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="105.4" y1="202.0" x2="105.4" y2="206.0" stroke="#cbd5e1" stroke-width="1"/><line x1="216.2" y1="202.0" x2="216.2" y2="206.0" stroke="#cbd5e1" stroke-width="1"/><line x1="327.1" y1="202.0" x2="327.1" y2="206.0" stroke="#cbd5e1" stroke-width="1"/><line x1="437.9" y1="202.0" x2="437.9" y2="206.0" stroke="#cbd5e1" stroke-width="1"/><line x1="548.8" y1="202.0" x2="548.8" y2="206.0" stroke="#cbd5e1" stroke-width="1"/><line x1="659.6" y1="202.0" x2="659.6" y2="206.0" stroke="#cbd5e1" stroke-width="1"/><text x="105.4" y="216.0" text-anchor="middle" font-size="8" fill="#6b7280" font-weight="400">0807-0813</text><text x="216.2" y="216.0" text-anchor="middle" font-size="8" fill="#6b7280" font-weight="400">0814-0820</text><text x="327.1" y="216.0" text-anchor="middle" font-size="8" fill="#6b7280" font-weight="400">0821-0827</text><text x="437.9" y="216.0" text-anchor="middle" font-size="8" fill="#6b7280" font-weight="400">0828-0903</text><text x="548.8" y="216.0" text-anchor="middle" font-size="8" fill="#6b7280" font-weight="400">0904-0910</text><text x="659.6" y="216.0" text-anchor="middle" font-size="8.5" fill="#1456F0" font-weight="700">0911-0917</text>
+  <text x="8" y="117.0" text-anchor="middle" font-size="8" fill="#9ca3af" transform="rotate(-90,8,117.0)">工单量</text>
+  <text x="715.0" y="24.0" text-anchor="end" font-size="7.5" fill="#9ca3af">柱：总评价量/负评量</text>
+</svg>
+    </div>
+    <script>
+function togCsatCh(ch,btn){
+  var hidden=btn.style.opacity==='0.35';
+  btn.style.opacity=hidden?'1':'0.35';
+  var idMap={overall:'csat-overall','bars-total':'csat-bars-total','bars-neg':'csat-bars-neg',target:'csat-target'};
+  var g=document.getElementById(idMap[ch]||('csat-ch-'+ch));
+  if(g)g.style.display=hidden?'':'none';
+}
+</script>
+<!-- inject-csat-combo-end -->
+    </div>
+  </div>
+  <!-- inject-dist-start -->
+<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px 12px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><div>
+    <div style="font-size:10.5px;font-weight:700;color:#1456F0;margin-bottom:4px">渠道分布 <span style="font-size:9px;color:#9ca3af;font-weight:400">By Channel</span></div>
+    <table style="width:100%;border-collapse:collapse">
+    <thead><tr><th style="background:#f0f4ff;font-size:10px;padding:5px 6px;font-weight:600;text-align:left;width:40%"></th><th style="background:#f0f4ff;font-size:10px;padding:5px 6px;font-weight:600;text-align:center;width:20%">合计</th><th style="background:#f0f4ff;font-size:10px;padding:5px 6px;font-weight:600;text-align:center;width:20%">不满意</th><th style="background:#f0f4ff;font-size:10px;padding:5px 6px;font-weight:600;text-align:center;width:20%">糟糕</th></tr></thead>
+    <tbody><tr><td style="padding:4px 6px;font-size:10.5px;color:#374151;white-space:nowrap">在线 LC</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center;font-weight:600;color:#374151">13</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#d97706;font-weight:700">6</span></td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#dc2626;font-weight:700">7</span></td></tr><tr><td style="padding:4px 6px;font-size:10.5px;color:#374151;white-space:nowrap">邮件 Email</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center;font-weight:600;color:#374151">3</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#d97706;font-weight:700">1</span></td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#dc2626;font-weight:700">2</span></td></tr><tr><td style="padding:4px 6px;font-size:10.5px;color:#374151;white-space:nowrap">电话 Phone</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center;font-weight:600;color:#374151">1</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#cbd5e1">-</span></td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#dc2626;font-weight:700">1</span></td></tr></tbody>
+  </table>
+  </div><div>
+    <div style="font-size:10.5px;font-weight:700;color:#1456F0;margin-bottom:4px">二级分类集中情况 <span style="font-size:9px;color:#9ca3af;font-weight:400">By Category</span></div>
+    <table style="width:100%;border-collapse:collapse">
+    <thead><tr><th style="background:#f0f4ff;font-size:10px;padding:5px 6px;font-weight:600;text-align:left;width:40%"></th><th style="background:#f0f4ff;font-size:10px;padding:5px 6px;font-weight:600;text-align:center;width:20%">合计</th><th style="background:#f0f4ff;font-size:10px;padding:5px 6px;font-weight:600;text-align:center;width:20%">不满意</th><th style="background:#f0f4ff;font-size:10px;padding:5px 6px;font-weight:600;text-align:center;width:20%">糟糕</th></tr></thead>
+    <tbody><tr><td style="padding:4px 6px;font-size:10.5px;color:#374151;white-space:nowrap">其他身份开户咨询</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center;font-weight:600;color:#374151">3</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#d97706;font-weight:700">2</span></td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#dc2626;font-weight:700">1</span></td></tr><tr><td style="padding:4px 6px;font-size:10.5px;color:#374151;white-space:nowrap">ACH入金操作</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center;font-weight:600;color:#374151">2</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#cbd5e1">-</span></td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#dc2626;font-weight:700">2</span></td></tr><tr><td style="padding:4px 6px;font-size:10.5px;color:#374151;white-space:nowrap">问题不明确</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center;font-weight:600;color:#374151">1</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#cbd5e1">-</span></td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#dc2626;font-weight:700">1</span></td></tr><tr><td style="padding:4px 6px;font-size:10.5px;color:#374151;white-space:nowrap">已故客户（遗产账户）</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center;font-weight:600;color:#374151">1</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#cbd5e1">-</span></td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#dc2626;font-weight:700">1</span></td></tr><tr><td style="padding:4px 6px;font-size:10.5px;color:#374151;white-space:nowrap">ACH出金操作</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center;font-weight:600;color:#374151">1</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#cbd5e1">-</span></td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#dc2626;font-weight:700">1</span></td></tr><tr><td style="padding:4px 6px;font-size:10.5px;color:#374151;white-space:nowrap">期货</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center;font-weight:600;color:#374151">1</td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#cbd5e1">-</span></td>
+    <td style="padding:4px 6px;font-size:10.5px;text-align:center"><span style="color:#dc2626;font-weight:700">1</span></td></tr></tbody>
+  </table>
+  </div></div></div>
+<!-- inject-dist-end -->
+  <!-- inject-neg-cards-start -->
+<div style="margin-top:22px">
+  <div class="subsect-title" style="margin-bottom:10px;cursor:pointer;user-select:none" onclick="(function(){var b=document.getElementById('neg-detail-body');var a=document.getElementById('neg-toggle');var open=b.style.display!=='none';b.style.display=open?'none':'';a.textContent=open?'▶':' ▼';})()">不满意工单明细 <span class="en">Dissatisfied Ticket Details</span> <span id="neg-toggle" style="font-size:11px;color:#94a3b8;margin-left:4px">▶</span></div>
+  <div id="neg-detail-body" style="display:none">
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+  <select id="filter-agent" onchange="filterNeg()" style="font-size:11.5px;padding:4px 8px;border:1px solid #c7d6f7;border-radius:4px;background:#f8faff;color:#374151">
+    <option value="">全部客服</option>
+    <option>alvinsim</option><option>calventan</option><option>jacelynlim</option><option>jeanliew</option><option>muhamadfaisal</option><option>whitneylee</option><option>wilsonwong</option><option>zaydentan</option>
+  </select>
+  <select id="filter-rating" onchange="filterNeg()" style="font-size:11.5px;padding:4px 8px;border:1px solid #c7d6f7;border-radius:4px;background:#f8faff;color:#374151">
+    <option value="">全部评价</option>
+    <option>不满意</option><option>糟糕</option>
+  </select>
+  <select id="filter-cat" onchange="filterNeg()" style="font-size:11.5px;padding:4px 8px;border:1px solid #c7d6f7;border-radius:4px;background:#f8faff;color:#374151">
+    <option value="">全部分类</option>
+    <option>ACH入金操作</option><option>ACH出金操作</option><option>moomoo会员</option><option>potential fraud</option><option>其他活动</option><option>其他身份开户咨询</option><option>内地身份开户咨询</option><option>已故客户（遗产账户）</option><option>恶意骚扰</option><option>期货</option><option>虚拟货币etf</option><option>账户被锁</option><option>重复开户</option><option>问题不明确</option>
+  </select>
+  <button onclick="resetNeg()" style="font-size:11px;padding:4px 10px;border:1px solid #c7d6f7;border-radius:4px;background:#fff;color:#1456F0;cursor:pointer">重置</button>
+  <span id="neg-count" style="font-size:11px;color:#94a3b8">共 17 条</span>
+</div><table id="neg-table" style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:11.5px">
+  <thead><tr>
+    <th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:8%">客服</th><th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:10%">工单号</th><th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:6%">MMID</th>
+    <th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:7%">渠道</th><th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:5%">评价</th>
+    <th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:11%">二级分类</th><th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:13%">三级分类</th>
+    <th style="background:#f0f4ff;font-size:11px;padding:7px 6px;font-weight:600;white-space:nowrap;width:40%">不满意原因</th>
+  </tr></thead>
+  <tbody id="neg-body"><tr data-agent="alvinsim" data-rating="糟糕" data-cat="问题不明确">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">alvinsim</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260914191956831238</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">77152767</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">问题不明确</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">Poor User Experience</td>
+</tr><tr data-agent="calventan" data-rating="糟糕" data-cat="已故客户（遗产账户）">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">calventan</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">20260915030918121231</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">73357324</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Phone</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">已故客户（遗产账户）</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">My sister passed away in May and they still have not resolved the transfer of ownership!  They just keep passing it to the "relevant" department. Bad Customer Service Bad Customer Service</td>
+</tr><tr data-agent="calventan" data-rating="糟糕" data-cat="ACH出金操作">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">calventan</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260915222944118380</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">77290576</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">ACH出金操作</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">ai doing a better job </td>
+</tr><tr data-agent="calventan" data-rating="糟糕" data-cat="期货">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">calventan</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260911225333785791</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76573915</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">期货</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">产品体验差</td>
+</tr><tr data-agent="calventan" data-rating="不满意" data-cat="其他身份开户咨询">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">calventan</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260911221705978903</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">72425280</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#d97706;color:#fff;padding:2px 6px;border-radius:10px">不满意</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">其他身份开户咨询</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">其他</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal"><span style="color:#cbd5e1">-</span></td>
+</tr><tr data-agent="jacelynlim" data-rating="不满意" data-cat="potential fraud">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">jacelynlim</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260917025422374710</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">77085002</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#d97706;color:#fff;padding:2px 6px;border-radius:10px">不满意</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">potential fraud</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">Bad Customer Service</td>
+</tr><tr data-agent="jacelynlim" data-rating="不满意" data-cat="其他活动">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">jacelynlim</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">50260826232550861573</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">77216509</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Email</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#d97706;color:#fff;padding:2px 6px;border-radius:10px">不满意</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">其他活动</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">Kept being told to try "fixes" that I already specified that had been tried. Finally, there were no further response from customer service with no resolution.</td>
+</tr><tr data-agent="jeanliew" data-rating="糟糕" data-cat="账户被锁">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">jeanliew</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260916054709367806</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76818230</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">账户被锁</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal"><span style="color:#cbd5e1">-</span></td>
+</tr><tr data-agent="jeanliew" data-rating="糟糕" data-cat="ACH入金操作">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">jeanliew</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">50260911063457781967</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76947662</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Email</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">ACH入金操作</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal"><span style="color:#cbd5e1">-</span></td>
+</tr><tr data-agent="jeanliew" data-rating="不满意" data-cat="其他身份开户咨询">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">jeanliew</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260915034427694130</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">77014896</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#d97706;color:#fff;padding:2px 6px;border-radius:10px">不满意</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">其他身份开户咨询</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">开户驳回</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal"><span style="color:#cbd5e1">-</span></td>
+</tr><tr data-agent="jeanliew" data-rating="不满意" data-cat="重复开户">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">jeanliew</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260914231409728083</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76877465</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#d97706;color:#fff;padding:2px 6px;border-radius:10px">不满意</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">重复开户</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal"><span style="color:#cbd5e1">-</span></td>
+</tr><tr data-agent="muhamadfaisal" data-rating="糟糕" data-cat="ACH入金操作">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">muhamadfaisal</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">50260908203609647011</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76975631</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Email</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">ACH入金操作</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">I have tried numerous times to make a deposit, only to be told that I need to make a $5.00 deposit. I have made no trades, but somehow I have been charged a $5.00 fee.</td>
+</tr><tr data-agent="whitneylee" data-rating="不满意" data-cat="虚拟货币etf">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">whitneylee</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260917115209386544</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76498191</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#d97706;color:#fff;padding:2px 6px;border-radius:10px">不满意</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">虚拟货币etf</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">Poor User Experience</td>
+</tr><tr data-agent="wilsonwong" data-rating="糟糕" data-cat="其他身份开户咨询">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">wilsonwong</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260915224839720023</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">77174813</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">其他身份开户咨询</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">开户驳回</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">跟人机一样的客服 体验极差</td>
+</tr><tr data-agent="wilsonwong" data-rating="不满意" data-cat="moomoo会员">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">wilsonwong</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260917035426100500</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76845002</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#d97706;color:#fff;padding:2px 6px;border-radius:10px">不满意</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">moomoo会员</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal"><span style="color:#cbd5e1">-</span></td>
+</tr><tr data-agent="zaydentan" data-rating="糟糕" data-cat="内地身份开户咨询">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">zaydentan</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260916141522324852</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">76267372</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">内地身份开户咨询</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">服務態度差產品體驗差</td>
+</tr><tr data-agent="zaydentan" data-rating="糟糕" data-cat="恶意骚扰">
+  <td style="padding:8px 6px;vertical-align:top;font-weight:600">zaydentan</td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:9.5px;word-break:break-all;overflow-wrap:break-word">10260911092055977004</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">77254652</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center">Live Chat</td>
+  <td style="padding:8px 6px;vertical-align:top;text-align:center"><span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:2px 6px;border-radius:10px">糟糕</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#64748b;font-size:10.5px">恶意骚扰</span></td>
+  <td style="padding:8px 6px;vertical-align:top;"><span style="color:#cbd5e1">-</span></td>
+  <td style="padding:8px 6px;vertical-align:top;font-size:11px;color:#334155;text-align:left;word-break:break-word;overflow-wrap:break-word;line-height:1.65;white-space:normal">Poor User Experience</td>
+</tr></tbody>
+</table>
+  </div>
+  <script>
+function filterNeg(){
+  var agent=document.getElementById('filter-agent').value;
+  var rating=document.getElementById('filter-rating').value;
+  var cat=document.getElementById('filter-cat').value;
+  var rows=document.querySelectorAll('#neg-body tr');
+  var count=0;
+  rows.forEach(function(r){
+    var show=(!agent||r.dataset.agent===agent)&&(!rating||r.dataset.rating===rating)&&(!cat||r.dataset.cat===cat);
+    r.style.display=show?'':'none';
+    if(show)count++;
+  });
+  document.getElementById('neg-count').textContent='共 '+count+' 条';
+}
+function resetNeg(){
+  ['filter-agent','filter-rating','filter-cat'].forEach(function(id){document.getElementById(id).value='';});
+  filterNeg();
+}
+</script>
+</div>
+<!-- inject-neg-cards-end -->
+</div>
+
+<div class="section" id="三"><h2><span class="sect-num">三</span>个人业绩分析 <span class="en">Individual Breakdown</span></h2>
+  <div class="breakdown-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#1456F0;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:10px">在线 <span style="opacity:.8;font-weight:400">Live Chat</span></div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 8px"><table><thead><tr><th>客服<br><span class="en">Agent</span></th><th>工单<br><span class="en">Tickets</span></th><th>30s接通<br><span class="en">30s Rate</span></th><th>满意度<br><span class="en">CSAT</span></th><th>一次性解决率<br><span class="en">FCR</span></th><th>平均处理时长<br><span class="en">Avg Handle</span></th></tr></thead><tbody><tr><td>jacelynlim</td><td>28</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>83.3%</td><td><span style="color:#dc2626;font-weight:700">85.7%</span></td><td>15.1m</td></tr><tr><td>terrychen</td><td>61</td><td><span style="color:#dc2626;font-weight:700">98.4%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>88.5%</td><td>12.1m</td></tr><tr><td>muhamadfaisal</td><td>31</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>9.7m</td></tr><tr><td>calventan</td><td>53</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>75.0%</td><td>94.3%</td><td>10.9m</td></tr><tr><td>azamuddin</td><td>24</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>9.5m</td></tr><tr><td>jeanliew</td><td>30</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#dc2626;font-weight:700">57.1%</span></td><td>96.7%</td><td>10.6m</td></tr><tr><td>whitneylee</td><td>71</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>93.8%</td><td>94.4%</td><td>10.4m</td></tr><tr><td>alvinsim</td><td>17</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>87.5%</td><td>94.1%</td><td>5.6m</td></tr><tr><td>zaydentan</td><td>31</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>75.0%</td><td>96.8%</td><td>12.7m</td></tr><tr><td>wilsonwong</td><td>23</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>66.7%</td><td>91.3%</td><td>13.9m</td></tr></tbody></table></div>
+    </div>
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#0ea5e9;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:10px">电话 <span style="opacity:.8;font-weight:400">Phone</span></div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 8px"><table><thead><tr><th>客服<br><span class="en">Agent</span></th><th>呼入<br><span class="en">Inbound</span></th><th>20s接通<br><span class="en">20s Rate</span></th><th>通话时长<br><span class="en">Call Dur.</span></th><th>满意度<br><span class="en">CSAT</span></th><th>一次性解决率<br><span class="en">FCR</span></th></tr></thead><tbody><tr><td>jacelynlim</td><td>33</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>8m 28s</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td></tr><tr><td>terrychen</td><td>52</td><td><span style="color:#dc2626;font-weight:700">71.2%</span></td><td>3m 29s</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>88.9%</td></tr><tr><td>muhamadfaisal</td><td>27</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>6m 39s</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>96.4%</td></tr><tr><td>calventan</td><td>30</td><td>96.7%</td><td>7m 48s</td><td><span style="color:#dc2626;font-weight:700">50.0%</span></td><td>96.7%</td></tr><tr><td>azamuddin</td><td>29</td><td>93.1%</td><td>8m 19s</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#15803d;font-weight:700">100.0%</span></td></tr><tr><td>jeanliew</td><td>17</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>12m 41s</td><td><span style="color:#dc2626;font-weight:700">0.0%</span></td><td>95.0%</td></tr><tr><td>alvinsim</td><td>11</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>10m 47s</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td><span style="color:#dc2626;font-weight:700">81.8%</span></td></tr><tr><td>wilsonwong</td><td>17</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>9m 36s</td><td><span style="color:#dc2626;font-weight:700">0.0%</span></td><td>94.7%</td></tr></tbody></table></div>
+    </div>
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#8b5cf6;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:10px">邮件 <span style="opacity:.8;font-weight:400">Email</span></div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 8px"><table><thead><tr><th>客服<br><span class="en">Agent</span></th><th>工单<br><span class="en">Tickets</span></th><th>SLA达标<br><span class="en">SLA Rate</span></th><th>满意度<br><span class="en">CSAT</span></th></tr></thead><tbody><tr><td>jacelynlim</td><td>39</td><td>77.0%</td><td>100.0%</td></tr><tr><td>terrychen</td><td>32</td><td>28.0%</td><td>-</td></tr><tr><td>muhamadfaisal</td><td>37</td><td>84.0%</td><td>-</td></tr><tr><td>calventan</td><td>26</td><td>73.0%</td><td>-</td></tr><tr><td>azamuddin</td><td>25</td><td><span style="color:#15803d;font-weight:700">100.0%</span></td><td>100.0%</td></tr><tr><td>jeanliew</td><td>28</td><td>29.0%</td><td>100.0%</td></tr><tr><td>whitneylee</td><td>34</td><td>26.0%</td><td>-</td></tr><tr><td>alvinsim</td><td>17</td><td>71.0%</td><td>100.0%</td></tr><tr><td>zaydentan</td><td>8</td><td>88.0%</td><td>-</td></tr><tr><td>wilsonwong</td><td>24</td><td><span style="color:#dc2626;font-weight:700">17.0%</span></td><td>-</td></tr></tbody></table></div>
+    </div>
+  </div>
+  <div style="margin-top:20px">
+    <div style="display:inline-flex;align-items:center;gap:6px;background:#f59e0b;color:#fff;border-radius:5px;padding:4px 11px;font-size:11.5px;font-weight:700;letter-spacing:.6px;margin-bottom:6px">外呼 <span style="opacity:.8;font-weight:400">Outbound</span></div>
+    <p class="meta" style="margin:2px 0 8px">Calendar day: 2026-09-11 ~ 2026-09-17 BT</p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;overflow-x:auto"><table><thead><tr><th>客服<br><span class="en">Agent</span></th><th>分配Leads<br><span class="en">Leads Assigned</span></th><th>跟进量<br><span class="en">Follow-up</span></th><th>有效跟进<br><span class="en">Eff. Follow</span></th><th>周PC<br><span class="en">Weekly PC</span></th><th>分配转化率月<br><span class="en">Dist. Conv%</span></th><th>有效转化率月<br><span class="en">Eff. Conv%</span></th></tr></thead><tbody><tr><td>whitneylee</td><td style="font-weight:700;color:#16a34a;">513</td><td>553</td><td style="font-weight:700;color:#16a34a;">112</td><td>9</td><td>2.1%</td><td>11.2%</td></tr><tr><td>calventan</td><td>503</td><td style="font-weight:700;color:#16a34a;">633</td><td>98</td><td>7</td><td>1.3%</td><td>6%</td></tr><tr><td>azamuddin</td><td>461</td><td>482</td><td>78</td><td>10</td><td style="font-weight:700;color:#16a34a;">2.9%</td><td style="font-weight:700;color:#16a34a;">15.8%</td></tr><tr><td>jacelynlim</td><td>427</td><td>342</td><td>71</td><td>7</td><td style="font-weight:700;color:#dc2626;">0.9%</td><td style="font-weight:700;color:#dc2626;">5.6%</td></tr><tr><td>jeanliew</td><td>344</td><td>329</td><td>69</td><td>7</td><td>1.5%</td><td>9.3%</td></tr><tr><td>muhamadfaisal</td><td>412</td><td>416</td><td>63</td><td style="font-weight:700;color:#16a34a;">11</td><td>2.3%</td><td>15.8%</td></tr><tr><td>terrychen</td><td>246</td><td>239</td><td>57</td><td>6</td><td>1.8%</td><td>11.3%</td></tr><tr><td>alvinsim</td><td>192</td><td style="font-weight:700;color:#dc2626;">134</td><td>40</td><td>7</td><td>1.8%</td><td>7.1%</td></tr><tr><td>wilsonwong</td><td>204</td><td>165</td><td>30</td><td>2</td><td>1.1%</td><td>7.1%</td></tr><tr><td>zaydentan</td><td style="font-weight:700;color:#dc2626;">170</td><td>137</td><td style="font-weight:700;color:#dc2626;">23</td><td>2</td><td>1.4%</td><td>9.5%</td></tr></tbody></table></div>
+  </div>
+  <div style="margin-top:20px">
+    <div class="subsect-title">业绩分析 <span class="en">Performance Analysis</span></div>
+    <div style="margin-top:8px"><div style="background:#f0fdf4;border-left:3px solid #22c55e;border-radius:6px;padding:8px 14px;margin-bottom:10px;font-size:12.5px;color:#15803d"><strong>亮点</strong>　在线 30s接通率 LC 30s Rate <strong>99.7%</strong>，达成目标 ≥90%　·　周 PC Top 3：terrychen(<strong>17</strong>)、azamuddin(<strong>16</strong>)、calventan(<strong>14</strong>)</div><div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;font-weight:700;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:3px">待提升</span><span style="font-size:13px;font-weight:600;color:#1a1a2e">月度有效转化率差距 Monthly Eff. Conv. Rate Gap <span style="color:#d97706;font-weight:700">muhamadfaisal(15.8%) vs jacelynlim(5.6%)</span></span></div><div style="margin-left:4px"><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">复盘低转化率成员的有效跟进质量，对比高效成员跟进节点与话术</span></div><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">推动低转化率成员参与 1-on-1 coaching，聚焦 objection handling</span></div></div></div><div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;font-weight:700;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:3px">待提升</span><span style="font-size:13px;font-weight:600;color:#1a1a2e">在线 FCR Live Chat FCR <span style="color:#d97706;font-weight:700">93.8%</span> <span style="font-size:11px;color:#9ca3af">目标≥95%</span></span></div><div style="margin-left:4px"><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">梳理重复来电 Top 问题，补充标准话术</span></div><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">识别转接率高的工单类型，减少不必要转接</span></div></div></div><div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;font-weight:700;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:3px">待提升</span><span style="font-size:13px;font-weight:600;color:#1a1a2e">电话 20s接通率 Phone 20s Rate <span style="color:#d97706;font-weight:700">91.7%</span> <span style="font-size:11px;color:#9ca3af">目标≥95%</span></span></div><div style="margin-left:4px"><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">分析漏接高峰时段，调整排班覆盖</span></div><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">确认话机状态，排查坐席接通障碍</span></div></div></div><div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;font-weight:700;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:3px">待提升</span><span style="font-size:13px;font-weight:600;color:#1a1a2e">电话 FCR Phone FCR <span style="color:#d97706;font-weight:700">94.5%</span> <span style="font-size:11px;color:#9ca3af">目标≥95%</span></span></div><div style="margin-left:4px"><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">提炼电话高频问题，强化一次性解决能力</span></div><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">跟进需多步骤处理的案例，规范跟进流程</span></div></div></div><div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;font-weight:700;background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:3px">待提升</span><span style="font-size:13px;font-weight:600;color:#1a1a2e">整体 SLA Overall SLA <span style="color:#d97706;font-weight:700">89.3%</span> <span style="font-size:11px;color:#9ca3af">目标≥90%</span></span></div><div style="margin-left:4px"><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">梳理超时工单分布，定位延误渠道</span></div><div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px"><span style="color:#1456F0;font-size:12px;flex-shrink:0;margin-top:1px">→</span><span style="font-size:12px;color:#374151;line-height:1.5">建立优先级处理规范，缩短响应周期</span></div></div></div></div>
+  </div>
+  
+</div>
+
+<div class="section" id="四"><h2><span class="sect-num">四</span>本周重点工作 <span class="en">Key Work This Week</span></h2>
+  <div class="editable-hint">点击编辑 / Click to edit</div>
+  <div class="editable-area" contenteditable="true"><ol>
+  <li>完成未入资客户及邀请官群发促活跟进</li>
+  <li>完成个人与团队H2绩效目标设定</li>
+  <li>启动满意度提升专项：完成CSAT问题归因分析，识别FCR与接通率薄弱环节</li>
+  <li>为冲刺季末PC，申请OT并同步组内，鼓励大家冲刺PC目标</li>
+</ol></div></div>
+</div>
+
+<div class="section" id="五"><h2><span class="sect-num">五</span>下周计划 <span class="en">Next Week Plans</span></h2>
+  <div class="editable-hint">点击编辑 / Click to edit</div>
+  <div class="editable-area" contenteditable="true"><ol>
+  <li>联合资金团队完成入金问题客服培训及相关权限开通</li>
+  <li>梳理US团队近期FCR/电话接通率/满意度的归因，解决卡点问题</li>
+  <li>加速月度PC冲刺，截至25/9，争取达成9月PC达成400+</li>
+</ol></div></div>
+</div>
+
+<p class="meta">Generated: 2026-09-20T13:55:33.897Z &nbsp;|&nbsp; Week: 2026-09-11 ~ 2026-09-17</p>
+<script>
+function togGroup(id,btn){
+  var g=document.getElementById(id);if(!g)return;
+  var hide=g.style.display!=='none';
+  g.style.display=hide?'none':'';
+  btn.style.opacity=hide?'0.3':'1';
+}
+function togFill(chartId,color,btn){
+  var chart=document.getElementById(chartId);if(!chart)return;
+  var els=Array.from(chart.querySelectorAll('[fill="'+color+'"]')).filter(function(el){
+    return el.closest('[id^="leg-"]')===null;
+  });
+  var hide=els.length>0&&els[0].style.display!=='none';
+  els.forEach(function(el){el.style.display=hide?'none':'';});
+  btn.style.opacity=hide?'0.3':'1';
+}
+function togClass(cls,btn){
+  var els=document.querySelectorAll('.'+cls);
+  var hide=els.length>0&&els[0].style.display!=='none';
+  els.forEach(function(el){el.style.display=hide?'none':'';});
+  btn.style.opacity=hide?'0.3':'1';
+}
+</script>
+</body>
+</html>
