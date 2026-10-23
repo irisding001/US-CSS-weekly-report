@@ -2,19 +2,19 @@
 /**
  * Send US CSS Weekly Report notification card to Feishu.
  * Usage: node send_weekly_notify.js [chat_id]
- *   If chat_id is omitted, sends to Iris's personal open_id.
- *   If chat_id is provided (oc_xxx), sends to that group.
+ *   If chat_id is omitted, sends to the group.
+ *   If chat_id is an open_id (ou_xxx), sends to that user.
  */
 const { execFile } = require('child_process');
 const path = require('path');
 
 // ── Config ──────────────────────────────────────────────────────────────────
-const PROFILE        = 'us-ccs';
+const PROFILE        = 'us-ccs';  // appId: cli_aa99822db9b8dbd6
 const IRIS_OPEN_ID   = 'ou_423989c914515582660dfef99848b0e7';
 const GROUP_CHAT_ID  = 'oc_6b53fdf35d29e9203579c4fc7b70acde'; // US CSS Weekly Report 群
-const REPORT_URL     = 'https://irisding001.github.io/US-CSS-weekly-report/weekly_report_2026-08-28_0903.html';
+const REPORT_URL = 'https://irisding001.github.io/US-CSS-weekly-report/weekly_report_2026-10-16_1022.html';
 const HISTORY_URL    = 'https://irisding001.github.io/US-CSS-weekly-report/';
-const WEEK_RANGE     = '08-28 ~ 09-03';
+const WEEK_RANGE = 'Oct 16 – Oct 22, 2026';
 
 // ── lark-cli invocation (Windows-safe) ──────────────────────────────────────
 const IS_WIN = process.platform === 'win32';
@@ -45,8 +45,8 @@ const card = {
   },
   elements: [
     {
-      tag: 'markdown',
-      content: '本周报告已更新，含满意度分析及不满意工单分析'
+      tag: 'div',
+      text: { tag: 'lark_md', content: '本周报告已更新，含满意度分析及不满意工单分析' }
     },
     {
       tag: 'action',
@@ -54,7 +54,7 @@ const card = {
         {
           tag: 'button',
           text: { tag: 'plain_text', content: '查看周报 View Report' },
-          type: 'default',
+          type: 'primary',
           url: REPORT_URL
         },
         {
@@ -70,7 +70,7 @@ const card = {
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 async function main() {
-  const chatId = process.argv[2] || GROUP_CHAT_ID;  // default to group chat
+  const target = process.argv[2] || GROUP_CHAT_ID;
   const cardJson = JSON.stringify(card);
 
   const args = [
@@ -81,12 +81,12 @@ async function main() {
     '--content', cardJson,
   ];
 
-  if (chatId) {
-    args.push('--chat-id', chatId);
-    console.log(`Sending to group: ${chatId}`);
+  if (target.startsWith('ou_')) {
+    args.push('--user-id', target);
+    console.log(`Sending to user: ${target}`);
   } else {
-    args.push('--user-id', IRIS_OPEN_ID);
-    console.log(`Sending to Iris: ${IRIS_OPEN_ID}`);
+    args.push('--chat-id', target);
+    console.log(`Sending to group: ${target}`);
   }
 
   try {
